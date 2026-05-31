@@ -164,3 +164,38 @@
   .blog-main { padding: 0 1.25rem 4rem; }
   .blog-hero  { padding: 3rem 0 2.5rem; }
 }
+
+/* ─── Post Photo Gallery ────────────────────────────────────────── */
+.post-gallery {
+  display: grid;
+  gap: 0.5rem;
+  margin: 2rem 0;
+}
+
+.post-gallery.gallery-2 { grid-template-columns: 1fr 1fr; }
+.post-gallery.gallery-3 { grid-template-columns: 1fr 1fr 1fr; }
+.post-gallery.gallery-many { grid-template-columns: 1fr 1fr; }
+
+.gallery-item img {
+  width: 100%;
+  aspect-ratio: 4/3;
+  object-fit: cover;
+  display: block;
+  border: 1px solid var(--paper-dark);
+  transition: transform 0.3s var(--ease-out);
+  cursor: zoom-in;
+}
+.gallery-item img:hover { transform: scale(1.02); }
+
+.gallery-item figcaption {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  color: var(--ink-faint);
+  margin-top: 0.3rem;
+  font-style: italic;
+}
+
+@media (max-width: 600px) {
+  .post-gallery.gallery-3,
+  .post-gallery.gallery-many { grid-template-columns: 1fr 1fr; }
+}

@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin — Japan Move</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="admin.css" />
+</head>
+<body>
+
+  <!-- ── LOGIN SCREEN ───────────────────────────────────────────── -->
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-kanji" aria-hidden="true">管理</div>
+      <h1 class="login-title">Japan Move</h1>
+      <p class="login-sub">Admin Panel</p>
+
+      <div class="login-form">
+        <div class="field-group">
+          <label class="field-label">Password</label>
+          <input type="password" id="loginPassword" class="field-input" placeholder="Enter your password" />
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">GitHub Token
+            <a href="https://github.com/settings/tokens/new?scopes=repo&description=japan-move-blog"
+               target="_blank" class="help-link">Get one →</a>
+          </label>
+          <input type="password" id="loginToken" class="field-input" placeholder="ghp_xxxxxxxxxxxx" />
+          <p class="field-hint">Needed to publish posts to GitHub. Saved in this browser only.</p>
+        </div>
+
+        <button class="btn-primary" id="loginBtn">Sign In</button>
+        <p class="login-error" id="loginError"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── ADMIN PANEL ────────────────────────────────────────────── -->
+  <div id="adminPanel" class="admin-panel hidden">
+
+    <header class="admin-header">
+      <div class="admin-header-inner">
+        <a href="index.html" class="admin-logo">
+          <span class="logo-kanji-sm">日本</span>
+          <span class="admin-logo-text">Japan Move <span class="admin-badge">Admin</span></span>
+        </a>
+        <div class="admin-header-actions">
+          <a href="blog.html" target="_blank" class="btn-ghost">View Blog →</a>
+          <button class="btn-ghost" id="logoutBtn">Sign Out</button>
+        </div>
+      </div>
+    </header>
+
+    <main class="admin-main">
+
+      <div class="status-bar hidden" id="statusBar">
+        <span id="statusMsg"></span>
+      </div>
+
+      <div class="admin-layout">
+
+        <!-- ── LEFT: Editor ──────────────────────────────────────── -->
+        <div class="editor-panel">
+          <h2 class="panel-title">New Post</h2>
+
+          <!-- Category & Date -->
+          <div class="field-row">
+            <div class="field-group">
+              <label class="field-label">Category</label>
+              <select class="field-input" id="postCategory">
+                <option>Vlog</option>
+                <option>Housing</option>
+                <option>Visa &amp; Paperwork</option>
+                <option>Language</option>
+                <option>Logistics</option>
+                <option>Culture</option>
+                <option>Food</option>
+                <option>Life in Japan</option>
+                <option>Travel</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Date</label>
+              <input type="date" class="field-input" id="postDate" />
+            </div>
+          </div>
+
+          <!-- Title -->
+          <div class="field-group">
+            <label class="field-label">Title</label>
+            <input type="text" class="field-input" id="postTitle" placeholder="Your post title..." />
+          </div>
+
+          <!-- Body -->
+          <div class="field-group">
+            <label class="field-label">Body
+              <span class="field-hint-inline">Select text then click a button to format</span>
+            </label>
+            <div class="toolbar">
+              <button class="toolbar-btn" data-action="bold" title="Bold"><b>B</b></button>
+              <button class="toolbar-btn italic" data-action="italic" title="Italic"><i>I</i></button>
+              <button class="toolbar-btn" data-action="link" title="Add hyperlink">🔗</button>
+              <button class="toolbar-btn" data-action="h3" title="Heading">H</button>
+              <div class="toolbar-sep"></div>
+              <button class="toolbar-btn" data-action="para" title="New paragraph">¶</button>
+            </div>
+            <div
+              class="body-editor"
+              id="postBody"
+              contenteditable="true"
+              data-placeholder="Write your post here...&#10;&#10;Select any text and use the toolbar above to make it bold, italic, add a link, or make it a heading.">
+            </div>
+          </div>
+
+          <!-- YouTube -->
+          <div class="field-group">
+            <label class="field-label">YouTube Video <span class="optional">optional</span></label>
+            <input type="text" class="field-input" id="postYoutube"
+              placeholder="https://www.youtube.com/watch?v=abc123  or just: abc123" />
+            <p class="field-hint">Upload to <a href="https://www.youtube.com/@Hashtagemmer" target="_blank" class="help-link">@Hashtagemmer</a> first, then paste the link.</p>
+          </div>
+
+          <!-- ── MULTI-IMAGE UPLOAD ─────────────────────────────── -->
+          <div class="field-group">
+            <label class="field-label">
+              Photos <span class="optional">optional — up to 10 images</span>
+            </label>
+
+            <!-- Drop zone -->
+            <div class="upload-zone" id="uploadZone">
+              <input type="file" id="photoInput" accept="image/*" multiple class="upload-input" />
+              <div class="upload-inner" id="uploadInner">
+                <span class="upload-icon">📷</span>
+                <span class="upload-text">Tap to choose photos</span>
+                <span class="upload-sub">Select multiple at once · JPG, PNG, WebP · max 5MB each</span>
+              </div>
+            </div>
+
+            <!-- Image list -->
+            <div class="image-list" id="imageList"></div>
+
+            <!-- Add more button (shown after first upload) -->
+            <div class="add-more-wrap hidden" id="addMoreWrap">
+              <label class="btn-add-more">
+                <input type="file" id="photoInputMore" accept="image/*" multiple class="upload-input-hidden" />
+                + Add More Photos
+              </label>
+            </div>
+          </div>
+
+          <!-- External link -->
+          <div class="field-group">
+            <label class="field-label">External Link <span class="optional">optional</span></label>
+            <input type="text" class="field-input" id="postLink" placeholder="https://..." />
+            <input type="text" class="field-input" id="postLinkText" placeholder="Link label (e.g. Read more on GaijinPot)" style="margin-top:0.5rem;" />
+          </div>
+
+          <!-- Publish -->
+          <div class="publish-row">
+            <button class="btn-preview" id="previewBtn">Preview</button>
+            <button class="btn-publish" id="publishBtn">
+              <span id="publishLabel">Publish Post →</span>
+            </button>
+          </div>
+
+        </div>
+
+        <!-- ── RIGHT: Preview ────────────────────────────────────── -->
+        <div class="preview-panel" id="previewPanel">
+          <h2 class="panel-title">Preview</h2>
+          <div class="preview-box" id="previewBox">
+            <p class="preview-empty">Fill in the form and click Preview to see your post.</p>
+          </div>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <script src="admin.js"></script>
+</body>
+</html>
