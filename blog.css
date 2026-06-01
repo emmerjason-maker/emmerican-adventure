@@ -130,7 +130,7 @@
 .post-body {
   font-size: 1.05rem;
   line-height: 1.85;
-  color: var(--ink-light);
+  color: var(--ink);
 }
 
 .post-body p {

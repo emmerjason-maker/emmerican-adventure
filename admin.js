@@ -255,7 +255,7 @@ function renderPreview() {
 
   let html = `
     <div class="p-meta">
-      <span class="p-tag">${escHtml(category)}</span>
+      <span class="p-tag">Post #?</span>
       <span class="p-date">${escHtml(fmtDate)}</span>
     </div>
     <h2 class="p-title">${escHtml(title || 'Untitled Post')}</h2>
@@ -300,11 +300,18 @@ function renderPreview() {
   }
 }
 
+// ── Count existing posts ─────────────────────────────────────────
+function countExistingPosts(html) {
+  const matches = html.match(/class="post-entry"/g);
+  return matches ? matches.length : 0;
+}
+
 // ── Build post HTML for blog.html ─────────────────────────────────
-function buildPostHtml({ title, date, category, body, ytId, uploadedImages, linkUrl, linkText }) {
+function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkText, postNumber }) {
   const fmtDate = date
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
     : '';
+  const tag = `Post #${postNumber}`;
 
   // Video block
   let videoBlock = '';
@@ -363,7 +370,7 @@ function buildPostHtml({ title, date, category, body, ytId, uploadedImages, link
 
       <header class="post-entry-header">
         <div class="post-meta">
-          <span class="post-tag">${escHtml(category)}</span>
+          <span class="post-tag">${tag}</span>
           <time class="post-date">${escHtml(fmtDate)}</time>
         </div>
         <h2 class="post-entry-title">${escHtml(title)}</h2>
@@ -418,10 +425,13 @@ async function handlePublish() {
     const currentContent = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
     const sha = fileJson.sha;
 
-    // 3. Build new post
-    const newPost = buildPostHtml({ title, date, category, body, ytId, uploadedImages, linkUrl, linkText });
+    // 3. Count existing posts to determine post number
+    const postNumber = countExistingPosts(currentContent) + 1;
 
-    // 4. Insert before the template marker (newest posts on top)
+    // 4. Build new post
+    const newPost = buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkText, postNumber });
+
+    // 5. Insert before the template marker (newest posts on top)
     const marker = '<!-- ====== NEW POST — COPY FROM HERE ====== -->';
     let updated;
     if (currentContent.includes(marker)) {
@@ -430,7 +440,7 @@ async function handlePublish() {
       updated = currentContent.replace('<article class="post-entry">', newPost + '\n\n    <article class="post-entry">');
     }
 
-    // 5. Push updated blog.html
+    // 6. Push updated blog.html
     const pushRes = await ghFetch(`contents/${CONFIG.blogFile}`, 'PUT', {
       message: `New post: ${title}`,
       content: btoa(unescape(encodeURIComponent(updated))),
