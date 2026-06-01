@@ -155,8 +155,8 @@ img { max-width: 100%; display: block; }
   z-index: 1;
   max-width: 1200px;
   margin: 0 auto;
-  padding: 8rem 2rem 6rem;
-  min-height: 80vh;
+  padding: 3rem 2rem 4rem;
+  min-height: auto;
   display: flex;
   flex-direction: column;
   justify-content: center;
