@@ -956,3 +956,25 @@ img { max-width: 100%; display: block; }
 @media (max-width: 600px) {
   .photo-grid { grid-template-columns: 1fr; }
 }
+
+/* ─── Empty states ──────────────────────────────────────────────── */
+.post-grid-empty {
+  grid-column: 1 / -1;
+  padding: 3rem;
+  text-align: center;
+  border: 1px dashed var(--paper-dark);
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+}
+.post-grid-empty a {
+  color: var(--red);
+  border-bottom: 1px solid rgba(192,57,43,0.3);
+}
+
+.videos-coming-soon {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 3rem 2rem;
+  text-align: center;
+}
