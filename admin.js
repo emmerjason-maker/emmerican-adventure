@@ -7,7 +7,7 @@
 const CONFIG = {
   password:  'japan2026',   // !! CHANGE THIS to your own password !!
   owner:     'emmerjason-maker',
-  repo:      'japan-move',
+  repo:      'emmerican-adventure',
   branch:    'main',
   blogFile:  'blog.html',
   maxImages: 10,
