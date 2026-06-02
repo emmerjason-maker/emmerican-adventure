@@ -327,7 +327,7 @@ function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkT
             allowfullscreen>
           </iframe>
         </div>
-        <p class="video-caption">Watch on <a href="https://www.youtube.com/@Hashtagemmer" target="_blank">YouTube →</a></p>
+        <p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>
       </div>`;
   }
 
