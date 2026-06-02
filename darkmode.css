@@ -1,10 +1,19 @@
 /* ═══════════════════════════════════════════════════════════════
-   Emmerican Adventure — Light / Dark Mode CSS Variables
-   Default = light mode. Dark mode triggered by [data-theme="dark"]
+   Emmerican Adventure — Light / Dark Mode
+   This file defines ALL CSS variables for both modes
    ═══════════════════════════════════════════════════════════════ */
 
-/* ── Light Mode (default) ──────────────────────────────────── */
+/* ── Font definitions (always needed) ─────────────────────── */
 :root {
+  --font-display: 'DM Serif Display', Georgia, serif;
+  --font-body:    'Noto Serif JP', 'Times New Roman', serif;
+  --font-mono:    'Space Mono', monospace;
+  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ── Light Mode ────────────────────────────────────────────── */
+:root,
+[data-theme="light"] {
   --ink:        #1a1714;
   --ink-light:  #3d3830;
   --ink-faint:  #6b6258;
@@ -15,15 +24,12 @@
   --red-muted:  #8b2020;
   --gold:       #b8922a;
   --white:      #fdfaf5;
-
-  --toggle-bg:  var(--paper-dark);
-  --toggle-color: var(--ink);
 }
 
 /* ── Dark Mode ─────────────────────────────────────────────── */
 [data-theme="dark"] {
-  --ink:        #f5f0e8;
-  --ink-light:  #ddd5c4;
+  --ink:        #f0ebe3;
+  --ink-light:  #d4cbbc;
   --ink-faint:  #9a8f82;
   --paper:      #1a1714;
   --paper-warm: #211e1a;
@@ -32,56 +38,38 @@
   --red-muted:  #c0392b;
   --gold:       #d4a93a;
   --white:      #f5f0e8;
-
-  --toggle-bg:  #2d2924;
-  --toggle-color: #f5f0e8;
 }
 
-/* ── Theme Toggle Button ───────────────────────────────────── */
+/* ── Smooth transitions ────────────────────────────────────── */
+*, *::before, *::after {
+  transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease;
+}
+
+/* ── Toggle Button ─────────────────────────────────────────── */
 .theme-toggle {
-  background: var(--toggle-bg);
+  background: var(--paper-dark);
   border: 1px solid var(--paper-dark);
-  color: var(--toggle-color);
+  color: var(--ink);
   width: 36px;
   height: 36px;
   border-radius: 50%;
   cursor: pointer;
   font-size: 1rem;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.2s, border-color 0.2s;
+  transition: border-color 0.2s;
   flex-shrink: 0;
   line-height: 1;
   padding: 0;
-  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
 }
 
 .theme-toggle:hover {
   border-color: var(--red);
 }
 
-/* ── Smooth transitions ────────────────────────────────────── */
-body,
-.site-header,
-.featured-card,
-.post-card,
-.post-entry,
-.video-card,
-.newsletter-section,
-.site-footer,
-.photos-section,
-.timeline-section,
-.bg-kanji {
-  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-}
-
-/* ── Dark mode specific overrides ─────────────────────────── */
-[data-theme="dark"] .site-header {
-  background: var(--paper);
-  border-bottom-color: var(--paper-dark);
-}
-
+/* ── Dark mode card/surface overrides ──────────────────────── */
 [data-theme="dark"] .featured-card,
 [data-theme="dark"] .post-card {
   background: var(--paper-warm);
@@ -89,71 +77,29 @@ body,
   box-shadow: 4px 4px 0 var(--paper-dark);
 }
 
-[data-theme="dark"] .preview-box {
-  background: var(--paper-warm);
-  color: var(--ink);
+[data-theme="dark"] .featured-card:hover,
+[data-theme="dark"] .post-card:hover {
+  box-shadow: 8px 8px 0 var(--paper-dark);
 }
 
 [data-theme="dark"] .photos-hint {
   background: var(--paper-warm);
+  border-left-color: var(--gold);
 }
 
 [data-theme="dark"] .newsletter-section {
-  background: #111009;
+  background: #0e0c0a;
 }
 
-[data-theme="dark"] .bg-kanji {
-  color: var(--paper-dark);
-}
-
-[data-theme="dark"] .post-card:hover,
-[data-theme="dark"] .featured-card:hover {
-  box-shadow: 8px 8px 0 var(--paper-dark);
-}
-
-[data-theme="dark"] body {
-  background: var(--paper);
-  color: var(--ink);
-}
-
-[data-theme="dark"] .hero-title,
-[data-theme="dark"] .hero-desc,
-[data-theme="dark"] .hero-location,
-[data-theme="dark"] .hero-date,
-[data-theme="dark"] .hero-label,
-[data-theme="dark"] .hero-scroll {
-  color: var(--ink);
-}
-
-[data-theme="dark"] .hero-title em {
-  color: var(--red);
-}
-
-[data-theme="dark"] .nav-link {
+[data-theme="dark"] .post-grid-empty {
+  border-color: var(--paper-dark);
   color: var(--ink-faint);
 }
 
-[data-theme="dark"] .nav-link:hover,
-[data-theme="dark"] .nav-link.active {
-  color: var(--red);
+[data-theme="dark"] .img-placeholder {
   background: var(--paper-dark);
 }
 
-[data-theme="dark"] .logo-title {
-  color: var(--ink);
-}
-
-[data-theme="dark"] .section-title {
-  color: var(--ink);
-}
-
-[data-theme="dark"] .timeline-label {
-  color: var(--ink);
-}
-
-[data-theme="dark"] .post-card-title,
-[data-theme="dark"] .post-card-excerpt,
-[data-theme="dark"] .featured-title,
-[data-theme="dark"] .featured-excerpt {
-  color: var(--ink);
+[data-theme="dark"] .post-card-img {
+  background: var(--paper-dark);
 }
