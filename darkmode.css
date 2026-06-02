@@ -54,6 +54,7 @@
   flex-shrink: 0;
   line-height: 1;
   padding: 0;
+  font-family: "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
 }
 
 .theme-toggle:hover {
@@ -108,4 +109,51 @@ body,
 [data-theme="dark"] .post-card:hover,
 [data-theme="dark"] .featured-card:hover {
   box-shadow: 8px 8px 0 var(--paper-dark);
+}
+
+[data-theme="dark"] body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+[data-theme="dark"] .hero-title,
+[data-theme="dark"] .hero-desc,
+[data-theme="dark"] .hero-location,
+[data-theme="dark"] .hero-date,
+[data-theme="dark"] .hero-label,
+[data-theme="dark"] .hero-scroll {
+  color: var(--ink);
+}
+
+[data-theme="dark"] .hero-title em {
+  color: var(--red);
+}
+
+[data-theme="dark"] .nav-link {
+  color: var(--ink-faint);
+}
+
+[data-theme="dark"] .nav-link:hover,
+[data-theme="dark"] .nav-link.active {
+  color: var(--red);
+  background: var(--paper-dark);
+}
+
+[data-theme="dark"] .logo-title {
+  color: var(--ink);
+}
+
+[data-theme="dark"] .section-title {
+  color: var(--ink);
+}
+
+[data-theme="dark"] .timeline-label {
+  color: var(--ink);
+}
+
+[data-theme="dark"] .post-card-title,
+[data-theme="dark"] .post-card-excerpt,
+[data-theme="dark"] .featured-title,
+[data-theme="dark"] .featured-excerpt {
+  color: var(--ink);
 }
