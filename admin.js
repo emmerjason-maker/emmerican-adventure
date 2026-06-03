@@ -451,6 +451,10 @@ async function handlePublish() {
       throw new Error(err.message || 'GitHub push failed');
     }
 
+    // 7. Update homepage featured post
+    showStatus('Updating homepage…', false, true);
+    await updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId });
+
     showStatus('✓ Published! Your post will be live in ~60 seconds.', false);
     resetForm();
 
@@ -459,6 +463,86 @@ async function handlePublish() {
     showStatus('✗ Error: ' + err.message, true);
   } finally {
     setPublishing(false);
+  }
+}
+
+
+// ── Update homepage featured post ────────────────────────────────
+async function updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId }) {
+  try {
+    const fmtDate = date
+      ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
+      : '';
+
+    // Pick the best image — first uploaded image or a YouTube thumbnail
+    let imgSrc = '';
+    if (uploadedImages && uploadedImages.length > 0) {
+      imgSrc = uploadedImages[0].path;
+    } else if (ytId) {
+      imgSrc = `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg`;
+    }
+
+    // Short excerpt from body
+    const bodyEl = $('postBody');
+    const plainText = bodyEl ? bodyEl.innerText.trim() : '';
+    const excerpt = plainText.length > 120
+      ? plainText.substring(0, 120).replace(/\s+\S*$/, '') + '…'
+      : plainText;
+
+    // Fetch current index.html
+    const fileRes = await ghFetch('contents/index.html');
+    if (!fileRes.ok) throw new Error('Could not fetch index.html');
+    const fileJson = await fileRes.json();
+    const currentHtml = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+    const sha = fileJson.sha;
+
+    // Build new featured card image
+    const newImg = imgSrc
+      ? `<img src="${escHtml(imgSrc)}" alt="${escHtml(title)}" />`
+      : `<div class="img-placeholder"><span class="placeholder-kanji">記</span></div>`;
+
+    // Replace featured card using markers
+    const startMarker = '<section class="featured-post" id="journal">';
+    const endMarker   = '</section>';
+    const startIdx = currentHtml.indexOf(startMarker);
+    const endIdx   = currentHtml.indexOf(endMarker, startIdx) + endMarker.length;
+
+    if (startIdx === -1) throw new Error('Could not find featured-post section in index.html');
+
+    const newSection = `<section class="featured-post" id="journal">
+      <div class="section-tag">Latest Post</div>
+      <article class="featured-card">
+        <div class="featured-card-img">
+          ${newImg}
+        </div>
+        <div class="featured-card-body">
+          <div class="post-meta">
+            <span class="post-tag">Post #${postNumber}</span>
+            <span class="post-date">${escHtml(fmtDate)}</span>
+          </div>
+          <h2 class="featured-title">${escHtml(title)}</h2>
+          <p class="featured-excerpt">${escHtml(excerpt)}</p>
+          <a href="blog.html" class="read-more">Read More <span>→</span></a>
+        </div>
+      </article>
+    </section>`;
+
+    const updatedHtml = currentHtml.substring(0, startIdx) + newSection + currentHtml.substring(endIdx);
+
+    // Push updated index.html
+    const pushRes = await ghFetch('contents/index.html', 'PUT', {
+      message: `Update homepage featured post: ${title}`,
+      content: btoa(unescape(encodeURIComponent(updatedHtml))),
+      sha,
+      branch: CONFIG.branch,
+    });
+
+    if (!pushRes.ok) {
+      const err = await pushRes.json();
+      console.warn('Homepage update failed:', err.message);
+    }
+  } catch (err) {
+    console.warn('Could not update homepage featured post:', err.message);
   }
 }
 
