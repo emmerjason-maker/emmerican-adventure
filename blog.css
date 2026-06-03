@@ -211,3 +211,28 @@
   .post-gallery.gallery-3,
   .post-gallery.gallery-many { grid-template-columns: 1fr 1fr; }
 }
+
+/* ─── Force override any pasted inline styles ───────────────────── */
+.post-body * {
+  font-family: inherit !important;
+  font-size: inherit !important;
+  line-height: inherit !important;
+  color: inherit !important;
+  background: transparent !important;
+  margin-left: 0 !important;
+  text-indent: 0 !important;
+  -webkit-text-stroke: initial !important;
+}
+
+.post-body b,
+.post-body strong { font-weight: 700 !important; }
+.post-body i,
+.post-body em { font-style: italic !important; }
+.post-body u { text-decoration: underline !important; }
+.post-body h3 {
+  font-family: var(--font-display) !important;
+  font-size: 1.3rem !important;
+  font-weight: 400 !important;
+  color: var(--ink) !important;
+  margin: 1.5rem 0 0.75rem !important;
+}
