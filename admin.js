@@ -505,6 +505,15 @@ function buildPostPage({ title, slug, date, postNumber, body, ytId, uploadedImag
         </div>
         <h1 class="post-entry-title">${escHtml(title)}</h1>
       </header>
+      <div class="post-ad">
+        <ins class="adsbygoogle"
+          style="display:block"
+          data-ad-client="ca-pub-3956728145959428"
+          data-ad-slot="auto"
+          data-ad-format="auto"
+          data-full-width-responsive="true"></ins>
+        <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+      </div>
       ${mediaHtml}
       <div class="post-body">
         ${body}
