@@ -720,11 +720,14 @@ async function updateSitemap({ slug, date }) {
 }
 
 // ── Update homepage featured post ────────────────────────────────
-async function updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId }) {
+async function updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId, slug }) {
   try {
     const fmtDate = date
       ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
       : '';
+
+    // Build post link
+    const postLink = slug ? `posts/${slug}.html` : 'blog.html';
 
     // Pick the best image — first uploaded image or a YouTube thumbnail
     let imgSrc = '';
