@@ -15,7 +15,7 @@
 :root,
 [data-theme="light"] {
   --ink:        #1a1714;
-  --ink-light:  #3d3830;
+  --ink-light:  #1a1714;
   --ink-faint:  #6b6258;
   --paper:      #f5f0e8;
   --paper-warm: #ede7d9;
