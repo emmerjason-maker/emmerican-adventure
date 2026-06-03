@@ -652,6 +652,10 @@ async function handlePublish() {
     showStatus('Updating homepage…', false, true);
     await updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId, slug });
 
+    // 9. Update sitemap
+    showStatus('Updating sitemap…', false, true);
+    await updateSitemap({ slug, date });
+
     showStatus('✓ Published! Your post will be live in ~60 seconds.', false);
     resetForm();
 
@@ -663,6 +667,47 @@ async function handlePublish() {
   }
 }
 
+
+
+// ── Update sitemap.xml ───────────────────────────────────────────
+async function updateSitemap({ slug, date }) {
+  try {
+    const today = date || new Date().toISOString().split('T')[0];
+    const newUrl = `https://emmericanadventure.com/posts/${slug}.html`;
+
+    // Fetch current sitemap
+    const fileRes = await ghFetch('contents/sitemap.xml');
+    if (!fileRes.ok) throw new Error('Could not fetch sitemap.xml');
+    const fileJson = await fileRes.json();
+    const currentXml = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+    const sha = fileJson.sha;
+
+    // Check if URL already exists
+    if (currentXml.includes(newUrl)) return;
+
+    // Insert new URL entry before closing </urlset>
+    const newEntry = `
+  <url>
+    <loc>${newUrl}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+</urlset>`;
+
+    const updatedXml = currentXml.replace('</urlset>', newEntry);
+
+    await ghFetch('contents/sitemap.xml', 'PUT', {
+      message: `Update sitemap: add ${slug}`,
+      content: btoa(unescape(encodeURIComponent(updatedXml))),
+      sha,
+      branch: CONFIG.branch,
+    });
+  } catch (err) {
+    console.warn('Could not update sitemap:', err.message);
+  }
+}
 
 // ── Update homepage featured post ────────────────────────────────
 async function updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId }) {
