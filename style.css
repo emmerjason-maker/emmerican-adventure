@@ -1101,8 +1101,10 @@ img { max-width: 100%; display: block; }
 
 /* ─── Journey Map Section ────────────────────────────────────────── */
 .journey-map-section {
-  padding: 4rem 0;
+  padding: 4rem 2rem;
   border-top: 1px solid var(--paper-dark);
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .journey-map-desc {
@@ -1116,7 +1118,7 @@ img { max-width: 100%; display: block; }
 .journey-map-wrap {
   border: 1px solid var(--paper-dark);
   overflow: hidden;
-  max-width: 900px;
+  max-width: 860px;
 }
 
 .journey-map-img {
@@ -1131,5 +1133,6 @@ img { max-width: 100%; display: block; }
 }
 
 @media (max-width: 600px) {
-  .journey-map-section { padding: 3rem 0; }
+  .journey-map-section { padding: 3rem 1.25rem; }
+}
 }
