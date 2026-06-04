@@ -1101,10 +1101,13 @@ img { max-width: 100%; display: block; }
 
 /* ─── Journey Map Section ────────────────────────────────────────── */
 .journey-map-section {
-  padding: 4rem 2rem;
-  border-top: 1px solid var(--paper-dark);
+  position: relative;
+  z-index: 1;
   max-width: 1200px;
   margin: 0 auto;
+  padding: 0 2rem 5rem;
+  border-top: 1px solid var(--paper-dark);
+  padding-top: 4rem;
 }
 
 .journey-map-desc {
