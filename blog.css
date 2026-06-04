@@ -426,3 +426,52 @@
 .post-photo img {
   cursor: zoom-in;
 }
+
+/* ─── Scheduled Posts ───────────────────────────────────────────── */
+.post-index-card.post-scheduled {
+  opacity: 0.85;
+  border-left: 3px solid var(--gold);
+}
+
+.post-index-link-scheduled {
+  display: grid;
+  grid-template-columns: 200px 1fr;
+  gap: 2rem;
+  align-items: start;
+  color: inherit;
+}
+
+.post-scheduled-img {
+  position: relative;
+  aspect-ratio: 4/3;
+  overflow: hidden;
+  background: var(--paper-dark);
+}
+
+.scheduled-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: var(--paper);
+  border: 1px solid var(--gold);
+  color: var(--gold);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.3rem 0.75rem;
+  white-space: nowrap;
+}
+
+.post-tag-scheduled {
+  border-color: var(--gold) !important;
+  color: var(--gold) !important;
+}
+
+.scheduled-title { opacity: 0.6; }
+.scheduled-excerpt { opacity: 0.5; font-style: italic; }
+
+@media (max-width: 600px) {
+  .post-index-link-scheduled { grid-template-columns: 1fr; }
+}

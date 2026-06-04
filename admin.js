@@ -403,7 +403,7 @@ ${videoBlock}${galleryBlock}
 
 
 // ── Build individual post page HTML ──────────────────────────────
-function buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText }) {
+function buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled }) {
   const fmtDate = date
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
     : '';
@@ -510,7 +510,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
     </div>
   </header>
   <main class="blog-main">
-    <article class="post-entry post-full">
+    <article class="post-entry post-full"${isScheduled ? ' data-scheduled="true"' : ''}>
       <header class="post-entry-header">
         <div class="post-meta">
           <span class="post-tag">Post #${postNumber}</span>
@@ -571,6 +571,18 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
 </html>`;
 }
 
+
+// ── Update publish button label based on date ─────────────────
+function updatePublishLabel() {
+  const date = $('postDate').value;
+  const label = $('publishLabel');
+  if (!label) return;
+  if (date && new Date(date + 'T00:00:00') > new Date()) {
+    label.textContent = 'Schedule Post →';
+  } else {
+    label.textContent = 'Publish Post →';
+  }
+}
 // ── Generate URL slug from title ─────────────────────────────────
 function slugify(title) {
   return title.toLowerCase()
@@ -593,8 +605,11 @@ async function handlePublish() {
     alert('Please add some content — body text, a video, or at least one photo.'); return;
   }
 
+  // Check if post is scheduled (future date)
+  const isScheduled = date && new Date(date + 'T00:00:00') > new Date();
+
   setPublishing(true);
-  showStatus('Uploading…', false, true);
+  showStatus(isScheduled ? 'Scheduling post…' : 'Uploading…', false, true);
 
   try {
     const slug = slugify(title);
@@ -623,7 +638,7 @@ async function handlePublish() {
 
     // 4. Build and push individual post page
     showStatus('Creating post page…', false, true);
-    const postPageHtml = buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText });
+    const postPageHtml = buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled });
     await uploadFile(`posts/${slug}.html`, btoa(unescape(encodeURIComponent(postPageHtml))));
 
     // 5. Build index card for blog.html
@@ -633,7 +648,23 @@ async function handlePublish() {
     const thumbSrc = uploadedImages.length > 0 ? uploadedImages[0].path
                    : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
 
-    const newCard = `
+    const newCard = isScheduled ? `
+    <article class="post-index-card post-scheduled" data-publish-date="${date}">
+      <div class="post-index-link post-index-link-scheduled">
+        <div class="post-index-img post-scheduled-img">
+          ${thumbSrc ? `<img src="${escHtml(thumbSrc)}" alt="${escHtml(title)}" style="opacity:0.4;" />` : ''}
+          <div class="scheduled-badge">🕐 Coming Soon</div>
+        </div>
+        <div class="post-index-body">
+          <div class="post-meta">
+            <span class="post-tag post-tag-scheduled">Scheduled</span>
+            <time class="post-date">${escHtml(fmtDate)}</time>
+          </div>
+          <h2 class="post-index-title scheduled-title">${escHtml(title)}</h2>
+          <p class="post-index-excerpt scheduled-excerpt">Going live on ${escHtml(fmtDate)}.</p>
+        </div>
+      </div>
+    </article>` : `
     <article class="post-index-card">
       <a href="posts/${slug}.html" class="post-index-link">
         <div class="post-index-img">
@@ -681,7 +712,7 @@ async function handlePublish() {
     showStatus('Updating sitemap…', false, true);
     await updateSitemap({ slug, date });
 
-    showStatus('✓ Published! Your post will be live in ~60 seconds.', false);
+    showStatus(isScheduled ? `✓ Scheduled! Post will go live on ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}` : '✓ Published! Your post will be live in ~60 seconds.', false);
     resetForm();
 
   } catch (err) {
@@ -994,8 +1025,9 @@ async function loadPostForEditing(filename, sha) {
 
 // ── Save edited post ──────────────────────────────────────────
 async function savePostEdit(filename, originalHtml) {
-  const newTitle = $('editTitle').value.trim();
-  const newBody  = $('editBody').innerHTML.trim();
+  const newTitle    = $('editTitle').value.trim();
+  const newBody     = $('editBody').innerHTML.trim();
+  const newLocation = $('editLocation') ? $('editLocation').value.trim() : '';
 
   if (!newTitle) { alert('Title cannot be empty'); return; }
 
@@ -1004,6 +1036,19 @@ async function savePostEdit(filename, originalHtml) {
   showStatus('Saving changes…', false, true);
 
   try {
+    // Build location HTML
+    let newLocationHtml = '';
+    if (newLocation) {
+      if (newLocation.startsWith('http') || newLocation.startsWith('maps.')) {
+        newLocationHtml = `<div class="post-location"><a href="${escHtml(newLocation)}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
+      } else if (newLocation.includes('|')) {
+        const parts = newLocation.split('|').map(s => s.trim());
+        newLocationHtml = `<div class="post-location"><a href="${escHtml(parts[1])}" target="_blank" rel="noopener">📍 ${escHtml(parts[0])}</a></div>`;
+      } else {
+        newLocationHtml = `<div class="post-location">📍 ${escHtml(newLocation)}</div>`;
+      }
+    }
+
     // Parse original HTML and replace title + body
     let updated = originalHtml;
 
@@ -1018,6 +1063,16 @@ async function savePostEdit(filename, originalHtml) {
       /<title>.*?<\/title>/,
       `<title>${escHtml(newTitle)} — Emmerican Adventure</title>`
     );
+
+    // Replace or add location
+    if (updated.includes('class="post-location"')) {
+      updated = updated.replace(/<div class="post-location">[\s\S]*?<\/div>/, newLocationHtml);
+    } else if (newLocationHtml) {
+      updated = updated.replace(
+        /(<h1 class="post-entry-title">[\s\S]*?<\/h1>)/,
+        `$1\n        ${newLocationHtml}`
+      );
+    }
 
     // Replace body content
     updated = updated.replace(

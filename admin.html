@@ -240,6 +240,17 @@
   </div>
 
   <script src="admin.js"></script>
+  <script>
+    // Update publish button when date changes
+    document.addEventListener('DOMContentLoaded', () => {
+      const dateInput = document.getElementById('postDate');
+      if (dateInput) {
+        dateInput.addEventListener('change', updatePublishLabel);
+        // Set today as default
+        dateInput.value = new Date().toISOString().split('T')[0];
+      }
+    });
+  </script>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
   <script>
