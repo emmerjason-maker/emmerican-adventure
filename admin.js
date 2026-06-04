@@ -766,7 +766,7 @@ async function updateSitemap({ slug, date }) {
 }
 
 // ── Update homepage featured post ────────────────────────────────
-async function updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId }) {
+async function updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId, slug }) {
   try {
     const fmtDate = date
       ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
@@ -806,6 +806,8 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
     const endIdx   = currentHtml.indexOf(endMarker, startIdx) + endMarker.length;
 
     if (startIdx === -1) throw new Error('Could not find featured-post section in index.html');
+
+    const postLink = slug ? `posts/${slug}.html` : 'blog.html';
 
     const newSection = `<section class="featured-post" id="journal">
       <div class="section-tag">Latest Post</div>
