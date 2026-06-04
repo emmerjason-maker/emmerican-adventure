@@ -1065,3 +1065,36 @@ img { max-width: 100%; display: block; }
   .hero { grid-template-columns: 1fr; min-height: auto; padding: 4rem 0 3rem; }
   .hero-timeline-snippet { display: none; }
 }
+
+/* ─── Timeline Auto-Update ───────────────────────────────────────── */
+.timeline-item.timeline-hidden {
+  display: none;
+}
+
+.timeline-toggle-btn {
+  background: transparent;
+  border: 1px solid var(--paper-dark);
+  color: var(--ink-faint);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  margin-bottom: 1.5rem;
+  transition: color 0.2s, border-color 0.2s;
+}
+.timeline-toggle-btn:hover {
+  color: var(--ink);
+  border-color: var(--ink-faint);
+}
+
+/* ─── Clickable section tag ─────────────────────────────────────── */
+.section-tag-link {
+  text-decoration: none;
+  transition: opacity 0.2s;
+  cursor: pointer;
+}
+.section-tag-link:hover {
+  opacity: 0.7;
+}

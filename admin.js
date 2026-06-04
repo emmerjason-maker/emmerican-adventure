@@ -494,7 +494,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
           <span class="logo-kanji">日本</span>
           <div class="logo-text">
             <span class="logo-title">Emmerican Adventure</span>
-            <span class="logo-sub">Chapter 1: We're Moving</span>
+            <span class="logo-sub">Chapter 1: Japan</span>
           </div>
         </a>
       </div>
@@ -810,7 +810,7 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
     const postLink = slug ? `posts/${slug}.html` : 'blog.html';
 
     const newSection = `<section class="featured-post" id="journal">
-      <div class="section-tag">Latest Post</div>
+      <a href="${postLink}" class="section-tag section-tag-link">Latest Post →</a>
       <article class="featured-card">
         <div class="featured-card-img">
           ${newImg}
@@ -820,7 +820,7 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
             <span class="post-tag">Post #${postNumber}</span>
             <span class="post-date">${escHtml(fmtDate)}</span>
           </div>
-          <h2 class="featured-title">${escHtml(title)}</h2>
+          <h2 class="featured-title"><a href="${postLink}" style="text-decoration:none;color:inherit;">${escHtml(title)}</a></h2>
           <p class="featured-excerpt">${escHtml(excerpt)}</p>
           <a href="${postLink}" class="read-more">Read More <span>→</span></a>
         </div>
