@@ -417,6 +417,8 @@ img { max-width: 100%; display: block; }
 
 /* ─── Timeline ──────────────────────────────────────────────────── */
 .timeline-section {
+  max-width: 1200px;
+  margin: 0 auto;
   position: relative;
   z-index: 1;
   max-width: 1200px;
@@ -867,6 +869,7 @@ img { max-width: 100%; display: block; }
 
 /* ─── Lightbox ──────────────────────────────────────────────────── */
 .lightbox {
+  z-index: 99999 !important;
   display: none;
   position: fixed;
   inset: 0;
@@ -1136,5 +1139,13 @@ img { max-width: 100%; display: block; }
 }
 
 @media (max-width: 600px) {
-  .journey-map-section { padding: 3rem 1.25rem; }
+  .journey-map-section {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem 5rem;
+  border-top: 1px solid var(--paper-dark);
+  padding-top: 4rem;
+}
 }
