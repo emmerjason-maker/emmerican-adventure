@@ -183,8 +183,9 @@ img { max-width: 100%; display: block; }
 
 .hero-meta {
   display: flex;
-  gap: 2rem;
+  gap: 1rem 2rem;
   align-items: center;
+  flex-wrap: wrap;
   opacity: 0;
   animation: fadeUp 0.9s var(--ease-out) 0.45s forwards;
 }
@@ -675,6 +676,7 @@ img { max-width: 100%; display: block; }
 
 @media (max-width: 600px) {
   .hero-title { font-size: 3.5rem; }
+  .hero-scroll { display: none; }
   .newsletter-form { flex-direction: column; }
   .newsletter-input { border-right: 1px solid rgba(255,255,255,0.2); border-bottom: none; }
   .footer-inner { flex-direction: column; align-items: flex-start; gap: 1rem; }
@@ -944,6 +946,19 @@ img { max-width: 100%; display: block; }
 .lightbox-prev { left: 1.5rem; }
 .lightbox-next { right: 1.5rem; }
 .lightbox-prev:hover, .lightbox-next:hover { border-color: var(--red); color: var(--red); }
+
+@media (max-width: 600px) {
+  .lightbox-close {
+    top: env(safe-area-inset-top, 1.5rem);
+    top: max(3.5rem, env(safe-area-inset-top, 1.5rem));
+    right: 1rem;
+    width: 48px;
+    height: 48px;
+    font-size: 1.4rem;
+  }
+  .lightbox-prev { left: 0.5rem; }
+  .lightbox-next { right: 0.5rem; }
+}
 
 /* ─── Responsive additions ──────────────────────────────────────── */
 @media (max-width: 900px) {
