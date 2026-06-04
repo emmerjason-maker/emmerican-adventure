@@ -993,9 +993,26 @@ async function loadPostForEditing(filename, sha) {
     const bodyEl = doc.querySelector('.post-body');
     const bodyHtml = bodyEl ? bodyEl.innerHTML : '';
 
+    // Read existing location from fetched post HTML
+    const locationEl = doc.querySelector('.post-location');
+    let existingLocation = '';
+    if (locationEl) {
+      const link = locationEl.querySelector('a');
+      if (link) {
+        const label = link.textContent.replace('📍 ', '').trim();
+        const href = link.getAttribute('href') || '';
+        existingLocation = href && href !== '#' && label !== 'View on Maps'
+          ? `${label} | ${href}`
+          : href || label;
+      } else {
+        existingLocation = locationEl.textContent.replace('📍 ', '').trim();
+      }
+    }
+
     // Populate edit form
     $('editTitle').value = title;
     $('editBody').innerHTML = bodyHtml;
+    if ($('editLocation')) $('editLocation').value = existingLocation;
     $('editPostTitle').textContent = `Editing: ${title}`;
 
     // Show edit form, hide list
