@@ -708,7 +708,13 @@ async function handlePublish() {
     showStatus('Updating homepage…', false, true);
     await updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId, slug });
 
-    // 9. Update sitemap
+    // 9. Update photo grids (index.html + photos.html)
+    if (uploadedImages && uploadedImages.length > 0) {
+      showStatus('Updating photo gallery…', false, true);
+      await updatePhotoGrids({ title, uploadedImages });
+    }
+
+    // 10. Update sitemap
     showStatus('Updating sitemap…', false, true);
     await updateSitemap({ slug, date });
 
@@ -843,6 +849,75 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
     }
   } catch (err) {
     console.warn('Could not update homepage featured post:', err.message);
+  }
+}
+
+
+// ── Update photo grids on index.html and photos.html ─────────────
+async function updatePhotoGrids({ title, uploadedImages }) {
+  try {
+    if (!uploadedImages || uploadedImages.length === 0) return;
+
+    const newItems = uploadedImages.map(img => `
+        <div class="photo-item" data-caption="${escHtml(title)}">
+          <img src="${escHtml(img.path)}" alt="${escHtml(title)}" />
+        </div>`).join('
+');
+
+    const marker = '        <!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
+
+    // ── Update index.html (keep 6 most recent) ────────────────────
+    const indexRes = await ghFetch('contents/index.html');
+    if (!indexRes.ok) throw new Error('Could not fetch index.html');
+    const indexJson = await indexRes.json();
+    const indexHtml = decodeURIComponent(escape(atob(indexJson.content.replace(/\n/g, ''))));
+    const indexSha = indexJson.sha;
+
+    if (indexHtml.includes(marker)) {
+      let updated = indexHtml.replace(marker, newItems + '\n' + marker);
+
+      // Trim to 6 most recent photo-items
+      const gridStart = updated.indexOf('<!-- ====== PHOTO GRID');
+      const gridEnd = updated.indexOf('<!-- ====== NEW PHOTOS INSERTED');
+      const gridContent = updated.substring(gridStart, gridEnd);
+      const itemMatches = [...gridContent.matchAll(/<div class="photo-item"[\s\S]*?<\/div>\s*<\/div>/g)];
+      if (itemMatches.length > 6) {
+        // Remove oldest (they're at the bottom, we insert at top)
+        const toRemove = itemMatches.slice(6);
+        let trimmed = updated;
+        for (const match of toRemove) {
+          trimmed = trimmed.replace(match[0], '');
+        }
+        updated = trimmed;
+      }
+
+      await ghFetch('contents/index.html', 'PUT', {
+        message: `Add photo to homepage grid: ${title}`,
+        content: btoa(unescape(encodeURIComponent(updated))),
+        sha: indexSha,
+        branch: CONFIG.branch,
+      });
+    }
+
+    // ── Update photos.html (keep all) ────────────────────────────
+    const photosRes = await ghFetch('contents/photos.html');
+    if (!photosRes.ok) throw new Error('Could not fetch photos.html');
+    const photosJson = await photosRes.json();
+    const photosHtml = decodeURIComponent(escape(atob(photosJson.content.replace(/\n/g, ''))));
+    const photosSha = photosJson.sha;
+
+    if (photosHtml.includes(marker)) {
+      const updatedPhotos = photosHtml.replace(marker, newItems + '\n' + marker);
+      await ghFetch('contents/photos.html', 'PUT', {
+        message: `Add photo to gallery: ${title}`,
+        content: btoa(unescape(encodeURIComponent(updatedPhotos))),
+        sha: photosSha,
+        branch: CONFIG.branch,
+      });
+    }
+
+  } catch (err) {
+    console.warn('Could not update photo grids:', err.message);
   }
 }
 
