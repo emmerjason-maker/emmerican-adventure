@@ -301,7 +301,7 @@ function renderPreview() {
 
 // ── Count existing posts ─────────────────────────────────────────
 function countExistingPosts(html) {
-  const matches = html.match(/class="post-entry"/g);
+  const matches = html.match(/class="post-index-card"/g);
   return matches ? matches.length : 0;
 }
 
