@@ -422,13 +422,20 @@ img { max-width: 100%; display: block; }
   padding: 0 0 6rem;
 }
 
-.timeline-section .section-header,
-.timeline-section .timeline,
-.timeline-section .timeline-toggle-btn {
+.timeline-section .section-header {
   max-width: 1200px;
   margin-left: auto;
   margin-right: auto;
   padding-left: 2rem;
+  padding-right: 2rem;
+}
+
+.timeline-section .timeline,
+.timeline-section .timeline-toggle-btn {
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 3rem;
   padding-right: 2rem;
 }
 
@@ -439,7 +446,7 @@ img { max-width: 100%; display: block; }
 .timeline::before {
   content: '';
   position: absolute;
-  left: 7px;
+  left: calc(2rem + 7px);
   top: 8px;
   bottom: 8px;
   width: 1px;
@@ -811,8 +818,9 @@ img { max-width: 100%; display: block; }
 
 .photo-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(3, 320px);
   gap: 1rem;
+  justify-content: start;
 }
 
 .photo-item {
