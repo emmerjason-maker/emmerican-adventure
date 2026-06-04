@@ -720,7 +720,7 @@ async function updateSitemap({ slug, date }) {
 }
 
 // ── Update homepage featured post ────────────────────────────────
-async function updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId }) {
+async function updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId, slug }) {
   try {
     const fmtDate = date
       ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
@@ -774,7 +774,7 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
           </div>
           <h2 class="featured-title">${escHtml(title)}</h2>
           <p class="featured-excerpt">${escHtml(excerpt)}</p>
-          <a href="${postLink}" class="read-more">Read More <span>→</span></a>
+          <a href="posts/${slug}.html" class="read-more">Read More <span>→</span></a>
         </div>
       </article>
     </section>`;
