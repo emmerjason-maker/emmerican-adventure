@@ -960,24 +960,9 @@ async function loadPostForEditing(filename, sha) {
     const bodyEl = doc.querySelector('.post-body');
     const bodyHtml = bodyEl ? bodyEl.innerHTML : '';
 
-    // Read existing location — could be plain text or a link
-    const locationEl = doc.querySelector('.post-location');
-    let existingLocation = '';
-    if (locationEl) {
-      const link = locationEl.querySelector('a');
-      if (link) {
-        const label = link.textContent.replace('📍 ', '').trim();
-        const href = link.getAttribute('href');
-        existingLocation = href && href !== '#' ? `${label} | ${href}` : label;
-      } else {
-        existingLocation = locationEl.textContent.replace('📍 ', '').trim();
-      }
-    }
-
     // Populate edit form
     $('editTitle').value = title;
     $('editBody').innerHTML = bodyHtml;
-    if ($('editLocation')) $('editLocation').value = existingLocation;
     $('editPostTitle').textContent = `Editing: ${title}`;
 
     // Show edit form, hide list
@@ -1009,9 +994,8 @@ async function loadPostForEditing(filename, sha) {
 
 // ── Save edited post ──────────────────────────────────────────
 async function savePostEdit(filename, originalHtml) {
-  const newTitle    = $('editTitle').value.trim();
-  const newBody     = $('editBody').innerHTML.trim();
-  const newLocation = $('editLocation') ? $('editLocation').value.trim() : '';
+  const newTitle = $('editTitle').value.trim();
+  const newBody  = $('editBody').innerHTML.trim();
 
   if (!newTitle) { alert('Title cannot be empty'); return; }
 
@@ -1020,19 +1004,6 @@ async function savePostEdit(filename, originalHtml) {
   showStatus('Saving changes…', false, true);
 
   try {
-    // Build location HTML
-    let newLocationHtml = '';
-    if (newLocation) {
-      if (newLocation.startsWith('http') || newLocation.startsWith('maps.')) {
-        newLocationHtml = `<div class="post-location"><a href="${escHtml(newLocation)}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
-      } else if (newLocation.includes('|')) {
-        const parts = newLocation.split('|').map(s => s.trim());
-        newLocationHtml = `<div class="post-location"><a href="${escHtml(parts[1])}" target="_blank" rel="noopener">📍 ${escHtml(parts[0])}</a></div>`;
-      } else {
-        newLocationHtml = `<div class="post-location">📍 ${escHtml(newLocation)}</div>`;
-      }
-    }
-
     // Parse original HTML and replace title + body
     let updated = originalHtml;
 
@@ -1048,21 +1019,18 @@ async function savePostEdit(filename, originalHtml) {
       `<title>${escHtml(newTitle)} — Emmerican Adventure</title>`
     );
 
-    // Replace or add location div
-    if (updated.includes('class="post-location"')) {
-      updated = updated.replace(/<div class="post-location">[\s\S]*?<\/div>/, newLocationHtml);
-    } else if (newLocationHtml) {
-      updated = updated.replace(
-        /(<h1 class="post-entry-title">[\s\S]*?<\/h1>)/,
-        `$1\n        ${newLocationHtml}`
-      );
-    }
-
     // Replace body content
     updated = updated.replace(
       /(<div class="post-body">)([\s\S]*?)(<\/div>\s*<footer)/,
       `$1\n        ${newBody}\n      $3`
     );
+
+    // Re-fetch latest SHA before pushing (prevents stale SHA error on repeated edits)
+    const latestRes = await ghFetch(`contents/posts/${filename}`);
+    if (latestRes.ok) {
+      const latestJson = await latestRes.json();
+      editingFileSha = latestJson.sha;
+    }
 
     // Push to GitHub
     const pushRes = await ghFetch(`contents/posts/${filename}`, 'PUT', {
