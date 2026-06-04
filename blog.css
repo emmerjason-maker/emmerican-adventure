@@ -320,112 +320,13 @@
   color: var(--ink-faint);
 }
 
-/* ─── Post Location Tag ─────────────────────────────────────────── */
-.post-location {
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: var(--ink-faint);
-  letter-spacing: 0.05em;
-  margin-top: 0.5rem;
+/* ─── AdSense — prevent empty ad gap ───────────────────────────── */
+.post-ad {
+  margin: 1rem 0;
+  min-height: 0;
+  overflow: hidden;
 }
-
-.post-index-card .post-location {
-  margin: 0.3rem 0 0.5rem;
-  font-size: 0.68rem;
-}
-
-/* ─── Post Image Lightbox ────────────────────────────────────────── */
-.post-lightbox {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.92);
-  z-index: 1000;
-  align-items: center;
-  justify-content: center;
-}
-.post-lightbox.open { display: flex; }
-
-.post-lightbox-img-wrap {
-  position: relative;
-  max-width: 90vw;
-  max-height: 85vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.post-lightbox-img-wrap img {
-  max-width: 90vw;
-  max-height: 85vh;
-  object-fit: contain;
-  display: block;
-  user-select: none;
-}
-
-.post-lightbox-close {
-  position: fixed;
-  top: 1.25rem;
-  right: 1.5rem;
-  background: transparent;
-  border: none;
-  color: rgba(255,255,255,0.7);
-  font-size: 2rem;
-  cursor: pointer;
-  line-height: 1;
-  z-index: 1001;
-  transition: color 0.2s;
-}
-.post-lightbox-close:hover { color: #fff; }
-
-.post-lightbox-prev,
-.post-lightbox-next {
-  position: fixed;
-  top: 50%;
-  transform: translateY(-50%);
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.15);
-  color: rgba(255,255,255,0.8);
-  font-size: 2rem;
-  width: 48px;
-  height: 64px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.2s, color 0.2s;
-  z-index: 1001;
-}
-.post-lightbox-prev { left: 1rem; }
-.post-lightbox-next { right: 1rem; }
-.post-lightbox-prev:hover,
-.post-lightbox-next:hover { background: rgba(255,255,255,0.2); color: #fff; }
-
-.post-lightbox-caption {
-  position: fixed;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
-  font-family: var(--font-mono);
-  font-size: 0.75rem;
-  color: rgba(255,255,255,0.55);
-  letter-spacing: 0.05em;
-  text-align: center;
-  max-width: 60vw;
-}
-
-.post-lightbox-counter {
-  position: fixed;
-  top: 1.25rem;
-  left: 1.5rem;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  color: rgba(255,255,255,0.45);
-  letter-spacing: 0.1em;
-}
-
-/* Make gallery items show zoom cursor */
-.gallery-item img,
-.post-photo img {
-  cursor: zoom-in;
+.post-ad ins[data-ad-status="unfilled"],
+.post-ad ins:not([data-ad-status]) {
+  display: none !important;
 }
