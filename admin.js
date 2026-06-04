@@ -494,7 +494,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
           <span class="logo-kanji">日本</span>
           <div class="logo-text">
             <span class="logo-title">Emmerican Adventure</span>
-            <span class="logo-sub">Chapter 1: Japan</span>
+            <span class="logo-sub">Chapter 1: We're Moving</span>
           </div>
         </a>
       </div>
