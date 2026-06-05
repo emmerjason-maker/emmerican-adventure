@@ -2,3 +2,8 @@ User-agent: *
 Allow: /
 
 Sitemap: https://emmericanadventure.com/sitemap.xml
+
+# Admin panel - no need to index
+Disallow: /admin.html
+Disallow: /admin.js
+Disallow: /admin.css
