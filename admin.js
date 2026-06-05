@@ -752,7 +752,11 @@ async function handlePublish() {
       await updatePhotoGrids({ title, uploadedImages });
     }
 
-    // 10. Update sitemap
+    // 10. Update search index
+    showStatus('Updating search index…', false, true);
+    await updateSearchIndex({ title, slug, date, tag, body, uploadedImages });
+
+    // 11. Update sitemap
     showStatus('Updating sitemap…', false, true);
     await updateSitemap({ slug, date });
 
@@ -956,6 +960,54 @@ async function updatePhotoGrids({ title, uploadedImages }) {
 
   } catch (err) {
     console.warn('Could not update photo grids:', err.message);
+  }
+}
+
+
+// ── Update search index in search.html ───────────────────────────
+async function updateSearchIndex({ title, slug, date, tag, body, uploadedImages }) {
+  try {
+    const searchRes = await ghFetch('contents/search.html');
+    if (!searchRes.ok) return;
+    const searchJson = await searchRes.json();
+    const searchHtml = decodeURIComponent(escape(atob(searchJson.content.replace(/\n/g, ''))));
+    const searchSha = searchJson.sha;
+
+    // Build excerpt from body
+    const plainBody = body.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
+    const excerpt = plainBody.substring(0, 120) + (plainBody.length > 120 ? '…' : '');
+
+    // Build keywords from title + tag + body words
+    const keywords = [title, tag, ...plainBody.split(' ').slice(0, 20)].join(' ').toLowerCase();
+
+    // Get first image if available
+    const img = (uploadedImages && uploadedImages.length > 0)
+      ? `images/${uploadedImages[0].path.split('/').pop()}`
+      : 'images/og-image.jpg';
+
+    const newEntry = `      {
+        slug: '${escHtml(slug)}',
+        title: '${escHtml(title).replace(/'/g,"\\'")}',
+        excerpt: '${excerpt.replace(/'/g,"\\'").replace(/\n/g,' ')}',
+        date: '${escHtml(date)}',
+        tag: '${escHtml(tag)}',
+        img: '${img}',
+        keywords: '${keywords.replace(/'/g,"\\'")}',
+      },`;
+
+    // Insert at top of POSTS array
+    const marker = 'const POSTS = [';
+    if (searchHtml.includes(marker)) {
+      const updated = searchHtml.replace(marker, marker + '\n' + newEntry);
+      await ghFetch('contents/search.html', 'PUT', {
+        message: `feat: add ${title} to search index`,
+        content: btoa(unescape(encodeURIComponent(updated))),
+        sha: searchSha,
+        branch: CONFIG.branch,
+      });
+    }
+  } catch (err) {
+    console.warn('Could not update search index:', err.message);
   }
 }
 
