@@ -198,14 +198,12 @@ img { max-width: 100%; display: block; }
 }
 
 .hero-scroll {
-  position: absolute;
-  bottom: 2.5rem;
-  left: 2rem;
   font-family: var(--font-mono);
   font-size: 0.7rem;
   letter-spacing: 0.15em;
   color: var(--ink-faint);
   text-transform: uppercase;
+  margin-top: 2rem;
   animation: bounce 2s ease-in-out infinite;
 }
 
@@ -674,9 +672,12 @@ img { max-width: 100%; display: block; }
   .hero { padding: 5rem 1.5rem 4rem; min-height: auto; }
 }
 
+@media (max-width: 900px) {
+  .hero-scroll { display: none; }
+}
+
 @media (max-width: 600px) {
   .hero-title { font-size: 3.5rem; }
-  .hero-scroll { display: none; }
   .newsletter-form { flex-direction: column; }
   .newsletter-input { border-right: 1px solid rgba(255,255,255,0.2); border-bottom: none; }
   .footer-inner { flex-direction: column; align-items: flex-start; gap: 1rem; }
