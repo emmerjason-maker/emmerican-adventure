@@ -12,7 +12,7 @@
 .blog-hero {
   padding: 5rem 0 3.5rem;
   border-bottom: 1px solid var(--paper-dark);
-  margin-bottom: 4rem;
+  margin-bottom: 2rem;
 }
 
 .blog-hero-title {
@@ -43,6 +43,10 @@
   opacity: 1;
 }
 
+.post-full.post-entry {
+  padding-top: 2rem;
+}
+
 .post-entry:last-child {
   border-bottom: none;
 }
@@ -56,11 +60,13 @@
 .post-ad {
   min-height: 0;
   margin: 0;
+  padding: 0;
   overflow: hidden;
+  max-height: 0;
+  transition: max-height 0.3s;
 }
-.post-ad:empty,
-.post-ad ins:not([data-ad-status="filled"]) {
-  display: none;
+.post-ad.ad-loaded {
+  max-height: 200px;
 }
 
 .post-entry-title {
