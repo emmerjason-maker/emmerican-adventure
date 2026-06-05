@@ -123,11 +123,21 @@ img { max-width: 100%; display: block; }
 .mobile-menu-btn {
   display: none;
   background: none;
-  border: none;
-  font-size: 1.4rem;
+  border: 1px solid var(--paper-dark);
+  font-size: 1rem;
   cursor: pointer;
   color: var(--ink);
   margin-left: auto;
+  width: 36px;
+  height: 36px;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s, color 0.2s;
+}
+.mobile-menu-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
 }
 
 /* ─── Hero ──────────────────────────────────────────────────────── */
