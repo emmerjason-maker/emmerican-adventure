@@ -40,13 +40,38 @@ document.addEventListener('DOMContentLoaded', () => {
   // ── Mobile menu ───────────────────────────────────────────────
   const menuBtn = document.querySelector('.mobile-menu-btn');
   const nav = document.querySelector('.nav');
+
+  function openMobileNav() {
+    nav.classList.add('mobile-open');
+    nav.style.cssText = 'display:flex; flex-direction:column; position:fixed; top:70px; left:0; right:0; background:var(--paper); border-bottom:1px solid var(--paper-dark); padding:1rem 2rem; gap:0.5rem; z-index:99;';
+    menuBtn.textContent = '✕';
+    menuBtn.setAttribute('aria-label', 'Close menu');
+  }
+
+  function closeMobileNav() {
+    nav.classList.remove('mobile-open');
+    nav.style.cssText = '';
+    menuBtn.textContent = '☰';
+    menuBtn.setAttribute('aria-label', 'Menu');
+  }
+
   if (menuBtn && nav) {
     menuBtn.addEventListener('click', () => {
-      const isOpen = nav.classList.contains('mobile-open');
-      nav.classList.toggle('mobile-open', !isOpen);
-      nav.style.cssText = isOpen
-        ? ''
-        : 'display:flex; flex-direction:column; position:fixed; top:70px; left:0; right:0; background:var(--paper); border-bottom:1px solid var(--paper-dark); padding:1rem 2rem; gap:0.5rem; z-index:99;';
+      nav.classList.contains('mobile-open') ? closeMobileNav() : openMobileNav();
+    });
+
+    // Dismiss when any nav link is tapped
+    nav.querySelectorAll('.nav-link').forEach(link => {
+      link.addEventListener('click', () => closeMobileNav());
+    });
+
+    // Dismiss when tapping outside
+    document.addEventListener('click', e => {
+      if (nav.classList.contains('mobile-open') &&
+          !nav.contains(e.target) &&
+          e.target !== menuBtn) {
+        closeMobileNav();
+      }
     });
   }
 
