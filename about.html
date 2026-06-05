@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>About — Emmerican Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="darkmode.js"></script>
+  <link rel="stylesheet" href="darkmode.css" />
+
+  <meta name="description" content="Meet the Emmer family — Jason, Megan, John, Kate, and Charley the Labradoodle — a Navy family trading Jacksonville, FL for Yokosuka, Japan in Summer 2026." />
+  <meta name="keywords" content="about emmerican adventure, navy family japan, military PCS Japan, Yokosuka expat, American family Japan" />
+  <meta name="author" content="Emmerican Adventure" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://emmericanadventure.com/about.html" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Emmerican Adventure" />
+  <meta property="og:title" content="About — Emmerican Adventure" />
+  <meta property="og:description" content="Meet the Emmer family — a Navy family trading Jacksonville, FL for Yokosuka, Japan in Summer 2026." />
+  <meta property="og:url" content="https://emmericanadventure.com/about.html" />
+  <meta property="og:image" content="https://emmericanadventure.com/images/og-image.jpg" />
+
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3956728145959428" crossorigin="anonymous"></script>
+
+  <style>
+    .about-hero {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 5rem 2rem 4rem;
+    }
+    .about-hero-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--red);
+      margin-bottom: 1.5rem;
+    }
+    .about-hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(3rem, 7vw, 6rem);
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+    .about-hero-title em {
+      font-style: italic;
+      color: var(--red);
+    }
+    .about-hero-desc {
+      max-width: 560px;
+      font-size: 1.1rem;
+      color: var(--ink-light);
+      line-height: 1.8;
+    }
+    .about-body {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 2rem 6rem;
+      display: grid;
+      grid-template-columns: 1fr 380px;
+      gap: 6rem;
+      align-items: start;
+    }
+    .about-content {}
+    .about-section {
+      margin-bottom: 3.5rem;
+    }
+    .about-section-label {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--red);
+      margin-bottom: 0.75rem;
+    }
+    .about-section h2 {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      font-weight: 400;
+      margin-bottom: 1.25rem;
+      line-height: 1.2;
+    }
+    .about-section p {
+      font-size: 1rem;
+      color: var(--ink-light);
+      line-height: 1.85;
+      margin-bottom: 1rem;
+    }
+    .about-section p:last-child { margin-bottom: 0; }
+    .about-rule {
+      width: 60px;
+      height: 2px;
+      background: var(--red);
+      margin: 2rem 0;
+    }
+    /* Sidebar */
+    .about-sidebar {
+      position: sticky;
+      top: 100px;
+    }
+    .about-card {
+      background: var(--paper-warm);
+      border: 1px solid var(--paper-dark);
+      padding: 2rem;
+      margin-bottom: 1.5rem;
+    }
+    .about-card-label {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--red);
+      margin-bottom: 1.25rem;
+    }
+    .family-member {
+      display: flex;
+      align-items: baseline;
+      gap: 0.75rem;
+      padding: 0.6rem 0;
+      border-bottom: 1px solid var(--paper-dark);
+    }
+    .family-member:last-child { border-bottom: none; }
+    .family-name {
+      font-family: var(--font-display);
+      font-size: 1rem;
+      font-weight: 400;
+      color: var(--ink);
+      min-width: 80px;
+    }
+    .family-role {
+      font-family: var(--font-mono);
+      font-size: 0.7rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.05em;
+    }
+    .about-stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    .about-stat {
+      padding: 1rem;
+      background: var(--paper-warm);
+      border: 1px solid var(--paper-dark);
+      text-align: center;
+    }
+    .about-stat-number {
+      font-family: var(--font-display);
+      font-size: 1.8rem;
+      color: var(--red);
+      line-height: 1;
+      display: block;
+      margin-bottom: 0.3rem;
+    }
+    .about-stat-label {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink-faint);
+    }
+    .about-connect-links {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .about-connect-link {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-family: var(--font-mono);
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink);
+      text-decoration: none;
+      padding: 0.7rem 1rem;
+      border: 1px solid var(--paper-dark);
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .about-connect-link:hover {
+      border-color: var(--red);
+      color: var(--red);
+    }
+    .about-connect-link span { font-size: 1rem; }
+    @media (max-width: 900px) {
+      .about-body {
+        grid-template-columns: 1fr;
+        gap: 3rem;
+      }
+      .about-sidebar { position: static; }
+      .about-stat-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .about-hero { padding: 4rem 1.5rem 3rem; }
+      .about-body { padding: 0 1.5rem 4rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-kanji" aria-hidden="true">家</div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-kanji">日本</span>
+        <div class="logo-text">
+          <span class="logo-title">Emmerican Adventure</span>
+          <span class="logo-sub">Chapter 1: We're Moving</span>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="blog.html" class="nav-link">Journal</a>
+        <a href="index.html#videos" class="nav-link">Videos</a>
+        <a href="photos.html" class="nav-link">Photos</a>
+        <a href="index.html#timeline" class="nav-link">Timeline</a>
+        <a href="about.html" class="nav-link active">About</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- ─── HERO ──────────────────────────────────────────────────── -->
+    <section class="about-hero">
+      <p class="about-hero-label">Chapter 1 — The Emmers</p>
+      <h1 class="about-hero-title">One Family.<br><em>One Giant Leap.</em></h1>
+      <p class="about-hero-desc">We're the Emmers — a Navy family who just got orders to Yokosuka, Japan. Jacksonville was a one-year stop. Japan is the next chapter. This is how we're getting there.</p>
+    </section>
+
+    <!-- ─── BODY ──────────────────────────────────────────────────── -->
+    <div class="about-body">
+
+      <!-- Left: content -->
+      <div class="about-content">
+
+        <div class="about-section">
+          <p class="about-section-label">Who We Are</p>
+          <h2>The Emmer Family</h2>
+          <p>Megan is active duty Navy — the reason we move, the reason we stay, and honestly the reason any of this works. Jason is the military spouse keeping the household running, the kids on schedule, the dog calm, and apparently now also running a blog about all of it.</p>
+          <p>John and Kate are along for the ride whether they asked for it or not. John is deep in baseball season and has opinions about everything. Kate is still deciding how she feels about Japan but has already requested we find good ramen. Charley — our Labradoodle — passed his overseas vet screening and is cleared for departure, which was genuinely one of our bigger logistical victories.</p>
+        </div>
+
+        <div class="about-rule"></div>
+
+        <div class="about-section">
+          <p class="about-section-label">The Move</p>
+          <h2>Jacksonville Was Never Home</h2>
+          <p>We arrived in Jacksonville knowing it was temporary — a one-year tour before the big one. And that's okay. Some duty stations you put down roots. Some you use to get ready for what's next. Jacksonville was the latter, and it treated us well.</p>
+          <p>Now we're heading to United States Fleet Activities Yokosuka — the largest US naval installation in the Western Pacific. It sits about 30 miles south of Tokyo in Kanagawa Prefecture. It's busy, storied, and nothing like anything we've done before. That's kind of the point.</p>
+          <p>The logistics alone are staggering: overseas medical and dental screenings, Charley's FAVN-One rabies titer test, unaccompanied baggage, household goods shipment, finding schools, navigating base housing — all while Megan is still actively doing her job. We're documenting every step of it.</p>
+        </div>
+
+        <div class="about-rule"></div>
+
+        <div class="about-section">
+          <p class="about-section-label">Why Japan</p>
+          <h2>The Language, The Culture, The Food</h2>
+          <p>Let's be honest — Japan is intimidating. We don't speak Japanese. We've never lived abroad. The cultural gap between a Navy base in Florida and a city 30 miles from Tokyo is about as wide as gaps get. And that's exactly why we're excited.</p>
+          <p>We want to learn the language — at least enough to order food, ask for directions, and not accidentally offend anyone. We want to understand the culture, not just observe it. And the food — Japanese cuisine is something we've experienced glimpses of here in the States, and we already know those glimpses are just the surface. We're ready to go deep.</p>
+          <p>The plan isn't to live on base and occasionally venture out. The plan is to actually live there — explore the temples and train lines, find the local spots, eat things we can't pronounce, and let Japan change us a little.</p>
+        </div>
+
+        <div class="about-rule"></div>
+
+        <div class="about-section">
+          <p class="about-section-label">For Military Families</p>
+          <h2>We're Documenting This So You Don't Have To Start From Scratch</h2>
+          <p>PCS moves are hard. OCONUS moves are harder. Overseas moves with kids, a dog, and a household full of stuff are a category of their own. We've spent hours digging through outdated forum posts, conflicting official guidance, and word-of-mouth advice that may or may not still be accurate.</p>
+          <p>If you're a military family heading to Yokosuka — or even just considering it — we want this site to be a real resource. The timeline, the screening process, the BAH reference, the honest posts about what the process actually looks like. Not the sanitized version. The actual version.</p>
+          <p>We're not experts. We're just one family doing it in real time and writing it all down.</p>
+        </div>
+
+        <div class="about-rule"></div>
+
+        <div class="about-section">
+          <p class="about-section-label">The Blog</p>
+          <h2>What You'll Find Here</h2>
+          <p>The <strong>Journal</strong> is where the real writing lives — honest dispatches from the PCS process, life in Jacksonville before we leave, and eventually life in Japan once we arrive. No polished highlight reel. Just what's actually happening.</p>
+          <p>The <strong>Videos</strong> section connects to our YouTube channel, where we're documenting the journey on camera — travel, food, base life, and everything in between.</p>
+          <p>The <strong>Timeline</strong> tracks every milestone from orders to arrival, so you can see exactly where we are in the process — and use it as a reference if you're planning your own move.</p>
+          <p>Subscribe to the newsletter if you want new posts in your inbox. We write when something worth writing about happens — which, during a PCS to Japan, turns out to be pretty often.</p>
+        </div>
+
+      </div>
+
+      <!-- Right: sidebar -->
+      <aside class="about-sidebar">
+
+        <!-- Family card -->
+        <div class="about-card">
+          <p class="about-card-label">The Crew</p>
+          <div class="family-member">
+            <span class="family-name">Megan</span>
+            <span class="family-role">Active Duty Navy</span>
+          </div>
+          <div class="family-member">
+            <span class="family-name">Jason</span>
+            <span class="family-role">Military Spouse &amp; Writer</span>
+          </div>
+          <div class="family-member">
+            <span class="family-name">John</span>
+            <span class="family-role">Son · Baseball Enthusiast</span>
+          </div>
+          <div class="family-member">
+            <span class="family-name">Kate</span>
+            <span class="family-role">Daughter · Ramen Curious</span>
+          </div>
+          <div class="family-member">
+            <span class="family-name">Charley</span>
+            <span class="family-role">Labradoodle · FAVN Certified</span>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <div class="about-stat-grid" style="margin-bottom:1.5rem;">
+          <div class="about-stat">
+            <span class="about-stat-number">7,300</span>
+            <span class="about-stat-label">Miles West</span>
+          </div>
+          <div class="about-stat">
+            <span class="about-stat-number">14+</span>
+            <span class="about-stat-label">Hours Flying</span>
+          </div>
+          <div class="about-stat">
+            <span class="about-stat-number">4</span>
+            <span class="about-stat-label">Family Members</span>
+          </div>
+          <div class="about-stat">
+            <span class="about-stat-number">1</span>
+            <span class="about-stat-label">Good Dog</span>
+          </div>
+        </div>
+
+        <!-- Connect -->
+        <div class="about-card">
+          <p class="about-card-label">Follow Along</p>
+          <div class="about-connect-links">
+            <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank" class="about-connect-link">
+              <span>▶</span> YouTube
+            </a>
+            <a href="blog.html" class="about-connect-link">
+              <span>✍</span> Journal
+            </a>
+            <a href="index.html#newsletter" class="about-connect-link">
+              <span>✉</span> Newsletter
+            </a>
+          </div>
+        </div>
+
+      </aside>
+
+    </div>
+
+    <!-- ─── NEWSLETTER ─────────────────────────────────────────────── -->
+    <section class="newsletter-section">
+      <div class="newsletter-inner">
+        <div class="newsletter-kanji" aria-hidden="true">購読</div>
+        <h2 class="newsletter-title">Follow the Journey</h2>
+        <p class="newsletter-desc">Get new posts delivered to your inbox — no spam, just honest dispatches from the road to Japan.</p>
+        <form action="https://emmericanadventure.us20.list-manage.com/subscribe/post?u=89f13c4d1cf24740459db2e57&id=c5d36eaec8&f_id=005b0de0f0" method="post" target="_blank" class="newsletter-form">
+          <input type="email" name="EMAIL" placeholder="your@email.com" class="newsletter-input" required />
+          <div style="position:absolute;left:-5000px;" aria-hidden="true">
+            <input type="text" name="b_89f13c4d1cf24740459db2e57_c5d36eaec8" tabindex="-1" value="" />
+          </div>
+          <button type="submit" class="newsletter-btn">Subscribe</button>
+        </form>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span class="footer-kanji">旅</span>
+        <span class="footer-name">Emmerican Adventure</span>
+      </div>
+      <div class="footer-copy">© 2026 Emmerican Adventure — Made with 愛 in Jacksonville, FL | As an Amazon Associate I earn from qualifying purchases.</div>
+      <div class="footer-links">
+        <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KRCW4S3G9P');
+  </script>
+</body>
+</html>
