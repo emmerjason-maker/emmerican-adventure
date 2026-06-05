@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Search — Emmerican Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <script src="darkmode.js"></script>
+  <link rel="stylesheet" href="darkmode.css" />
+  <link rel="stylesheet" href="blog.css" />
+  <meta name="robots" content="noindex" />
+  <style>
+    .search-section {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 4rem 2rem 6rem;
+    }
+    .search-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--red);
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .search-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 400;
+      margin-bottom: 2.5rem;
+      line-height: 1;
+    }
+    .search-input-wrap {
+      display: flex;
+      gap: 0;
+      margin-bottom: 3rem;
+      border: 1px solid var(--paper-dark);
+    }
+    .search-input {
+      flex: 1;
+      padding: 1rem 1.25rem;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      background: var(--paper-warm);
+      border: none;
+      color: var(--ink);
+      outline: none;
+    }
+    .search-input::placeholder { color: var(--ink-faint); }
+    .search-btn {
+      padding: 1rem 1.5rem;
+      background: var(--red);
+      color: var(--white);
+      border: none;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .search-btn:hover { background: var(--red-muted); }
+    .search-results { }
+    .search-count {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--ink-faint);
+      margin-bottom: 2rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--paper-dark);
+    }
+    .search-result-card {
+      display: grid;
+      grid-template-columns: 120px 1fr;
+      gap: 1.5rem;
+      padding: 1.5rem 0;
+      border-bottom: 1px solid var(--paper-dark);
+      text-decoration: none;
+      color: inherit;
+      transition: opacity 0.2s;
+    }
+    .search-result-card:hover { opacity: 0.75; }
+    .search-result-img {
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      background: var(--paper-dark);
+    }
+    .search-result-img img { width: 100%; height: 100%; object-fit: cover; }
+    .search-result-body {}
+    .search-result-meta {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 0.5rem;
+    }
+    .search-result-title {
+      font-family: var(--font-display);
+      font-size: 1.2rem;
+      font-weight: 400;
+      margin-bottom: 0.5rem;
+      line-height: 1.3;
+    }
+    .search-result-excerpt {
+      font-size: 0.88rem;
+      color: var(--ink-light);
+      line-height: 1.7;
+    }
+    .search-highlight { background: rgba(192,57,43,0.15); color: var(--red); padding: 0 2px; }
+    .search-empty {
+      text-align: center;
+      padding: 4rem 0;
+      color: var(--ink-faint);
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+    }
+    .search-empty .kanji {
+      font-family: var(--font-body);
+      font-size: 4rem;
+      display: block;
+      margin-bottom: 1rem;
+      opacity: 0.3;
+    }
+    @media (max-width: 600px) {
+      .search-section { padding: 3rem 1.5rem 4rem; }
+      .search-result-card { grid-template-columns: 80px 1fr; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-kanji" aria-hidden="true">探</div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="index.html" class="logo">
+        <span class="logo-kanji">日本</span>
+        <div class="logo-text">
+          <span class="logo-title">Emmerican Adventure</span>
+          <span class="logo-sub">Chapter 1: We're Moving</span>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="blog.html" class="nav-link">Journal</a>
+        <a href="index.html#videos" class="nav-link">Videos</a>
+        <a href="photos.html" class="nav-link">Photos</a>
+        <a href="index.html#timeline" class="nav-link">Timeline</a>
+        <a href="about.html" class="nav-link">About</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="search-section">
+      <span class="search-label">Search</span>
+      <h1 class="search-title">Find a Post</h1>
+
+      <div class="search-input-wrap">
+        <input type="text" id="searchInput" class="search-input"
+               placeholder="Try 'packing', 'Japan', 'PCS'…"
+               autocomplete="off" autofocus />
+        <button class="search-btn" onclick="doSearch()">Search</button>
+      </div>
+
+      <div id="searchResults"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span class="footer-kanji">旅</span>
+        <span class="footer-name">Emmerican Adventure</span>
+      </div>
+      <div class="footer-copy">© 2026 Emmerican Adventure</div>
+      <div class="footer-links">
+        <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+  <script>
+    // Post index — add new posts here when published
+    const POSTS = [
+      {
+        slug: 'pcs-chronicles-the-medical-milestone',
+        title: 'PCS Chronicles: The Medical Milestone',
+        excerpt: 'Another step in the PCS checklist — overseas medical screenings, vaccinations, and the paperwork marathon that comes with a military move to Japan.',
+        date: 'June 4, 2026',
+        tag: 'PCS',
+        img: 'images/1780615200623-img_2058.jpeg',
+        keywords: 'medical screening vaccination PCS checklist military move Japan overseas OCONUS'
+      },
+      {
+        slug: 'chasing-dreams-under-the-wings-of-legends-a-day-at-nas-jax',
+        title: 'Chasing Dreams Under the Wings of Legends: A Day at NAS Jax',
+        excerpt: 'A day at NAS Jacksonville with John — Blue Angels jets, airpower history, and a reminder of why serving matters.',
+        date: 'June 3, 2026',
+        tag: 'Military',
+        img: 'images/1780529452654-img_2047.jpeg',
+        keywords: 'NAS Jacksonville Blue Angels military base Navy airshow jets aviation'
+      },
+      {
+        slug: 'training-my-palate-hot-pot-feast',
+        title: 'Training My Palate: A Pre-Departure Hot Pot Feast',
+        excerpt: 'What better way to prep for life in Asia than with a comforting, communal meal of Korean hot pot?',
+        date: 'June 2, 2026',
+        tag: 'Food',
+        img: 'images/1780446352815-img_2042.jpeg',
+        keywords: 'hot pot Korean food Japanese food ramen sushi Asian cuisine pre-departure'
+      },
+      {
+        slug: 'packing-up-for-japan-the-purge-begins',
+        title: 'Packing Up for Japan: The Purge Begins!',
+        excerpt: 'The purge has officially begun. If it doesn\'t fit in a suitcase or ship cheaply, it\'s gone.',
+        date: 'May 31, 2026',
+        tag: 'PCS',
+        img: 'images/1780279755736-img_2030.jpeg',
+        keywords: 'packing moving household goods shipment purge PCS military move Japan'
+      },
+    ];
+
+    function highlight(text, query) {
+      if (!query) return text;
+      const re = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+      return text.replace(re, '<span class="search-highlight">$1</span>');
+    }
+
+    function doSearch() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const container = document.getElementById('searchResults');
+
+      if (!query) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const results = POSTS.filter(p =>
+        p.title.toLowerCase().includes(query) ||
+        p.excerpt.toLowerCase().includes(query) ||
+        p.keywords.toLowerCase().includes(query) ||
+        p.tag.toLowerCase().includes(query) ||
+        p.date.toLowerCase().includes(query)
+      );
+
+      if (results.length === 0) {
+        container.innerHTML = `
+          <div class="search-empty">
+            <span class="kanji">？</span>
+            No posts found for "<strong>${query}</strong>".<br>Try a different keyword.
+          </div>`;
+        return;
+      }
+
+      container.innerHTML = `<div class="search-count">${results.length} result${results.length !== 1 ? 's' : ''} for "${query}"</div>` +
+        results.map(p => `
+          <a href="posts/${p.slug}.html" class="search-result-card">
+            <div class="search-result-img">
+              <img src="${p.img}" alt="${p.title}" loading="lazy" />
+            </div>
+            <div class="search-result-body">
+              <div class="search-result-meta">
+                <span class="post-tag">${p.tag}</span>
+                <span class="post-date">${p.date}</span>
+              </div>
+              <div class="search-result-title">${highlight(p.title, query)}</div>
+              <div class="search-result-excerpt">${highlight(p.excerpt, query)}</div>
+            </div>
+          </a>`).join('');
+    }
+
+    // Search on enter key
+    document.getElementById('searchInput').addEventListener('keydown', e => {
+      if (e.key === 'Enter') doSearch();
+    });
+
+    // Auto-search if ?q= param in URL
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('q')) {
+      document.getElementById('searchInput').value = params.get('q');
+      doSearch();
+    }
+  </script>
+
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-KRCW4S3G9P');
+  </script>
+</body>
+</html>
