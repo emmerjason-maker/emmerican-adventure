@@ -63,12 +63,11 @@
 ## 🔑 Admin Panel
 
 - **URL:** https://emmericanadventure.com/admin.html
-- **Password:** Stored as SHA-256 hash in admin.js (plain text: `japan2026`)
+- **Password:** Stored as SHA-256 hash in admin.js
 - **GitHub owner:** emmerjason-maker
 - **GitHub repo:** emmerican-adventure
 - **Branch:** main
-- **PAT:** Regenerate at GitHub → Settings → Developer settings → Personal access tokens
-  - ⚠️ Rotate PAT regularly — treat like a password
+- **PAT:** Stored privately — rotate regularly at GitHub → Settings → Developer settings
 
 ---
 
