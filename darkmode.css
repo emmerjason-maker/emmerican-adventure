@@ -103,6 +103,16 @@
 [data-theme="dark"] .post-card-img {
   background: var(--paper-dark);
 }
+/* ── Videos Section — always dark regardless of theme ──────── */
+.videos-section,
+[data-theme="light"] .videos-section,
+[data-theme="dark"] .videos-section {
+  background: #1a1714 !important;
+}
+
+[data-theme="dark"] .videos-section .section-title { color: #f5f0e8 !important; }
+[data-theme="dark"] .videos-section .section-rule { background: rgba(255,255,255,0.15) !important; }
+
 /* ── Footer ─────────────────────────────────────────────────── */
 [data-theme="dark"] .site-footer {
   background: #0e0c0a;
