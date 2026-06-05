@@ -4,8 +4,9 @@
    ═══════════════════════════════════════════════════════════════ */
 
 // ── Config ────────────────────────────────────────────────────────
+// Password stored as SHA-256 hash — plain text never in source
 const CONFIG = {
-  password:  'japan2026',   // !! CHANGE THIS to your own password !!
+  passwordHash: 'b181ca2307e6900f3d218dcabd221d64d0296cffbac6fa70a89815e67a3a49b1',  // SHA-256 of password
   owner:     'emmerjason-maker',
   repo:      'emmerican-adventure',
   branch:    'main',
@@ -74,11 +75,14 @@ function bindEvents() {
 }
 
 // ── Login ─────────────────────────────────────────────────────────
-function handleLogin() {
+async function handleLogin() {
   const pw    = $('loginPassword').value.trim();
   const token = $('loginToken').value.trim();
 
-  if (pw !== CONFIG.password) {
+  // Hash the entered password and compare
+  const pwBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  const pwHash = Array.from(new Uint8Array(pwBuffer)).map(b => b.toString(16).padStart(2,'0')).join('');
+  if (pwHash !== CONFIG.passwordHash) {
     $('loginError').textContent = 'Incorrect password.';
     return;
   }
@@ -403,9 +407,14 @@ ${videoBlock}${galleryBlock}
 
 
 // ── Build individual post page HTML ──────────────────────────────
-function buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled }) {
+function buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled, seoExcerpt, prevPostSlug, prevPostTitle }) {
   const fmtDate = date
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
+    : '';
+
+  // Build prev post link if provided
+  const prevPostHtml = (prevPostSlug && prevPostTitle)
+    ? `<a href="../posts/\${escHtml(prevPostSlug)}.html" class="read-more small" style="margin-left:auto;">Next: \${escHtml(prevPostTitle)} →</a>`
     : '';
 
   // Build location HTML — supports plain text, URL, or "Label | URL" format
@@ -453,7 +462,8 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
   }
 
   let linkBlock = linkUrl ? `<p><a href="${escHtml(linkUrl)}" target="_blank" rel="noopener">${escHtml(linkText || linkUrl)}</a></p>` : '';
-  const plainExcerpt = body.replace(/<[^>]+>/g, '').substring(0, 140);
+  const autoExcerpt = body.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().substring(0, 155);
+  const plainExcerpt = (seoExcerpt && seoExcerpt.trim()) ? seoExcerpt.trim() : autoExcerpt;
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -535,6 +545,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
       </div>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
+        \${prevPostHtml}
       </footer>
       <div class="post-comments">
         <div id="disqus_thread"></div>
@@ -625,6 +636,23 @@ async function handlePublish() {
       uploadedImages.push({ path, caption: img.caption });
     }
 
+    // 1b. Sanitize post body — strip inline styles/fonts from editor paste
+    const bodyEditor = $('postBody');
+    if (bodyEditor) {
+      // Remove all style attributes from body content
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = bodyEditor.innerHTML;
+      tempDiv.querySelectorAll('[style]').forEach(el => el.removeAttribute('style'));
+      tempDiv.querySelectorAll('span:not([class])').forEach(el => {
+        el.replaceWith(...el.childNodes);
+      });
+      // Remove empty paragraphs
+      tempDiv.querySelectorAll('p').forEach(p => {
+        if (!p.textContent.trim() && !p.querySelector('img')) p.remove();
+      });
+      bodyEditor.innerHTML = tempDiv.innerHTML;
+    }
+
     // 2. Fetch current blog.html to count posts
     showStatus('Publishing post…', false, true);
     const blogRes = await ghFetch(`contents/${CONFIG.blogFile}`);
@@ -638,7 +666,17 @@ async function handlePublish() {
 
     // 4. Build and push individual post page
     showStatus('Creating post page…', false, true);
-    const postPageHtml = buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled });
+    const seoExcerpt = $('postSeoExcerpt') ? $('postSeoExcerpt').value.trim() : '';
+
+    // Get previous post slug/title from blog.html (newest post at top = first card)
+    let prevPostSlug = '', prevPostTitle = '';
+    const prevMatch = blogContent.match(/href="posts\/([^"]+)\.html"[^>]*>[\s\S]*?post-index-title[^>]*>([^<]+)</);
+    if (prevMatch) {
+      prevPostSlug = prevMatch[1];
+      prevPostTitle = prevMatch[2].trim();
+    }
+
+    const postPageHtml = buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled, seoExcerpt, prevPostSlug, prevPostTitle });
     await uploadFile(`posts/${slug}.html`, btoa(unescape(encodeURIComponent(postPageHtml))));
 
     // 5. Build index card for blog.html
@@ -1130,7 +1168,12 @@ async function savePostEdit(filename, originalHtml) {
   showStatus('Saving changes…', false, true);
 
   try {
-    // Build location HTML
+    // Build prev post link if provided
+  const prevPostHtml = (prevPostSlug && prevPostTitle)
+    ? `<a href="../posts/\${escHtml(prevPostSlug)}.html" class="read-more small" style="margin-left:auto;">Next: \${escHtml(prevPostTitle)} →</a>`
+    : '';
+
+  // Build location HTML
     let newLocationHtml = '';
     if (newLocation) {
       if (newLocation.startsWith('http') || newLocation.startsWith('maps.')) {
