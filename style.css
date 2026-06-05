@@ -688,7 +688,7 @@ img { max-width: 100%; display: block; }
 .videos-section {
   position: relative;
   z-index: 1;
-  background: var(--ink);
+  background: #1a1714 !important;
   padding: 5rem 0;
 }
 
@@ -730,6 +730,7 @@ img { max-width: 100%; display: block; }
   border: 1px solid rgba(255,255,255,0.1);
   overflow: hidden;
   transition: transform 0.25s, border-color 0.25s;
+  isolation: isolate;
 }
 .video-card:hover {
   transform: translateY(-4px);
@@ -755,7 +756,7 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: var(--white);
+  background: #f5f0e8;
 }
 .video-title {
   font-family: var(--font-display);
