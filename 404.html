@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>404 — Page Not Found | Emmerican Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/style.css" />
+  <script src="/darkmode.js"></script>
+  <link rel="stylesheet" href="/darkmode.css" />
+  <meta name="robots" content="noindex" />
+  <style>
+    .error-section {
+      max-width: 700px;
+      margin: 0 auto;
+      padding: 6rem 2rem 6rem;
+      text-align: center;
+      min-height: 70vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+    }
+    .error-kanji {
+      font-family: var(--font-body);
+      font-size: 8rem;
+      font-weight: 700;
+      color: var(--paper-dark);
+      line-height: 1;
+      margin-bottom: 1.5rem;
+      opacity: 0.4;
+    }
+    .error-code {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--red);
+      margin-bottom: 1rem;
+    }
+    .error-title {
+      font-family: var(--font-display);
+      font-size: clamp(2rem, 5vw, 3.5rem);
+      font-weight: 400;
+      line-height: 1.1;
+      margin-bottom: 1.5rem;
+    }
+    .error-title em { font-style: italic; color: var(--red); }
+    .error-desc {
+      font-size: 1rem;
+      color: var(--ink-light);
+      line-height: 1.8;
+      max-width: 480px;
+      margin: 0 auto 3rem;
+    }
+    .error-links {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .error-link-primary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      background: var(--red);
+      color: var(--white);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-decoration: none;
+      transition: background 0.2s;
+    }
+    .error-link-primary:hover { background: var(--red-muted); }
+    .error-link-secondary {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.85rem 2rem;
+      border: 1px solid var(--paper-dark);
+      color: var(--ink);
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      text-decoration: none;
+      transition: border-color 0.2s, color 0.2s;
+    }
+    .error-link-secondary:hover { border-color: var(--red); color: var(--red); }
+    @media (max-width: 600px) {
+      .error-section { padding: 4rem 1.5rem; }
+      .error-links { flex-direction: column; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+  <div class="bg-kanji" aria-hidden="true">迷</div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="/index.html" class="logo">
+        <span class="logo-kanji">日本</span>
+        <div class="logo-text">
+          <span class="logo-title">Emmerican Adventure</span>
+          <span class="logo-sub">Chapter 1: We're Moving</span>
+        </div>
+      </a>
+      <nav class="nav">
+        <a href="/index.html" class="nav-link">Home</a>
+        <a href="/blog.html" class="nav-link">Journal</a>
+        <a href="/photos.html" class="nav-link">Photos</a>
+        <a href="/about.html" class="nav-link">About</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">🌙</button>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="error-section">
+      <div class="error-kanji" aria-hidden="true">迷子</div>
+      <p class="error-code">404 — Lost in Translation</p>
+      <h1 class="error-title">This page took a wrong<br>turn to <em>Japan</em>.</h1>
+      <p class="error-desc">The page you're looking for doesn't exist — maybe it moved (much like we're about to), or the link was wrong. Either way, let's get you back on track.</p>
+      <div class="error-links">
+        <a href="/index.html" class="error-link-primary">← Back Home</a>
+        <a href="/blog.html" class="error-link-secondary">Read the Journal</a>
+        <a href="/search.html" class="error-link-secondary">Search Posts</a>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span class="footer-kanji">旅</span>
+        <span class="footer-name">Emmerican Adventure</span>
+      </div>
+      <div class="footer-copy">© 2026 Emmerican Adventure</div>
+    </div>
+  </footer>
+
+  <script src="/main.js"></script>
+</body>
+</html>
