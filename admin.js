@@ -625,14 +625,28 @@ async function handlePublish() {
   try {
     const slug = slugify(title);
 
-    // 1. Upload all images to GitHub
+    // 1. Upload all images to GitHub (compressed)
     const uploadedImages = [];
     for (let i = 0; i < images.length; i++) {
       const img = images[i];
-      showStatus(`Uploading photo ${i + 1} of ${images.length}…`, false, true);
-      const safeName = img.name.replace(/\s+/g, '-').toLowerCase();
+      showStatus(`Optimizing & uploading photo ${i + 1} of ${images.length}…`, false, true);
+      const safeName = img.name.replace(/[^a-z0-9.]/gi, '-').toLowerCase().replace(/\.png$/i, '.jpg');
       const path = `images/${Date.now()}-${safeName}`;
-      await uploadFile(path, img.dataUrl.split(',')[1]);
+      // Compress via canvas before upload
+      const compressed = await new Promise((resolve) => {
+        const image = new Image();
+        image.onload = () => {
+          const maxW = 1600;
+          let w = image.width, h = image.height;
+          if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(image, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.78).split(',')[1]);
+        };
+        image.src = img.dataUrl;
+      });
+      await uploadFile(path, compressed);
       uploadedImages.push({ path, caption: img.caption });
     }
 
@@ -754,9 +768,13 @@ async function handlePublish() {
 
     // 10. Update search index
     showStatus('Updating search index…', false, true);
-    await updateSearchIndex({ title, slug, date, tag, body, uploadedImages });
+    await updateSearchIndex({ title, slug, date, category, uploadedImages, body });
 
-    // 11. Update sitemap
+    // 11. Update related posts on existing posts
+    showStatus('Updating related posts…', false, true);
+    await updateRelatedPosts({ title, slug, date, category, uploadedImages });
+
+    // 12. Update sitemap
     showStatus('Updating sitemap…', false, true);
     await updateSitemap({ slug, date });
 
@@ -790,6 +808,13 @@ async function updateSitemap({ slug, date }) {
     if (currentXml.includes(newUrl)) return;
 
     // Insert new URL entry before closing </urlset>
+    // Also update lastmod on homepage and blog entries
+    let updatedXml = currentXml
+      .replace(/<loc>https:\/\/emmericanadventure\.com\/<\/loc>\s*<lastmod>[^<]+<\/lastmod>/,
+               `<loc>https://emmericanadventure.com/</loc>\n    <lastmod>${today}</lastmod>`)
+      .replace(/<loc>https:\/\/emmericanadventure\.com\/blog\.html<\/loc>\s*<lastmod>[^<]+<\/lastmod>/,
+               `<loc>https://emmericanadventure.com/blog.html</loc>\n    <lastmod>${today}</lastmod>`);
+
     const newEntry = `
   <url>
     <loc>${newUrl}</loc>
@@ -965,7 +990,7 @@ async function updatePhotoGrids({ title, uploadedImages }) {
 
 
 // ── Update search index in search.html ───────────────────────────
-async function updateSearchIndex({ title, slug, date, tag, body, uploadedImages }) {
+async function updateSearchIndex({ title, slug, date, category, uploadedImages, body }) {
   try {
     const searchRes = await ghFetch('contents/search.html');
     if (!searchRes.ok) return;
@@ -973,29 +998,23 @@ async function updateSearchIndex({ title, slug, date, tag, body, uploadedImages 
     const searchHtml = decodeURIComponent(escape(atob(searchJson.content.replace(/\n/g, ''))));
     const searchSha = searchJson.sha;
 
-    // Build excerpt from body
     const plainBody = body.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
     const excerpt = plainBody.substring(0, 120) + (plainBody.length > 120 ? '…' : '');
-
-    // Build keywords from title + tag + body words
-    const keywords = [title, tag, ...plainBody.split(' ').slice(0, 20)].join(' ').toLowerCase();
-
-    // Get first image if available
+    const keywords = [title, category, ...plainBody.split(' ').slice(0, 20)].join(' ').toLowerCase();
     const img = (uploadedImages && uploadedImages.length > 0)
       ? `images/${uploadedImages[0].path.split('/').pop()}`
       : 'images/og-image.jpg';
 
     const newEntry = `      {
-        slug: '${escHtml(slug)}',
-        title: '${escHtml(title).replace(/'/g,"\\'")}',
+        slug: '${slug.replace(/'/g,"\\'")}',
+        title: '${title.replace(/'/g,"\\'")}',
         excerpt: '${excerpt.replace(/'/g,"\\'").replace(/\n/g,' ')}',
-        date: '${escHtml(date)}',
-        tag: '${escHtml(tag)}',
+        date: '${date}',
+        tag: '${category}',
         img: '${img}',
         keywords: '${keywords.replace(/'/g,"\\'")}',
       },`;
 
-    // Insert at top of POSTS array
     const marker = 'const POSTS = [';
     if (searchHtml.includes(marker)) {
       const updated = searchHtml.replace(marker, marker + '\n' + newEntry);
@@ -1008,6 +1027,66 @@ async function updateSearchIndex({ title, slug, date, tag, body, uploadedImages 
     }
   } catch (err) {
     console.warn('Could not update search index:', err.message);
+  }
+}
+
+// ── Auto-update related posts on existing post files ─────────────
+async function updateRelatedPosts({ title, slug, date, category, uploadedImages }) {
+  try {
+    const blogRes = await ghFetch('contents/blog.html');
+    if (!blogRes.ok) return;
+    const blogJson = await blogRes.json();
+    const blogHtml = decodeURIComponent(escape(atob(blogJson.content.replace(/\n/g, ''))));
+
+    const slugMatches = [...blogHtml.matchAll(/href="posts\/([^"]+)\.html"/g)];
+    const existingSlugs = slugMatches.map(m => m[1]).filter(s => s !== slug).slice(0, 4);
+    if (existingSlugs.length === 0) return;
+
+    const img = (uploadedImages && uploadedImages.length > 0)
+      ? `../images/${uploadedImages[0].path.split('/').pop()}`
+      : '../images/og-image.jpg';
+
+    const newCard = `        <a href="../posts/${slug}.html" class="related-card">
+          <div class="related-card-img"><img src="${img}" alt="${escHtml(title)}" loading="lazy" /></div>
+          <div class="related-card-body">
+            <div class="post-meta"><span class="post-tag">${escHtml(category)}</span><span class="post-date">${escHtml(date)}</span></div>
+            <div class="related-card-title">${escHtml(title)}</div>
+          </div>
+        </a>`;
+
+    for (const existingSlug of existingSlugs) {
+      try {
+        const postRes = await ghFetch(`contents/posts/${existingSlug}.html`);
+        if (!postRes.ok) continue;
+        const postJson = await postRes.json();
+        let postHtml = decodeURIComponent(escape(atob(postJson.content.replace(/\n/g, ''))));
+        const postSha = postJson.sha;
+
+        const gridStart = postHtml.indexOf('<div class="related-grid">');
+        if (gridStart === -1) continue;
+        const gridEnd = postHtml.indexOf('</div>', gridStart) + 6;
+        const gridContent = postHtml.substring(gridStart, gridEnd);
+        const cardCount = (gridContent.match(/class="related-card"/g) || []).length;
+
+        let newGrid;
+        if (cardCount >= 2) {
+          const lastIdx = gridContent.lastIndexOf('<a href="../posts/');
+          newGrid = '<div class="related-grid">\n' + newCard + '\n' + gridContent.substring('<div class="related-grid">\n'.length, lastIdx) + '\n        </div>';
+        } else {
+          newGrid = gridContent.replace('<div class="related-grid">', '<div class="related-grid">\n' + newCard);
+        }
+
+        postHtml = postHtml.substring(0, gridStart) + newGrid + postHtml.substring(gridEnd);
+        await ghFetch(`contents/posts/${existingSlug}.html`, 'PUT', {
+          message: `feat: add ${title} to related posts`,
+          content: btoa(unescape(encodeURIComponent(postHtml))),
+          sha: postSha,
+          branch: CONFIG.branch,
+        });
+      } catch(e) { console.warn('related posts error:', e.message); }
+    }
+  } catch (err) {
+    console.warn('Could not update related posts:', err.message);
   }
 }
 
