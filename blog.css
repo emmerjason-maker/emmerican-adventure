@@ -168,6 +168,10 @@
 /* ─── Post Footer ───────────────────────────────────────────────── */
 .post-entry-footer {
   margin-top: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
 }
 
 /* ─── Post Photo Gallery ────────────────────────────────────────── */
