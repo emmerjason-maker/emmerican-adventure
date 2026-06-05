@@ -3,16 +3,44 @@
 
   <url>
     <loc>https://emmericanadventure.com/</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-06-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
 
   <url>
     <loc>https://emmericanadventure.com/blog.html</loc>
-    <lastmod>2026-06-02</lastmod>
+    <lastmod>2026-06-05</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
+  </url>
+
+  <url>
+    <loc>https://emmericanadventure.com/about.html</loc>
+    <lastmod>2026-06-05</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://emmericanadventure.com/photos.html</loc>
+    <lastmod>2026-06-05</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.7</priority>
+  </url>
+
+  <url>
+    <loc>https://emmericanadventure.com/posts/pcs-chronicles-the-medical-milestone.html</loc>
+    <lastmod>2026-06-04</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://emmericanadventure.com/posts/chasing-dreams-under-the-wings-of-legends-a-day-at-nas-jax.html</loc>
+    <lastmod>2026-06-03</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
   </url>
 
   <url>
@@ -25,22 +53,6 @@
   <url>
     <loc>https://emmericanadventure.com/posts/packing-up-for-japan-the-purge-begins.html</loc>
     <lastmod>2026-05-31</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-
-  <url>
-    <loc>https://emmericanadventure.com/posts/chasing-dreams-under-the-wings-of-legends-a-day-at-nas-jax.html</loc>
-    <lastmod>2026-06-03</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.8</priority>
-  </url>
-
-
-  <url>
-    <loc>https://emmericanadventure.com/posts/pcs-chronicles-the-medical-milestone.html</loc>
-    <lastmod>2026-06-04</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
