@@ -25,6 +25,7 @@ const $ = id => document.getElementById(id);
 // -- Startup -------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
   $('postDate').value = new Date().toISOString().split('T')[0];
+  if ($('ytAddBtn')) $('ytAddBtn').addEventListener('click', addYtVideo);
 
   const saved = localStorage.getItem('jm_gh_token');
   if (saved) $('loginToken').value = saved;
@@ -249,7 +250,7 @@ function renderPreview() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
   const body     = $('postBody').innerHTML.trim();
-  const ytId     = extractYouTubeId($('postYoutube').value.trim());
+  const ytId     = ytVideos.length > 0 ? ytVideos[0].id : null;
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim() || linkUrl;
   const fmtDate  = date
@@ -607,12 +608,12 @@ async function handlePublish() {
   const date     = $('postDate').value;
   const location = $('postLocation') ? $('postLocation').value.trim() : '';
   const body     = $('postBody').innerHTML.trim();
-  const ytId     = extractYouTubeId($('postYoutube').value.trim());
+  const ytId     = ytVideos.length > 0 ? ytVideos[0].id : null;
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim();
 
   if (!title) { alert('Please add a post title.'); return; }
-  if (!body && !ytId && images.length === 0) {
+  if (!body && ytVideos.length === 0 && images.length === 0) {
     alert('Please add some content - body text, a video, or at least one photo.'); return;
   }
 
@@ -1190,7 +1191,7 @@ function showStatus(msg, isError, persist = false) {
 function resetForm() {
   $('postTitle').value    = '';
   $('postBody').innerHTML = '';
-  $('postYoutube').value  = '';
+  ytVideos = []; renderYtVideoList();
   $('postLink').value     = '';
   if ($('postLocation')) $('postLocation').value = '';
   $('postLinkText').value = '';
