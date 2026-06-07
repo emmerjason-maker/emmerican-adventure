@@ -441,10 +441,10 @@ img { max-width: 100%; display: block; }
 
 .timeline-section .timeline,
 .timeline-section .timeline-toggle-btn {
-  max-width: 600px;
+  max-width: 560px;
   margin-left: auto;
   margin-right: auto;
-  padding-left: 2.5rem;
+  padding-left: 2rem;
   padding-right: 2rem;
 }
 
