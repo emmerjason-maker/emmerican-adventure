@@ -238,13 +238,25 @@
                 <p class="field-hint">Plain text, Maps URL, or <strong>Label | Maps URL</strong></p>
               </div>
               <div class="field-group">
+                <label class="field-label">YouTube Videos <span class="optional">optional</span></label>
+                <div id="editYtVideoList"></div>
+                <div class="yt-add-row">
+                  <input type="text" class="field-input" id="editYtVideoInput"
+                    placeholder="Paste YouTube URL or video ID…" />
+                  <input type="text" class="field-input" id="editYtVideoLabel"
+                    placeholder="Label (optional)" style="max-width:160px;" />
+                  <button type="button" class="btn-secondary" id="editYtAddBtn">+ Add</button>
+                </div>
+              </div>
+
+              <div class="field-group">
                 <label class="field-label">Photos <span class="optional">optional</span></label>
                 <div id="editPhotoList"></div>
                 <label class="file-label" style="margin-top:0.5rem;">
                   <input type="file" id="editPhotoInput" accept="image/*" multiple style="display:none;" />
                   <span class="file-btn btn-secondary">+ Add Photos</span>
                 </label>
-                <p class="field-hint">Click a photo to remove it. New photos will be uploaded on save.</p>
+                <p class="field-hint">Click ✕ to remove. New photos upload on save.</p>
               </div>
 
               <div class="field-group">
