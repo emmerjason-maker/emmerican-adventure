@@ -277,6 +277,46 @@ function renderEditYtVideoList() {
     </div>`).join('');
 }
 
+// -- Edit form Photo management ------------------------------------
+function handleEditPhotoAdd(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      editPhotos.push({ src: ev.target.result, caption: '', isNew: true, file, dataUrl: ev.target.result });
+      renderEditPhotoList();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function removeEditPhoto(idx) {
+  editPhotos.splice(idx, 1);
+  renderEditPhotoList();
+}
+
+function renderEditPhotoList() {
+  const list = $('editPhotoList');
+  if (!list) return;
+  if (editPhotos.length === 0) {
+    list.innerHTML = '<p class="field-hint" style="margin:0 0 0.5rem;">No photos yet.</p>';
+    return;
+  }
+  list.innerHTML = editPhotos.map((p, i) => `
+    <div class="yt-video-item" style="align-items:flex-start;margin-bottom:0.5rem;">
+      <img src="${p.src}" style="width:80px;height:60px;object-fit:cover;border-radius:2px;flex-shrink:0;" alt="photo" />
+      <div class="yt-video-meta" style="flex:1;">
+        <span class="yt-video-id">${p.isNew ? 'New upload' : decodeURIComponent(p.src.split('/').pop()).substring(0,35)}</span>
+        <input type="text" class="field-input" placeholder="Caption (optional)"
+          style="margin-top:4px;padding:4px 8px;font-size:0.78rem;"
+          value="${escHtml(p.caption || '')}"
+          onchange="editPhotos[${i}].caption = this.value" />
+      </div>
+      <button type="button" class="img-btn remove" onclick="removeEditPhoto(${i})" title="Remove">✕</button>
+    </div>`).join('');
+}
+
 // -- Preview -------------------------------------------------------
 function renderPreview() {
   const title    = $('postTitle').value.trim();
@@ -1343,6 +1383,17 @@ async function loadPostForEditing(filename, sha) {
       }
     }
 
+    // Parse existing photos from post
+    editPhotos = [];
+    doc.querySelectorAll('.post-photo img, .post-gallery img').forEach(img => {
+      const src = img.getAttribute('src') || '';
+      const caption = img.closest('figure')?.querySelector('figcaption')?.textContent?.trim()
+                   || img.getAttribute('alt') || '';
+      if (src && !src.includes('youtube')) {
+        editPhotos.push({ src, caption, isNew: false });
+      }
+    });
+
     // Parse existing YouTube videos from post
     editYtVideos = [];
     const iframes = doc.querySelectorAll('.post-video iframe');
@@ -1362,6 +1413,7 @@ async function loadPostForEditing(filename, sha) {
     $('editBody').innerHTML = bodyHtml;
     if ($('editLocation')) $('editLocation').value = existingLocation;
     renderEditYtVideoList();
+    renderEditPhotoList();
     $('editPostTitle').textContent = `Editing: ${title}`;
 
     // Show edit form, hide list
@@ -1452,6 +1504,50 @@ async function savePostEdit(filename, originalHtml) {
       /(<div class="post-body">)([\s\S]*?)(<\/div>\s*<footer)/,
       `$1\n        ${newBody}\n      $3`
     );
+
+    // Upload any new photos and rebuild photo HTML
+    for (let i = 0; i < editPhotos.length; i++) {
+      const p = editPhotos[i];
+      if (p.isNew && p.file) {
+        showStatus(`Uploading photo ${i+1} of ${editPhotos.filter(x=>x.isNew).length}…`, false, true);
+        const safeName = p.file.name.replace(/[^a-z0-9.]/gi, '-').toLowerCase().replace(/\.png$/i, '.jpg');
+        const path = `images/${Date.now()}-${safeName}`;
+        const compressed = await new Promise(resolve => {
+          const image = new Image();
+          image.onload = () => {
+            const maxW = 1600;
+            let w = image.width, h = image.height;
+            if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(image, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.78).split(',')[1]);
+          };
+          image.src = p.dataUrl;
+        });
+        await uploadFile(path, compressed);
+        editPhotos[i].src = `../${path}`;
+        editPhotos[i].isNew = false;
+      }
+    }
+
+    // Rebuild photo HTML
+    let newPhotoHtml = '';
+    if (editPhotos.length === 1) {
+      const p = editPhotos[0];
+      newPhotoHtml = `\n      <figure class="post-photo">\n        <img src="${escHtml(p.src)}" alt="${escHtml(p.caption || newTitle)}" />\n        ${p.caption ? `<figcaption>${escHtml(p.caption)}</figcaption>` : ''}\n      </figure>`;
+    } else if (editPhotos.length > 1) {
+      const gc = editPhotos.length === 2 ? 'gallery-2' : editPhotos.length === 3 ? 'gallery-3' : 'gallery-4';
+      const items = editPhotos.map(p => `<figure class="gallery-item"><img src="${escHtml(p.src)}" alt="${escHtml(p.caption || newTitle)}" />${p.caption ? `<figcaption>${escHtml(p.caption)}</figcaption>` : ''}</figure>`).join('');
+      newPhotoHtml = `\n      <div class="post-gallery ${gc}">${items}</div>`;
+    }
+
+    // Strip old photo blocks and insert new ones
+    updated = updated.replace(/<figure class="post-photo">[\s\S]*?<\/figure>/g, '');
+    updated = updated.replace(/<div class="post-gallery[^"]*">[\s\S]*?<\/div>/g, '');
+    if (newPhotoHtml) {
+      updated = updated.replace(/(<div class="post-body">)/, `$1${newPhotoHtml}`);
+    }
 
     // Replace YouTube video blocks
     const newVideoHtml = editYtVideos.map(v => `
