@@ -1481,92 +1481,72 @@ async function savePostEdit(filename) {
 
   if (!newTitle) { alert('Title cannot be empty'); return; }
 
-  // If editBody is empty, fall back to the stored original body
-  let bodyToSave = newBody;
-  if (!bodyToSave || !bodyToSave.trim() || bodyToSave.trim() === '<br>') {
-    if (editBodyHtml && editBodyHtml.trim()) {
-      console.warn('editBody empty — using stored original body as fallback');
-      bodyToSave = editBodyHtml;
-    } else {
-      alert('Body appears empty and no backup found — not saving to protect your content.');
-      return;
-    }
+  // Use stored original if editor is empty
+  const bodyToSave = (newBody && newBody.trim() && newBody.trim() !== '<br>')
+    ? newBody : editBodyHtml;
+
+  if (!bodyToSave || !bodyToSave.trim()) {
+    alert('Body is empty — not saving to protect your content.');
+    return;
   }
 
   $('saveEditLabel').textContent = 'Saving…';
   $('saveEditBtn').disabled = true;
-  showStatus('Saving changes…', false, true);
+  showStatus('Fetching latest version…', false, true);
 
   try {
-    // Always re-fetch the LATEST version of the post from GitHub
-    // This prevents stale originalHtml from corrupting the post
-    showStatus('Fetching latest post version…', false, true);
+    // Always re-fetch latest from GitHub
     const latestFetch = await ghFetch(`contents/posts/${filename}`);
     if (!latestFetch.ok) throw new Error('Could not fetch latest post');
     const latestJson = await latestFetch.json();
     const originalHtml = decodeURIComponent(escape(atob(latestJson.content.replace(/\n/g, ''))));
     editingFileSha = latestJson.sha;
 
-    // Parse existing next-post link to preserve it
-    const parser2 = new DOMParser();
-    const origDoc = parser2.parseFromString(originalHtml, 'text/html');
-    const existingNextLink = origDoc.querySelector('.post-entry-footer .read-more:not([href="../blog.html"])');
-    const prevPostHtml = existingNextLink ? existingNextLink.outerHTML : '';
+    // Parse into DOM — do ALL changes through the DOM, no string regex on content
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(originalHtml, 'text/html');
 
-  // Build location HTML
-    let newLocationHtml = '';
+    // ── Title ────────────────────────────────────────────────────
+    const titleEl = doc.querySelector('.post-entry-title');
+    if (titleEl) titleEl.textContent = newTitle;
+    const titleTag = doc.querySelector('title');
+    if (titleTag) titleTag.textContent = newTitle + ' - Emmerican Adventure';
+    // og:title
+    const ogTitle = doc.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', newTitle + ' - Emmerican Adventure');
+
+    // ── Location ─────────────────────────────────────────────────
+    const existingLoc = doc.querySelector('.post-location');
     if (newLocation) {
+      let locHtml = '';
       if (newLocation.startsWith('http') || newLocation.startsWith('maps.')) {
-        newLocationHtml = `<div class="post-location"><a href="${escHtml(newLocation)}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
+        locHtml = `<div class="post-location"><a href="${newLocation}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
       } else if (newLocation.includes('|')) {
         const parts = newLocation.split('|').map(s => s.trim());
-        newLocationHtml = `<div class="post-location"><a href="${escHtml(parts[1])}" target="_blank" rel="noopener">📍 ${escHtml(parts[0])}</a></div>`;
+        locHtml = `<div class="post-location"><a href="${parts[1]}" target="_blank" rel="noopener">📍 ${parts[0]}</a></div>`;
       } else {
-        newLocationHtml = `<div class="post-location">📍 ${escHtml(newLocation)}</div>`;
+        locHtml = `<div class="post-location">📍 ${newLocation}</div>`;
       }
+      const locDiv = parser.parseFromString(locHtml, 'text/html').body.firstChild;
+      if (existingLoc) {
+        existingLoc.replaceWith(locDiv);
+      } else {
+        titleEl?.insertAdjacentElement('afterend', locDiv);
+      }
+    } else if (existingLoc) {
+      existingLoc.remove();
     }
 
-    // Parse original HTML and replace title + body
-    let updated = originalHtml;
+    // ── Body ─────────────────────────────────────────────────────
+    const bodyEl = doc.querySelector('.post-body');
+    if (!bodyEl) throw new Error('Could not find post-body in HTML');
+    bodyEl.innerHTML = '\n        ' + bodyToSave + '\n      ';
 
-    // Replace title in h1
-    updated = updated.replace(
-      /(<h1 class="post-entry-title">)([\s\S]*?)(<\/h1>)/,
-      `$1${escHtml(newTitle)}$3`
-    );
-
-    // Replace title in <title> tag
-    updated = updated.replace(
-      /<title>.*?<\/title>/,
-      `<title>${escHtml(newTitle)} - Emmerican Adventure</title>`
-    );
-
-    // Replace or add location
-    if (updated.includes('class="post-location"')) {
-      updated = updated.replace(/<div class="post-location">[\s\S]*?<\/div>/, newLocationHtml);
-    } else if (newLocationHtml) {
-      updated = updated.replace(
-        /(<h1 class="post-entry-title">[\s\S]*?<\/h1>)/,
-        `$1\n        ${newLocationHtml}`
-      );
-    }
-
-    // Replace body using DOM parser — much safer than regex
-    const saveParser = new DOMParser();
-    const saveDoc = saveParser.parseFromString(updated, 'text/html');
-    const saveBodyEl = saveDoc.querySelector('.post-body');
-    if (saveBodyEl) {
-      saveBodyEl.innerHTML = '\n        ' + bodyToSave + '\n      ';
-      updated = '<!DOCTYPE html>\n' + saveDoc.documentElement.outerHTML;
-    } else {
-      throw new Error('Could not find post-body in HTML — aborting to protect content.');
-    }
-
-    // Upload any new photos and rebuild photo HTML
+    // ── Upload new photos ─────────────────────────────────────────
     for (let i = 0; i < editPhotos.length; i++) {
       const p = editPhotos[i];
       if (p.isNew && p.file) {
-        showStatus(`Uploading photo ${i+1} of ${editPhotos.filter(x=>x.isNew).length}…`, false, true);
+        showStatus(`Uploading photo ${i+1}…`, false, true);
         const safeName = p.file.name.replace(/[^a-z0-9.]/gi, '-').toLowerCase().replace(/\.png$/i, '.jpg');
         const path = `images/${Date.now()}-${safeName}`;
         const compressed = await new Promise(resolve => {
@@ -1588,46 +1568,46 @@ async function savePostEdit(filename) {
       }
     }
 
-    // Rebuild photo HTML
-    let newPhotoHtml = '';
-    if (editPhotos.length === 1) {
-      const p = editPhotos[0];
-      newPhotoHtml = `\n      <figure class="post-photo">\n        <img src="${escHtml(p.src)}" alt="${escHtml(p.caption || newTitle)}" />\n        ${p.caption ? `<figcaption>${escHtml(p.caption)}</figcaption>` : ''}\n      </figure>`;
-    } else if (editPhotos.length > 1) {
-      const gc = editPhotos.length === 2 ? 'gallery-2' : editPhotos.length === 3 ? 'gallery-3' : 'gallery-4';
-      const items = editPhotos.map(p => `<figure class="gallery-item"><img src="${escHtml(p.src)}" alt="${escHtml(p.caption || newTitle)}" />${p.caption ? `<figcaption>${escHtml(p.caption)}</figcaption>` : ''}</figure>`).join('');
-      newPhotoHtml = `\n      <div class="post-gallery ${gc}">${items}</div>`;
+    // ── Rebuild photos in DOM ────────────────────────────────────
+    // Remove existing photo blocks
+    doc.querySelectorAll('.post-photo, .post-gallery').forEach(el => el.remove());
+    // Build new photo HTML and insert before post-body
+    if (editPhotos.length > 0) {
+      let photoHtml = '';
+      if (editPhotos.length === 1) {
+        const p = editPhotos[0];
+        photoHtml = `<figure class="post-photo"><img src="${p.src}" alt="${p.caption || newTitle}" />${p.caption ? `<figcaption>${p.caption}</figcaption>` : ''}</figure>`;
+      } else {
+        const gc = editPhotos.length === 2 ? 'gallery-2' : editPhotos.length === 3 ? 'gallery-3' : 'gallery-4';
+        const items = editPhotos.map(p =>
+          `<figure class="gallery-item"><img src="${p.src}" alt="${p.caption || newTitle}" />${p.caption ? `<figcaption>${p.caption}</figcaption>` : ''}</figure>`
+        ).join('');
+        photoHtml = `<div class="post-gallery ${gc}">${items}</div>`;
+      }
+      const photoNode = parser.parseFromString(photoHtml, 'text/html').body.firstChild;
+      bodyEl.parentNode.insertBefore(photoNode, bodyEl);
     }
 
-    // Strip old photo blocks and insert new ones
-    updated = updated.replace(/<figure class="post-photo">[\s\S]*?<\/figure>/g, '');
-    updated = updated.replace(/<div class="post-gallery[^"]*">[\s\S]*?<\/div>/g, '');
-    if (newPhotoHtml) {
-      updated = updated.replace(/(<div class="post-body">)/, `$1${newPhotoHtml}`);
-    }
+    // ── Rebuild YouTube videos in DOM ────────────────────────────
+    doc.querySelectorAll('.post-video').forEach(el => el.remove());
+    // Insert videos before post-body (after photos)
+    const reversedVideos = [...editYtVideos].reverse();
+    reversedVideos.forEach(v => {
+      const captionHtml = v.label
+        ? `<p class="video-caption">${v.label}</p>`
+        : `<p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>`;
+      const vidHtml = `<div class="post-video"><div class="video-embed-wrap"><iframe src="https://www.youtube.com/embed/${v.id}" title="${v.label || newTitle}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>${captionHtml}</div>`;
+      const vidNode = parser.parseFromString(vidHtml, 'text/html').body.firstChild;
+      bodyEl.parentNode.insertBefore(vidNode, bodyEl);
+    });
 
-    // Replace YouTube video blocks
-    const newVideoHtml = editYtVideos.map(v => `
-      <div class="post-video">
-        <div class="video-embed-wrap">
-          <iframe src="https://www.youtube.com/embed/${v.id}" title="${escHtml(v.label || newTitle)}"
-            frameborder="0"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen></iframe>
-        </div>
-        ${v.label ? `<p class="video-caption">${escHtml(v.label)}</p>` : '<p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>'}
-      </div>`).join('\n');
+    // ── Preserve footer links ────────────────────────────────────
+    // (already preserved since we're editing the original DOM)
 
-    // Remove all existing video blocks and insert new ones before post-body
-    updated = updated.replace(/<div class="post-video">[\s\S]*?<\/div>\s*<\/div>/g, '');
-    if (newVideoHtml) {
-      updated = updated.replace(
-        /(<div class="post-body">)/,
-        newVideoHtml + '\n      $1'
-      );
-    }
+    // ── Serialize and push ───────────────────────────────────────
+    const updated = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
 
-    // Push to GitHub
+    showStatus('Saving to GitHub…', false, true);
     const pushRes = await ghFetch(`contents/posts/${filename}`, 'PUT', {
       message: `Edit post: ${newTitle}`,
       content: btoa(unescape(encodeURIComponent(updated))),
@@ -1649,6 +1629,7 @@ async function savePostEdit(filename) {
     $('saveEditBtn').disabled = false;
   }
 }
+
 
 // -- Edit toolbar (for the edit body editor) -------------------
 function editToolbar(action) {
