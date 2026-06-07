@@ -1,10 +1,10 @@
-/* ═══════════════════════════════════════════════════════════════
-   Japan Move — Admin Panel JS
+/* ===============================================================
+   Japan Move - Admin Panel JS
    Multi-image support, rich text editor, YouTube, GitHub publish
-   ═══════════════════════════════════════════════════════════════ */
+   =============================================================== */
 
-// ── Config ────────────────────────────────────────────────────────
-// Password stored as SHA-256 hash — plain text never in source
+// -- Config --------------------------------------------------------
+// Password stored as SHA-256 hash - plain text never in source
 const CONFIG = {
   passwordHash: 'b181ca2307e6900f3d218dcabd221d64d0296cffbac6fa70a89815e67a3a49b1',  // SHA-256 of password
   owner:     'emmerjason-maker',
@@ -15,18 +15,16 @@ const CONFIG = {
   maxSizeMB: 5,
 };
 
-// ── State ─────────────────────────────────────────────────────────
+// -- State ---------------------------------------------------------
 // images = array of { id, file, dataUrl, name, caption }
 let images      = [];
 let githubToken = null;
 
 const $ = id => document.getElementById(id);
 
-// ── Startup ───────────────────────────────────────────────────────
+// -- Startup -------------------------------------------------------
 document.addEventListener('DOMContentLoaded', () => {
   $('postDate').value = new Date().toISOString().split('T')[0];
-  $('postDate').addEventListener('change', updatePublishLabel);
-  updatePublishLabel();
 
   const saved = localStorage.getItem('jm_gh_token');
   if (saved) $('loginToken').value = saved;
@@ -39,7 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
 });
 
-// ── Events ────────────────────────────────────────────────────────
+// -- Events --------------------------------------------------------
 function bindEvents() {
   // Login
   $('loginBtn').addEventListener('click', handleLogin);
@@ -76,7 +74,7 @@ function bindEvents() {
   $('publishBtn').addEventListener('click', handlePublish);
 }
 
-// ── Login ─────────────────────────────────────────────────────────
+// -- Login ---------------------------------------------------------
 async function handleLogin() {
   const pw    = $('loginPassword').value.trim();
   const token = $('loginToken').value.trim();
@@ -104,7 +102,7 @@ function showAdmin() {
   $('adminPanel').classList.remove('hidden');
 }
 
-// ── Toolbar ───────────────────────────────────────────────────────
+// -- Toolbar -------------------------------------------------------
 function handleToolbar(action) {
   $('postBody').focus();
   if (action === 'bold')   { document.execCommand('bold');            return; }
@@ -126,7 +124,7 @@ function handleToolbar(action) {
   }
 }
 
-// ── Multi-image handling ──────────────────────────────────────────
+// -- Multi-image handling ------------------------------------------
 function addFiles(fileList) {
   const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
   const remaining = CONFIG.maxImages - images.length;
@@ -235,7 +233,7 @@ function renderImageList() {
   );
 }
 
-// ── YouTube ID extraction ─────────────────────────────────────────
+// -- YouTube ID extraction -----------------------------------------
 function extractYouTubeId(input) {
   if (!input) return null;
   input = input.trim();
@@ -246,7 +244,7 @@ function extractYouTubeId(input) {
   return match ? match[1] : null;
 }
 
-// ── Preview ───────────────────────────────────────────────────────
+// -- Preview -------------------------------------------------------
 function renderPreview() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
@@ -305,13 +303,13 @@ function renderPreview() {
   }
 }
 
-// ── Count existing posts ─────────────────────────────────────────
+// -- Count existing posts -----------------------------------------
 function countExistingPosts(html) {
   const matches = html.match(/class="post-index-card"/g);
   return matches ? matches.length : 0;
 }
 
-// ── Build post HTML for blog.html ─────────────────────────────────
+// -- Build post HTML for blog.html ---------------------------------
 function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkText, postNumber }) {
   const fmtDate = date
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
@@ -340,7 +338,7 @@ function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkT
   let galleryBlock = '';
   if (uploadedImages && uploadedImages.length > 0) {
     if (uploadedImages.length === 1) {
-      // Single image — use figure
+      // Single image - use figure
       const img = uploadedImages[0];
       galleryBlock = `
       <figure class="post-photo">
@@ -348,7 +346,7 @@ function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkT
         ${img.caption ? `<figcaption>${escHtml(img.caption)}</figcaption>` : ''}
       </figure>`;
     } else {
-      // Multiple images — gallery grid
+      // Multiple images - gallery grid
       const gridClass = uploadedImages.length === 2 ? 'gallery-2'
                       : uploadedImages.length === 3 ? 'gallery-3'
                       : 'gallery-many';
@@ -370,7 +368,7 @@ function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkT
   }
 
   return `
-    <!-- ====== POST: ${escHtml(title)} — ${fmtDate} ====== -->
+    <!-- ====== POST: ${escHtml(title)} - ${fmtDate} ====== -->
     <article class="post-entry">
 
       <header class="post-entry-header">
@@ -408,7 +406,7 @@ ${videoBlock}${galleryBlock}
 
 
 
-// ── Build individual post page HTML ──────────────────────────────
+// -- Build individual post page HTML ------------------------------
 function buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled, seoExcerpt, prevPostSlug, prevPostTitle }) {
   const fmtDate = date
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
@@ -419,7 +417,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
     ? `<a href="../posts/\${escHtml(prevPostSlug)}.html" class="read-more small" style="margin-left:auto;">Next: \${escHtml(prevPostTitle)} →</a>`
     : '';
 
-  // Build location HTML — supports plain text, URL, or "Label | URL" format
+  // Build location HTML - supports plain text, URL, or "Label | URL" format
   let locationHtml = '';
   if (location) {
     if (location.startsWith('http') || location.startsWith('maps.')) {
@@ -472,7 +470,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>${escHtml(title)} — Emmerican Adventure</title>
+  <title>${escHtml(title)} - Emmerican Adventure</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
@@ -485,7 +483,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
   <link rel="canonical" href="https://emmericanadventure.com/posts/${slug}.html" />
   <meta property="og:type" content="article" />
   <meta property="og:site_name" content="Emmerican Adventure" />
-  <meta property="og:title" content="${escHtml(title)} — Emmerican Adventure" />
+  <meta property="og:title" content="${escHtml(title)} - Emmerican Adventure" />
   <meta property="og:description" content="${escHtml(plainExcerpt)}" />
   <meta property="og:url" content="https://emmericanadventure.com/posts/${slug}.html" />
   ${imgSrc ? `<meta property="og:image" content="https://emmericanadventure.com/${escHtml(imgSrc)}" />` : ''}
@@ -573,7 +571,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
         <span class="footer-kanji">日本へ</span>
         <span class="footer-name">Emmerican Adventure</span>
       </div>
-      <div class="footer-copy">© 2026 Emmerican Adventure — Made with 愛 in Jacksonville, FL | As an Amazon Associate I earn from qualifying purchases.</div>
+      <div class="footer-copy">© 2026 Emmerican Adventure - Made with 愛 in Jacksonville, FL | As an Amazon Associate I earn from qualifying purchases.</div>
       <div class="footer-links">
         <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube</a>
       </div>
@@ -585,7 +583,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
 }
 
 
-// ── Update publish button label based on date ─────────────────
+// -- Update publish button label based on date -----------------
 function updatePublishLabel() {
   const date = $('postDate').value;
   const label = $('publishLabel');
@@ -596,14 +594,14 @@ function updatePublishLabel() {
     label.textContent = 'Publish Post →';
   }
 }
-// ── Generate URL slug from title ─────────────────────────────────
+// -- Generate URL slug from title ---------------------------------
 function slugify(title) {
   return title.toLowerCase()
     .replace(/[^a-z0-9]+/g, '-')
     .replace(/^-|-$/g, '');
 }
 
-// ── Publish ───────────────────────────────────────────────────────
+// -- Publish -------------------------------------------------------
 async function handlePublish() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
@@ -615,7 +613,7 @@ async function handlePublish() {
 
   if (!title) { alert('Please add a post title.'); return; }
   if (!body && !ytId && images.length === 0) {
-    alert('Please add some content — body text, a video, or at least one photo.'); return;
+    alert('Please add some content - body text, a video, or at least one photo.'); return;
   }
 
   // Check if post is scheduled (future date)
@@ -696,7 +694,7 @@ async function handlePublish() {
       uploadedImages.push({ path, caption: img.caption });
     }
 
-    // 1b. Sanitize post body — strip inline styles/fonts from editor paste
+    // 1b. Sanitize post body - strip inline styles/fonts from editor paste
     const bodyEditor = $('postBody');
     if (bodyEditor) {
       // Remove all style attributes from body content
@@ -781,7 +779,7 @@ async function handlePublish() {
     </article>`;
 
     // 6. Insert card at top of blog.html
-    const cardMarker = '<!-- ====== NEW POST INDEX CARD — COPY FROM HERE ====== -->';
+    const cardMarker = '<!-- ====== NEW POST INDEX CARD - COPY FROM HERE ====== -->';
     let updatedBlog;
     if (blogContent.includes(cardMarker)) {
       updatedBlog = blogContent.replace(cardMarker, cardMarker + newCard);
@@ -837,7 +835,7 @@ async function handlePublish() {
 
 
 
-// ── Update sitemap.xml ───────────────────────────────────────────
+// -- Update sitemap.xml -------------------------------------------
 async function updateSitemap({ slug, date }) {
   try {
     const today = date || new Date().toISOString().split('T')[0];
@@ -885,14 +883,14 @@ async function updateSitemap({ slug, date }) {
   }
 }
 
-// ── Update homepage featured post ────────────────────────────────
+// -- Update homepage featured post --------------------------------
 async function updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId, slug }) {
   try {
     const fmtDate = date
       ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
       : '';
 
-    // Pick the best image — first uploaded image or a YouTube thumbnail
+    // Pick the best image - first uploaded image or a YouTube thumbnail
     let imgSrc = '';
     if (uploadedImages && uploadedImages.length > 0) {
       imgSrc = uploadedImages[0].path;
@@ -967,7 +965,7 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
 }
 
 
-// ── Update photo grids on index.html and photos.html ─────────────
+// -- Update photo grids on index.html and photos.html -------------
 async function updatePhotoGrids({ title, uploadedImages }) {
   try {
     if (!uploadedImages || uploadedImages.length === 0) return;
@@ -975,12 +973,11 @@ async function updatePhotoGrids({ title, uploadedImages }) {
     const newItems = uploadedImages.map(img => `
         <div class="photo-item" data-caption="${escHtml(title)}">
           <img src="${escHtml(img.path)}" alt="${escHtml(title)}" />
-        </div>`).join('
-');
+        </div>`).join('\n');
 
     const marker = '        <!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
 
-    // ── Update index.html (keep 6 most recent) ────────────────────
+    // -- Update index.html (keep 6 most recent) --------------------
     const indexRes = await ghFetch('contents/index.html');
     if (!indexRes.ok) throw new Error('Could not fetch index.html');
     const indexJson = await indexRes.json();
@@ -1013,7 +1010,7 @@ async function updatePhotoGrids({ title, uploadedImages }) {
       });
     }
 
-    // ── Update photos.html (keep all) ────────────────────────────
+    // -- Update photos.html (keep all) ----------------------------
     const photosRes = await ghFetch('contents/photos.html');
     if (!photosRes.ok) throw new Error('Could not fetch photos.html');
     const photosJson = await photosRes.json();
@@ -1036,7 +1033,7 @@ async function updatePhotoGrids({ title, uploadedImages }) {
 }
 
 
-// ── Update search index in search.html ───────────────────────────
+// -- Update search index in search.html ---------------------------
 async function updateSearchIndex({ title, slug, date, category, uploadedImages, body }) {
   try {
     const searchRes = await ghFetch('contents/search.html');
@@ -1077,7 +1074,7 @@ async function updateSearchIndex({ title, slug, date, category, uploadedImages, 
   }
 }
 
-// ── Auto-update related posts on existing post files ─────────────
+// -- Auto-update related posts on existing post files -------------
 async function updateRelatedPosts({ title, slug, date, category, uploadedImages }) {
   try {
     const blogRes = await ghFetch('contents/blog.html');
@@ -1137,7 +1134,7 @@ async function updateRelatedPosts({ title, slug, date, category, uploadedImages 
   }
 }
 
-// ── GitHub helpers ────────────────────────────────────────────────
+// -- GitHub helpers ------------------------------------------------
 async function uploadFile(path, base64Content) {
   const res = await ghFetch(`contents/${path}`, 'PUT', {
     message: `Upload: ${path}`,
@@ -1163,7 +1160,7 @@ function ghFetch(endpoint, method = 'GET', body = null) {
   return fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/${endpoint}`, opts);
 }
 
-// ── UI helpers ────────────────────────────────────────────────────
+// -- UI helpers ----------------------------------------------------
 function setPublishing(on) {
   $('publishBtn').disabled = on;
   $('publishLabel').textContent = on ? 'Publishing…' : 'Publish Post →';
@@ -1198,14 +1195,14 @@ function escHtml(str) {
     .replace(/>/g, '&gt;')
     .replace(/"/g, '&quot;');
 }
-// ═══════════════════════════════════════════════════════════════
+// ===============================================================
 // EDIT POSTS FEATURE
-// ═══════════════════════════════════════════════════════════════
+// ===============================================================
 
 let editingSlug = null;
 let editingFileSha = null;
 
-// ── Tab switching ─────────────────────────────────────────────
+// -- Tab switching ---------------------------------------------
 function switchTab(tab) {
   const panelNew  = $('panelNew');
   const panelEdit = $('panelEdit');
@@ -1226,7 +1223,7 @@ function switchTab(tab) {
   }
 }
 
-// ── Load list of posts from /posts/ folder ────────────────────
+// -- Load list of posts from /posts/ folder --------------------
 async function loadPostsList() {
   const list = $('postsList');
   list.innerHTML = '<p class="preview-empty">Loading posts…</p>';
@@ -1263,7 +1260,7 @@ async function loadPostsList() {
   }
 }
 
-// ── Load a post for editing ───────────────────────────────────
+// -- Load a post for editing -----------------------------------
 async function loadPostForEditing(filename, sha) {
   editingSlug = filename.replace('.html', '');
 
@@ -1333,7 +1330,7 @@ async function loadPostForEditing(filename, sha) {
   }
 }
 
-// ── Save edited post ──────────────────────────────────────────
+// -- Save edited post ------------------------------------------
 async function savePostEdit(filename, originalHtml) {
   const newTitle    = $('editTitle').value.trim();
   const newBody     = $('editBody').innerHTML.trim();
@@ -1376,7 +1373,7 @@ async function savePostEdit(filename, originalHtml) {
     // Replace title in <title> tag
     updated = updated.replace(
       /<title>.*?<\/title>/,
-      `<title>${escHtml(newTitle)} — Emmerican Adventure</title>`
+      `<title>${escHtml(newTitle)} - Emmerican Adventure</title>`
     );
 
     // Replace or add location
@@ -1425,7 +1422,7 @@ async function savePostEdit(filename, originalHtml) {
   }
 }
 
-// ── Edit toolbar (for the edit body editor) ───────────────────
+// -- Edit toolbar (for the edit body editor) -------------------
 function editToolbar(action) {
   $('editBody').focus();
   if (action === 'bold')   document.execCommand('bold');
