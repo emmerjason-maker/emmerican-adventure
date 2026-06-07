@@ -45,6 +45,10 @@ function bindEvents() {
     $(id).addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); })
   );
 
+  // Edit form YouTube add button
+  if ($('editYtAddBtn')) $('editYtAddBtn').addEventListener('click', addEditYtVideo);
+  if ($('editPhotoInput')) $('editPhotoInput').addEventListener('change', handleEditPhotoAdd);
+
   // Logout
   $('logoutBtn').addEventListener('click', () => {
     sessionStorage.removeItem('jm_authed');
@@ -1478,10 +1482,11 @@ async function savePostEdit(filename, originalHtml) {
   showStatus('Saving changes…', false, true);
 
   try {
-    // Build prev post link if provided
-  const prevPostHtml = (prevPostSlug && prevPostTitle)
-    ? `<a href="../posts/\${escHtml(prevPostSlug)}.html" class="read-more small" style="margin-left:auto;">Next: \${escHtml(prevPostTitle)} →</a>`
-    : '';
+    // Preserve existing prev/next post link from the original HTML
+    const parser2 = new DOMParser();
+    const origDoc = parser2.parseFromString(originalHtml, 'text/html');
+    const existingNextLink = origDoc.querySelector('.post-entry-footer .read-more:not([href="../blog.html"])');
+    const prevPostHtml = existingNextLink ? existingNextLink.outerHTML : '';
 
   // Build location HTML
     let newLocationHtml = '';
