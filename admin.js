@@ -1289,8 +1289,11 @@ function escHtml(str) {
 // EDIT POSTS FEATURE
 // ===============================================================
 
-let editingSlug = null;
+let editingSlug  = null;
 let editingFileSha = null;
+let editYtVideos  = [];
+let editPhotos    = [];
+let editBodyHtml  = '';
 
 // -- Tab switching ---------------------------------------------
 function switchTab(tab) {
@@ -1392,6 +1395,7 @@ async function loadPostForEditing(filename, sha) {
     const title = doc.querySelector('.post-entry-title')?.textContent?.trim() || '';
     const bodyEl = doc.querySelector('.post-body');
     const bodyHtml = bodyEl ? bodyEl.innerHTML : '';
+    editBodyHtml = bodyHtml;
 
     // Read existing location from fetched post HTML
     const locationEl = doc.querySelector('.post-location');
@@ -1477,10 +1481,16 @@ async function savePostEdit(filename) {
 
   if (!newTitle) { alert('Title cannot be empty'); return; }
 
-  // Guard: refuse to save if body editor is empty
-  if (!newBody || !newBody.trim() || newBody.trim() === '<br>') {
-    alert('Body appears empty — not saving to protect your content. If you only changed videos or photos, please add a space to the body and remove it to confirm it loaded correctly.');
-    return;
+  // If editBody is empty, fall back to the stored original body
+  let bodyToSave = newBody;
+  if (!bodyToSave || !bodyToSave.trim() || bodyToSave.trim() === '<br>') {
+    if (editBodyHtml && editBodyHtml.trim()) {
+      console.warn('editBody empty — using stored original body as fallback');
+      bodyToSave = editBodyHtml;
+    } else {
+      alert('Body appears empty and no backup found — not saving to protect your content.');
+      return;
+    }
   }
 
   $('saveEditLabel').textContent = 'Saving…';
@@ -1546,7 +1556,7 @@ async function savePostEdit(filename) {
     const saveDoc = saveParser.parseFromString(updated, 'text/html');
     const saveBodyEl = saveDoc.querySelector('.post-body');
     if (saveBodyEl) {
-      saveBodyEl.innerHTML = '\n        ' + newBody + '\n      ';
+      saveBodyEl.innerHTML = '\n        ' + bodyToSave + '\n      ';
       updated = '<!DOCTYPE html>\n' + saveDoc.documentElement.outerHTML;
     } else {
       throw new Error('Could not find post-body in HTML — aborting to protect content.');
