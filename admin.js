@@ -80,8 +80,15 @@ async function handleLogin() {
   const token = $('loginToken').value.trim();
 
   // Hash the entered password and compare
-  const pwBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-  const pwHash = Array.from(new Uint8Array(pwBuffer)).map(b => b.toString(16).padStart(2,'0')).join('');
+  let pwHash;
+  try {
+    if (!crypto || !crypto.subtle) throw new Error('crypto.subtle unavailable');
+    const pwBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+    pwHash = Array.from(new Uint8Array(pwBuffer)).map(b => b.toString(16).padStart(2,'0')).join('');
+  } catch (e) {
+    $('loginError').textContent = 'Login requires HTTPS. Please use https://emmericanadventure.com/admin.html';
+    return;
+  }
   if (pwHash !== CONFIG.passwordHash) {
     $('loginError').textContent = 'Incorrect password.';
     return;
