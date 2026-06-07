@@ -1589,17 +1589,20 @@ async function savePostEdit(filename) {
     }
 
     // ── Rebuild YouTube videos in DOM ────────────────────────────
-    doc.querySelectorAll('.post-video').forEach(el => el.remove());
-    // Insert videos before post-body (after photos)
-    const reversedVideos = [...editYtVideos].reverse();
-    reversedVideos.forEach(v => {
-      const captionHtml = v.label
-        ? `<p class="video-caption">${v.label}</p>`
-        : `<p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>`;
-      const vidHtml = `<div class="post-video"><div class="video-embed-wrap"><iframe src="https://www.youtube.com/embed/${v.id}" title="${v.label || newTitle}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>${captionHtml}</div>`;
-      const vidNode = parser.parseFromString(vidHtml, 'text/html').body.firstChild;
+    doc.querySelectorAll('.post-video, .post-videos-grid').forEach(el => el.remove());
+    if (editYtVideos.length > 0) {
+      const makeVidEdit = v => {
+        const cap = v.label
+          ? `<p class="video-caption">${v.label}</p>`
+          : `<p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>`;
+        return `<div class="post-video"><div class="video-embed-wrap"><iframe src="https://www.youtube.com/embed/${v.id}" title="${v.label || newTitle}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>${cap}</div>`;
+      };
+      const vidContainerHtml = editYtVideos.length > 1
+        ? `<div class="post-videos-grid">${editYtVideos.map(makeVidEdit).join('')}</div>`
+        : makeVidEdit(editYtVideos[0]);
+      const vidNode = parser.parseFromString(vidContainerHtml, 'text/html').body.firstChild;
       bodyEl.parentNode.insertBefore(vidNode, bodyEl);
-    });
+    }
 
     // ── Preserve footer links ────────────────────────────────────
     // (already preserved since we're editing the original DOM)
