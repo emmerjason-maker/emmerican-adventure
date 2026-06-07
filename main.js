@@ -145,6 +145,32 @@ document.addEventListener('DOMContentLoaded', () => {
     if (e.key === 'ArrowRight') navigate(1);
   });
 
+  // ── Post image lightbox ──────────────────────────────────────
+  // Collect all post images for prev/next navigation
+  window.openPostLightbox = function(imgEl) {
+    const allImgs = Array.from(document.querySelectorAll(
+      '.post-photo img, .gallery-item img'
+    ));
+    const idx = allImgs.indexOf(imgEl);
+    window._lightboxItems = allImgs.map(i => ({
+      src: i.src,
+      caption: i.closest('figure')?.querySelector('figcaption')?.textContent
+             || i.getAttribute('alt') || ''
+    }));
+    window._lightboxIndex = idx >= 0 ? idx : 0;
+
+    const lb = document.getElementById('lightbox');
+    const lbImg = document.getElementById('lightboxImg');
+    const lbCap = document.getElementById('lightboxCaption');
+    if (!lb || !lbImg) return;
+
+    const item = window._lightboxItems[window._lightboxIndex];
+    lbImg.src = item.src;
+    lbImg.alt = item.caption;
+    if (lbCap) lbCap.textContent = item.caption;
+    lb.classList.add('open');
+  };
+
   // ── Show post-ad only when AdSense fills it ───────────────────
   const postAd = document.querySelector('.post-ad');
   if (postAd) {
