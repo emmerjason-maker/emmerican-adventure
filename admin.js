@@ -25,6 +25,8 @@ const $ = id => document.getElementById(id);
 // ── Startup ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   $('postDate').value = new Date().toISOString().split('T')[0];
+  $('postDate').addEventListener('change', updatePublishLabel);
+  updatePublishLabel();
 
   const saved = localStorage.getItem('jm_gh_token');
   if (saved) $('loginToken').value = saved;
@@ -80,15 +82,8 @@ async function handleLogin() {
   const token = $('loginToken').value.trim();
 
   // Hash the entered password and compare
-  let pwHash;
-  try {
-    if (!crypto || !crypto.subtle) throw new Error('crypto.subtle unavailable');
-    const pwBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
-    pwHash = Array.from(new Uint8Array(pwBuffer)).map(b => b.toString(16).padStart(2,'0')).join('');
-  } catch (e) {
-    $('loginError').textContent = 'Login requires HTTPS. Please use https://emmericanadventure.com/admin.html';
-    return;
-  }
+  const pwBuffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(pw));
+  const pwHash = Array.from(new Uint8Array(pwBuffer)).map(b => b.toString(16).padStart(2,'0')).join('');
   if (pwHash !== CONFIG.passwordHash) {
     $('loginError').textContent = 'Incorrect password.';
     return;
@@ -860,12 +855,6 @@ async function updateSitemap({ slug, date }) {
 
     // Insert new URL entry before closing </urlset>
     // Also update lastmod on homepage and blog entries
-    let updatedXml = currentXml
-      .replace(/<loc>https:\/\/emmericanadventure\.com\/<\/loc>\s*<lastmod>[^<]+<\/lastmod>/,
-               `<loc>https://emmericanadventure.com/</loc>\n    <lastmod>${today}</lastmod>`)
-      .replace(/<loc>https:\/\/emmericanadventure\.com\/blog\.html<\/loc>\s*<lastmod>[^<]+<\/lastmod>/,
-               `<loc>https://emmericanadventure.com/blog.html</loc>\n    <lastmod>${today}</lastmod>`);
-
     const newEntry = `
   <url>
     <loc>${newUrl}</loc>
@@ -876,7 +865,14 @@ async function updateSitemap({ slug, date }) {
 
 </urlset>`;
 
-    const updatedXml = currentXml.replace('</urlset>', newEntry);
+    const updatedXml = currentXml
+      .replace(/<loc>https:\/\/emmericanadventure\.com\/<\/loc>\s*<lastmod>[^<]+<\/lastmod>/,
+               `<loc>https://emmericanadventure.com/</loc>
+    <lastmod>${today}</lastmod>`)
+      .replace(/<loc>https:\/\/emmericanadventure\.com\/blog\.html<\/loc>\s*<lastmod>[^<]+<\/lastmod>/,
+               `<loc>https://emmericanadventure.com/blog.html</loc>
+    <lastmod>${today}</lastmod>`)
+      .replace('</urlset>', newEntry);
 
     await ghFetch('contents/sitemap.xml', 'PUT', {
       message: `Update sitemap: add ${slug}`,
