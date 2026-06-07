@@ -1526,11 +1526,17 @@ async function savePostEdit(filename, originalHtml) {
       );
     }
 
-    // Replace body content
-    updated = updated.replace(
-      /(<div class="post-body">)([\s\S]*?)(<\/div>\s*<footer)/,
-      `$1\n        ${newBody}\n      $3`
-    );
+    // Replace body content using DOM to avoid regex wiping content
+    if (newBody && newBody.trim()) {
+      updated = updated.replace(
+        /(<div class="post-body">)([\s\S]*?)(<\/div>\s*(?=<footer|<div class="related|<div class="post-comments))/,
+        `$1\n        ${newBody}\n      $3`
+      );
+    }
+    // Safety check — if post-body still empty after replacement, something went wrong
+    if (!updated.includes('class="post-body"') || updated.match(/<div class="post-body">\s*<\/div>/)) {
+      throw new Error('Body replacement failed — aborting to protect post content.');
+    }
 
     // Upload any new photos and rebuild photo HTML
     for (let i = 0; i < editPhotos.length; i++) {
