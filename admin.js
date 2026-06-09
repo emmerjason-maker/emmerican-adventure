@@ -17,8 +17,12 @@ const CONFIG = {
 
 // -- State ---------------------------------------------------------
 // images = array of { id, file, dataUrl, name, caption }
-let images      = [];
-let githubToken = null;
+let images       = [];
+let ytVideos     = []; // { id, label } for new post
+let editYtVideos = []; // { id, label } for edit form
+let editPhotos   = []; // { src, caption, isNew, file?, dataUrl? }
+let editBodyHtml = ''; // original body backup for edit form
+let githubToken  = null;
 
 const $ = id => document.getElementById(id);
 
@@ -1328,9 +1332,6 @@ function escHtml(str) {
 
 let editingSlug  = null;
 let editingFileSha = null;
-let editYtVideos  = [];
-let editPhotos    = [];
-let editBodyHtml  = '';
 
 // -- Tab switching ---------------------------------------------
 function switchTab(tab) {
