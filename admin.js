@@ -325,6 +325,41 @@ function renderEditPhotoList() {
     </div>`).join('');
 }
 
+// -- Multi-YouTube management (new post) ---------------------------
+function addYtVideo() {
+  const input = $('ytVideoInput') ? $('ytVideoInput').value.trim() : '';
+  const label = $('ytVideoLabel') ? $('ytVideoLabel').value.trim() : '';
+  const id = extractYouTubeId(input);
+  if (!id) { alert('Could not find a valid YouTube video ID in that URL.'); return; }
+  if (ytVideos.find(v => v.id === id)) { alert('That video is already added.'); return; }
+  ytVideos.push({ id, label });
+  if ($('ytVideoInput')) $('ytVideoInput').value = '';
+  if ($('ytVideoLabel')) $('ytVideoLabel').value = '';
+  renderYtVideoList();
+  renderPreview();
+}
+
+function removeYtVideo(id) {
+  ytVideos = ytVideos.filter(v => v.id !== id);
+  renderYtVideoList();
+  renderPreview();
+}
+
+function renderYtVideoList() {
+  const list = $('ytVideoList');
+  if (!list) return;
+  if (ytVideos.length === 0) { list.innerHTML = ''; return; }
+  list.innerHTML = ytVideos.map(v => `
+    <div class="yt-video-item">
+      <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" class="yt-thumb" alt="thumbnail" />
+      <div class="yt-video-meta">
+        <span class="yt-video-id">${v.id}</span>
+        ${v.label ? `<span class="yt-video-label">${escHtml(v.label)}</span>` : ''}
+      </div>
+      <button type="button" class="img-btn remove" onclick="removeYtVideo('${v.id}')">✕</button>
+    </div>`).join('');
+}
+
 // -- Preview -------------------------------------------------------
 function renderPreview() {
   const title    = $('postTitle').value.trim();
