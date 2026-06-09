@@ -45,6 +45,10 @@ function bindEvents() {
     $(id).addEventListener('keydown', e => { if (e.key === 'Enter') handleLogin(); })
   );
 
+  // New post YouTube add button
+  if ($('ytAddBtn')) $('ytAddBtn').addEventListener('click', addYtVideo);
+  if ($('photoInput')) $('photoInput').addEventListener('change', e => handlePhotoFiles(e.target.files));
+
   // Edit form YouTube add button
   if ($('editYtAddBtn')) $('editYtAddBtn').addEventListener('click', addEditYtVideo);
   if ($('editPhotoInput')) $('editPhotoInput').addEventListener('change', handleEditPhotoAdd);
@@ -326,7 +330,7 @@ function renderPreview() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
   const body     = $('postBody').innerHTML.trim();
-  const ytId     = extractYouTubeId($('postYoutube').value.trim());
+  const ytId     = ytVideos.length > 0 ? ytVideos[0].id : null;
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim() || linkUrl;
   const fmtDate  = date
@@ -684,12 +688,12 @@ async function handlePublish() {
   const date     = $('postDate').value;
   const location = $('postLocation') ? $('postLocation').value.trim() : '';
   const body     = $('postBody').innerHTML.trim();
-  const ytId     = extractYouTubeId($('postYoutube').value.trim());
+  const ytId     = ytVideos.length > 0 ? ytVideos[0].id : null;
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim();
 
   if (!title) { alert('Please add a post title.'); return; }
-  if (!body && !ytId && images.length === 0) {
+  if (!body && ytVideos.length === 0 && images.length === 0) {
     alert('Please add some content - body text, a video, or at least one photo.'); return;
   }
 
