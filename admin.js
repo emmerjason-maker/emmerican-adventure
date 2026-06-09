@@ -433,6 +433,7 @@ function buildPostHtml({ title, date, body, ytId, uploadedImages, linkUrl, linkT
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
     : '';
   const tag = `Post #${postNumber}`;
+  const category = ($('postCategory') ? $('postCategory').value : 'PCS') || 'PCS';
 
   // Video block
   let videoBlock = '';
