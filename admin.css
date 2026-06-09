@@ -341,6 +341,17 @@ select.field-input { cursor: pointer; }
   transition: border-color 0.2s;
   overflow-y: auto;
 }
+.body-editor p,
+.body-editor span,
+.body-editor div,
+.body-editor li,
+.body-editor h1,
+.body-editor h2,
+.body-editor h3 {
+  color: var(--white) !important;
+  background: transparent !important;
+  font-family: inherit !important;
+}
 .body-editor:focus { border-color: rgba(255,255,255,0.25); }
 .body-editor:empty::before {
   content: attr(data-placeholder);
