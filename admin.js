@@ -1521,8 +1521,19 @@ async function savePostEdit(filename) {
   if (!newTitle) { alert('Title cannot be empty'); return; }
 
   // Use stored original if editor is empty
-  const bodyToSave = (newBody && newBody.trim() && newBody.trim() !== '<br>')
+  const rawBody = (newBody && newBody.trim() && newBody.trim() !== '<br>')
     ? newBody : editBodyHtml;
+
+  // Sanitize - strip inline styles/fonts from pasted content
+  const sanitizeDiv = document.createElement('div');
+  sanitizeDiv.innerHTML = rawBody;
+  sanitizeDiv.querySelectorAll('[style]').forEach(el => el.removeAttribute('style'));
+  sanitizeDiv.querySelectorAll('[color],[face],[size]').forEach(el => {
+    el.removeAttribute('color'); el.removeAttribute('face'); el.removeAttribute('size');
+  });
+  sanitizeDiv.querySelectorAll('font').forEach(el => el.replaceWith(...el.childNodes));
+  sanitizeDiv.querySelectorAll('span:not([class])').forEach(el => el.replaceWith(...el.childNodes));
+  const bodyToSave = sanitizeDiv.innerHTML;
 
   if (!bodyToSave || !bodyToSave.trim()) {
     alert('Body is empty — not saving to protect your content.');
