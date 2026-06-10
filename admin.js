@@ -80,6 +80,8 @@ function bindEvents() {
 
   if ($('previewBtn')) $('previewBtn').addEventListener('click', renderPreview);
   if ($('publishBtn')) $('publishBtn').addEventListener('click', handlePublish);
+  if ($('editYtAddBtn')) $('editYtAddBtn').addEventListener('click', addEditYtVideo);
+  if ($('editPhotoInput')) $('editPhotoInput').addEventListener('change', handleEditPhotoAdd);
 }
 
 // ── Login ─────────────────────────────────────────────────────────
@@ -1077,8 +1079,11 @@ function escHtml(str) {
 // EDIT POSTS FEATURE
 // ═══════════════════════════════════════════════════════════════
 
-let editingSlug = null;
+let editingSlug  = null;
 let editingFileSha = null;
+let editYtVideos  = [];
+let editPhotos    = [];
+let editBodyHtml  = '';
 
 // ── Tab switching ─────────────────────────────────────────────
 function switchTab(tab) {
@@ -1118,20 +1123,41 @@ async function loadPostsList() {
       return;
     }
 
-    list.innerHTML = htmlFiles.map(file => {
-      // Convert slug back to readable title
-      const title = file.name
-        .replace('.html', '')
-        .replace(/-/g, ' ')
-        .replace(/\b\w/g, c => c.toUpperCase());
+    // Fetch each post to read real title, post#, date
+    list.innerHTML = '<p class="preview-empty">Loading post details…</p>';
+    const details = await Promise.all(htmlFiles.map(async file => {
+      try {
+        const r = await ghFetch(`contents/posts/${file.name}`);
+        if (!r.ok) return { file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '' };
+        const j = await r.json();
+        const html = decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))));
+        const doc = new DOMParser().parseFromString(html, 'text/html');
+        const title = doc.querySelector('.post-entry-title')?.textContent?.trim()
+          || file.name.replace('.html','').replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+        const postNum = doc.querySelector('.post-tag')?.textContent?.trim() || '';
+        const date = doc.querySelector('.post-date')?.textContent?.trim() || '';
+        return { file, title, postNum, date };
+      } catch(e) {
+        return { file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '' };
+      }
+    }));
 
-      return `
+    // Sort newest first by post number
+    details.sort((a, b) => {
+      const na = parseInt(a.postNum.replace('Post #','')) || 0;
+      const nb = parseInt(b.postNum.replace('Post #','')) || 0;
+      return nb - na;
+    });
+
+    list.innerHTML = details.map(({ file, title, postNum, date }) => `
         <div class="post-list-item" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
+          <div class="post-list-meta">
+            ${postNum ? `<span class="post-list-num">${postNum}</span>` : ''}
+            ${date ? `<span class="post-list-date">${date}</span>` : ''}
+          </div>
           <div class="post-list-title">${title}</div>
-          <div class="post-list-slug">${file.name}</div>
           <span class="post-list-arrow">Edit →</span>
-        </div>`;
-    }).join('');
+        </div>`).join('');
 
   } catch (err) {
     list.innerHTML = `<p class="preview-empty" style="color:var(--red)">Error: ${err.message}</p>`;
@@ -1175,11 +1201,44 @@ async function loadPostForEditing(filename, sha) {
       }
     }
 
-    // Populate edit form
+    // ── Parse existing photos ──────────────────────────────────
+    editPhotos = [];
+    doc.querySelectorAll('.post-photo img, .gallery-item img').forEach(img => {
+      const src = img.getAttribute('src') || '';
+      const caption = img.closest('figure')?.querySelector('figcaption')?.textContent?.trim()
+                   || img.getAttribute('alt') || '';
+      if (src && !src.includes('youtube')) {
+        // Normalize src — strip leading ../
+        const normSrc = src.replace(/^\.\.\//, '');
+        editPhotos.push({ src: normSrc, caption, isNew: false });
+      }
+    });
+
+    // ── Parse existing YouTube videos ──────────────────────────
+    editYtVideos = [];
+    doc.querySelectorAll('.post-video iframe, .post-videos-grid iframe').forEach(iframe => {
+      const src = iframe.getAttribute('src') || '';
+      const idMatch = src.match(/embed\/([a-zA-Z0-9_-]{11})/);
+      if (idMatch) {
+        const vidId = idMatch[1];
+        const caption = iframe.closest('.post-video')?.querySelector('.video-caption')?.textContent?.trim() || '';
+        const label = (caption === 'Watch on YouTube →' || caption.includes('YouTube')) ? '' : caption;
+        editYtVideos.push({ id: vidId, label });
+      }
+    });
+
+    // Store original body as fallback
+    editBodyHtml = bodyHtml;
+
+    // ── Populate edit form ──────────────────────────────────────
     $('editTitle').value = title;
-    $('editBody').innerHTML = bodyHtml;
+    setTimeout(() => { $('editBody').innerHTML = bodyHtml; }, 50);
     if ($('editLocation')) $('editLocation').value = existingLocation;
     $('editPostTitle').textContent = `Editing: ${title}`;
+
+    // Render photo and video lists
+    if (typeof renderEditPhotoList === 'function') renderEditPhotoList();
+    if (typeof renderEditYtVideoList === 'function') renderEditYtVideoList();
 
     // Show edit form, hide list
     $('postsList').classList.add('hidden');
@@ -1190,6 +1249,8 @@ async function loadPostForEditing(filename, sha) {
       $('editForm').classList.add('hidden');
       $('postsList').classList.remove('hidden');
       $('statusBar').classList.add('hidden');
+      editPhotos = [];
+      editYtVideos = [];
     };
 
     $('editPreviewBtn').onclick = () => {
@@ -1199,7 +1260,7 @@ async function loadPostForEditing(filename, sha) {
       `;
     };
 
-    $('saveEditBtn').onclick = () => savePostEdit(filename, html);
+    $('saveEditBtn').onclick = () => savePostEdit(filename);
 
     $('statusBar').classList.add('hidden');
 
@@ -1208,71 +1269,209 @@ async function loadPostForEditing(filename, sha) {
   }
 }
 
-// ── Save edited post ──────────────────────────────────────────
-async function savePostEdit(filename, originalHtml) {
+
+// ── Edit photo management ─────────────────────────────────────
+function renderEditPhotoList() {
+  const list = $('editPhotoList');
+  if (!list) return;
+  if (editPhotos.length === 0) {
+    list.innerHTML = '<p class="field-hint" style="margin:0 0 0.5rem;">No photos — add some below.</p>';
+    return;
+  }
+  list.innerHTML = editPhotos.map((p, i) => `
+    <div class="yt-video-item" style="align-items:flex-start;margin-bottom:0.5rem;">
+      <img src="${p.isNew ? p.src : (p.src.startsWith('images/') ? '../' + p.src : p.src)}"
+           style="width:80px;height:60px;object-fit:cover;border-radius:2px;flex-shrink:0;" alt="photo" />
+      <div class="yt-video-meta" style="flex:1;">
+        <span class="yt-video-id">${p.isNew ? 'New upload' : p.src.split('/').pop().substring(0,35)}</span>
+        <input type="text" class="field-input" placeholder="Caption (optional)"
+          style="margin-top:4px;padding:4px 8px;font-size:0.78rem;"
+          value="${escHtml(p.caption || '')}"
+          onchange="editPhotos[${i}].caption = this.value" />
+      </div>
+      <button type="button" class="img-btn remove" onclick="removeEditPhoto(${i})" title="Remove">✕</button>
+    </div>`).join('');
+}
+
+function removeEditPhoto(idx) {
+  editPhotos.splice(idx, 1);
+  renderEditPhotoList();
+}
+
+function handleEditPhotoAdd(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      editPhotos.push({ src: ev.target.result, caption: '', isNew: true, file, dataUrl: ev.target.result });
+      renderEditPhotoList();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+// ── Edit YouTube management ───────────────────────────────────
+function renderEditYtVideoList() {
+  const list = $('editYtVideoList');
+  if (!list) return;
+  if (!editYtVideos || editYtVideos.length === 0) { list.innerHTML = ''; return; }
+  list.innerHTML = editYtVideos.map(v => `
+    <div class="yt-video-item">
+      <img src="https://img.youtube.com/vi/${v.id}/mqdefault.jpg" class="yt-thumb" alt="thumbnail" />
+      <div class="yt-video-meta">
+        <span class="yt-video-id">${v.id}</span>
+        ${v.label ? `<span class="yt-video-label">${escHtml(v.label)}</span>` : ''}
+      </div>
+      <button type="button" class="img-btn remove" onclick="removeEditYtVideo('${v.id}')">✕</button>
+    </div>`).join('');
+}
+
+function addEditYtVideo() {
+  const input = $('editYtVideoInput') ? $('editYtVideoInput').value.trim() : '';
+  const label = $('editYtVideoLabel') ? $('editYtVideoLabel').value.trim() : '';
+  const id = extractYouTubeId(input);
+  if (!id) { alert('Could not find a valid YouTube video ID.'); return; }
+  if (editYtVideos.find(v => v.id === id)) { alert('That video is already added.'); return; }
+  editYtVideos.push({ id, label });
+  if ($('editYtVideoInput')) $('editYtVideoInput').value = '';
+  if ($('editYtVideoLabel')) $('editYtVideoLabel').value = '';
+  renderEditYtVideoList();
+}
+
+function removeEditYtVideo(id) {
+  editYtVideos = editYtVideos.filter(v => v.id !== id);
+  renderEditYtVideoList();
+}
+
+// ── Save edited post ─────────────────────────────────────────
+async function savePostEdit(filename) {
   const newTitle    = $('editTitle').value.trim();
   const newBody     = $('editBody').innerHTML.trim();
   const newLocation = $('editLocation') ? $('editLocation').value.trim() : '';
 
   if (!newTitle) { alert('Title cannot be empty'); return; }
 
+  // Use stored body if editor is empty
+  const bodyToSave = (newBody && newBody.trim() && newBody.trim() !== '<br>') ? newBody : editBodyHtml;
+  if (!bodyToSave || !bodyToSave.trim()) {
+    alert('Body is empty — not saving to protect content.'); return;
+  }
+
   $('saveEditLabel').textContent = 'Saving…';
   $('saveEditBtn').disabled = true;
-  showStatus('Saving changes…', false, true);
+  showStatus('Fetching latest version…', false, true);
 
   try {
-  // Build location HTML
-    let newLocationHtml = '';
+    // Always re-fetch latest from GitHub
+    const latestFetch = await ghFetch(`contents/posts/${filename}`);
+    if (!latestFetch.ok) throw new Error('Could not fetch latest post');
+    const latestJson = await latestFetch.json();
+    const originalHtml = decodeURIComponent(escape(atob(latestJson.content.replace(/\n/g, ''))));
+    editingFileSha = latestJson.sha;
+
+    // Parse into DOM — all changes through DOM, no string regex on content
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(originalHtml, 'text/html');
+
+    // ── Title ───────────────────────────────────────────────────
+    const titleEl = doc.querySelector('.post-entry-title');
+    if (titleEl) titleEl.textContent = newTitle;
+    const titleTag = doc.querySelector('title');
+    if (titleTag) titleTag.textContent = newTitle + ' — Emmerican Adventure';
+    const ogTitle = doc.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.setAttribute('content', newTitle + ' — Emmerican Adventure');
+
+    // ── Location ─────────────────────────────────────────────────
+    const existingLoc = doc.querySelector('.post-location');
     if (newLocation) {
+      let locHtml = '';
       if (newLocation.startsWith('http') || newLocation.startsWith('maps.')) {
-        newLocationHtml = `<div class="post-location"><a href="${escHtml(newLocation)}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
+        locHtml = `<div class="post-location"><a href="${escHtml(newLocation)}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
       } else if (newLocation.includes('|')) {
         const parts = newLocation.split('|').map(s => s.trim());
-        newLocationHtml = `<div class="post-location"><a href="${escHtml(parts[1])}" target="_blank" rel="noopener">📍 ${escHtml(parts[0])}</a></div>`;
+        locHtml = `<div class="post-location"><a href="${escHtml(parts[1])}" target="_blank" rel="noopener">📍 ${escHtml(parts[0])}</a></div>`;
       } else {
-        newLocationHtml = `<div class="post-location">📍 ${escHtml(newLocation)}</div>`;
+        locHtml = `<div class="post-location">📍 ${escHtml(newLocation)}</div>`;
+      }
+      const locNode = parser.parseFromString(locHtml, 'text/html').body.firstChild;
+      if (existingLoc) existingLoc.replaceWith(locNode);
+      else titleEl?.insertAdjacentElement('afterend', locNode);
+    } else if (existingLoc) {
+      existingLoc.remove();
+    }
+
+    // ── Body ─────────────────────────────────────────────────────
+    const bodyEl = doc.querySelector('.post-body');
+    if (!bodyEl) throw new Error('Could not find post-body in HTML');
+    bodyEl.innerHTML = '\n        ' + bodyToSave + '\n      ';
+
+    // ── Upload new photos ─────────────────────────────────────────
+    for (let i = 0; i < editPhotos.length; i++) {
+      const p = editPhotos[i];
+      if (p.isNew && p.file) {
+        showStatus(`Uploading photo ${i+1}…`, false, true);
+        const safeName = p.file.name.replace(/[^a-z0-9.]/gi, '-').toLowerCase().replace(/\.png$/i, '.jpg');
+        const path = `images/${Date.now()}-${safeName}`;
+        const compressed = await new Promise(resolve => {
+          const image = new Image();
+          image.onload = () => {
+            const maxW = 1600;
+            let w = image.width, h = image.height;
+            if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+            const canvas = document.createElement('canvas');
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(image, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.78).split(',')[1]);
+          };
+          image.src = p.dataUrl;
+        });
+        await uploadFile(path, compressed);
+        editPhotos[i].src = path;
+        editPhotos[i].isNew = false;
       }
     }
 
-    // Parse original HTML and replace title + body
-    let updated = originalHtml;
-
-    // Replace title in h1
-    updated = updated.replace(
-      /(<h1 class="post-entry-title">)([\s\S]*?)(<\/h1>)/,
-      `$1${escHtml(newTitle)}$3`
-    );
-
-    // Replace title in <title> tag
-    updated = updated.replace(
-      /<title>.*?<\/title>/,
-      `<title>${escHtml(newTitle)} — Emmerican Adventure</title>`
-    );
-
-    // Replace or add location
-    if (updated.includes('class="post-location"')) {
-      updated = updated.replace(/<div class="post-location">[\s\S]*?<\/div>/, newLocationHtml);
-    } else if (newLocationHtml) {
-      updated = updated.replace(
-        /(<h1 class="post-entry-title">[\s\S]*?<\/h1>)/,
-        `$1\n        ${newLocationHtml}`
-      );
+    // ── Rebuild photos in DOM ────────────────────────────────────
+    doc.querySelectorAll('.post-photo, .post-gallery').forEach(el => el.remove());
+    if (editPhotos.length > 0) {
+      let photoHtml = '';
+      if (editPhotos.length === 1) {
+        const p = editPhotos[0];
+        const src = p.src.startsWith('images/') ? '../' + p.src : p.src;
+        photoHtml = `<figure class="post-photo"><img src="${escHtml(src)}" alt="${escHtml(p.caption || newTitle)}" />${p.caption ? `<figcaption>${escHtml(p.caption)}</figcaption>` : ''}</figure>`;
+      } else {
+        const gc = editPhotos.length === 2 ? 'gallery-2' : editPhotos.length === 3 ? 'gallery-3' : 'gallery-many';
+        const items = editPhotos.map(p => {
+          const src = p.src.startsWith('images/') ? '../' + p.src : p.src;
+          return `<figure class="gallery-item"><img src="${escHtml(src)}" alt="${escHtml(p.caption || newTitle)}" />${p.caption ? `<figcaption>${escHtml(p.caption)}</figcaption>` : ''}</figure>`;
+        }).join('');
+        photoHtml = `<div class="post-gallery ${gc}">${items}</div>`;
+      }
+      const photoNode = parser.parseFromString(photoHtml, 'text/html').body.firstChild;
+      bodyEl.parentNode.insertBefore(photoNode, bodyEl);
     }
 
-    // Replace body content
-    updated = updated.replace(
-      /(<div class="post-body">)([\s\S]*?)(<\/div>\s*<footer)/,
-      `$1\n        ${newBody}\n      $3`
-    );
-
-    // Re-fetch latest SHA before pushing (prevents stale SHA error on repeated edits)
-    const latestRes = await ghFetch(`contents/posts/${filename}`);
-    if (latestRes.ok) {
-      const latestJson = await latestRes.json();
-      editingFileSha = latestJson.sha;
+    // ── Rebuild YouTube videos in DOM ────────────────────────────
+    doc.querySelectorAll('.post-video, .post-videos-grid').forEach(el => el.remove());
+    if (editYtVideos && editYtVideos.length > 0) {
+      const makeVid = v => {
+        const cap = v.label
+          ? `<p class="video-caption">${escHtml(v.label)}</p>`
+          : `<p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>`;
+        return `<div class="post-video"><div class="video-embed-wrap"><iframe src="https://www.youtube.com/embed/${v.id}" title="${escHtml(v.label || newTitle)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>${cap}</div>`;
+      };
+      const vidHtml = editYtVideos.length > 1
+        ? `<div class="post-videos-grid">${editYtVideos.map(makeVid).join('')}</div>`
+        : makeVid(editYtVideos[0]);
+      const vidNode = parser.parseFromString(vidHtml, 'text/html').body.firstChild;
+      bodyEl.parentNode.insertBefore(vidNode, bodyEl);
     }
 
-    // Push to GitHub
+    // ── Serialize and push ───────────────────────────────────────
+    const updated = '<!DOCTYPE html>\n' + doc.documentElement.outerHTML;
+    showStatus('Saving to GitHub…', false, true);
+
     const pushRes = await ghFetch(`contents/posts/${filename}`, 'PUT', {
       message: `Edit post: ${newTitle}`,
       content: btoa(unescape(encodeURIComponent(updated))),
@@ -1284,9 +1483,6 @@ async function savePostEdit(filename, originalHtml) {
       const err = await pushRes.json();
       throw new Error(err.message || 'Save failed');
     }
-
-    // Update sitemap during edit as well
-    await updateSitemap({ slug: filename.replace('.html', ''), date: new Date().toISOString().split('T')[0] });
 
     showStatus('✓ Post saved! Changes will be live in ~60 seconds.', false);
 
