@@ -975,19 +975,22 @@ async function updatePhotoGrids({ title, uploadedImages }) {
     if (indexHtml.includes(marker)) {
       let updated = indexHtml.replace(marker, newItems + '\n' + marker);
 
-      // Trim to 6 most recent photo-items
-      const gridStart = updated.indexOf('<!-- ====== PHOTO GRID');
-      const gridEnd = updated.indexOf('<!-- ====== NEW PHOTOS INSERTED');
-      const gridContent = updated.substring(gridStart, gridEnd);
-      const itemMatches = [...gridContent.matchAll(/<div class="photo-item"[\s\S]*?<\/div>\s*<\/div>/g)];
-      if (itemMatches.length > 6) {
-        // Remove oldest (they're at the bottom, we insert at top)
-        const toRemove = itemMatches.slice(6);
-        let trimmed = updated;
-        for (const match of toRemove) {
-          trimmed = trimmed.replace(match[0], '');
+      // Trim to exactly 6 most recent photo-items
+      // Split on the photo-item divs, keep first 6, discard the rest
+      const marker = '<!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
+      const markerIdx = updated.indexOf(marker);
+      if (markerIdx !== -1) {
+        const beforeMarker = updated.substring(0, markerIdx);
+        const afterMarker = updated.substring(markerIdx);
+        // Find all photo-item blocks by splitting on the opening tag
+        const parts = beforeMarker.split('<div class="photo-item"');
+        // parts[0] is everything before the first photo-item
+        // parts[1..n] are each photo-item (without the opening tag)
+        if (parts.length - 1 > 6) {
+          // Keep only the first 6 photo-items (newest, since we insert at top)
+          const kept = parts.slice(0, 7); // index 0 = prefix, 1-6 = 6 items
+          updated = kept.join('<div class="photo-item"') + afterMarker;
         }
-        updated = trimmed;
       }
 
       await ghFetch('contents/index.html', 'PUT', {
