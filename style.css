@@ -124,18 +124,22 @@ img { max-width: 100%; display: block; }
   display: none;
   background: none;
   border: 1px solid var(--paper-dark);
-  font-size: 1rem;
+  font-size: 1.4rem;
   cursor: pointer;
   color: var(--ink);
-  margin-left: auto;
-  width: 36px;
-  height: 36px;
-  display: none;
+  margin-left: 0.5rem;
+  width: 48px;
+  height: 48px;
+  min-width: 48px;
+  min-height: 48px;
   align-items: center;
   justify-content: center;
   transition: border-color 0.2s, color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
-.mobile-menu-btn:hover {
+.mobile-menu-btn:hover,
+.mobile-menu-btn:active {
   border-color: var(--red);
   color: var(--red);
 }
@@ -715,7 +719,7 @@ img { max-width: 100%; display: block; }
   }
 
   .nav { display: none; }
-  .mobile-menu-btn { display: block; }
+  .mobile-menu-btn { display: flex; }
 
   .hero { padding: 5rem 1.5rem 4rem; min-height: auto; }
 }
