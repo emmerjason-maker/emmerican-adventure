@@ -562,7 +562,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
       </div>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
-        \${prevPostHtml}
+        ${prevPostHtml}
       </footer>
       <div class="post-comments">
         <div id="disqus_thread"></div>
