@@ -773,6 +773,10 @@ async function handlePublish() {
     showStatus('Updating sitemap…', false, true);
     await updateSitemap({ slug, date });
 
+    // 11. Update RSS feed
+    showStatus('Updating RSS feed…', false, true);
+    await updateRssFeed({ title, slug, fmtDate, excerpt });
+
     // 11. Update Search Index
     showStatus('Updating search index…', false, true);
     const thumbPath = uploadedImages.length > 0 ? uploadedImages[0].path : (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '');
@@ -1013,6 +1017,57 @@ async function updatePhotoGrids({ title, uploadedImages }) {
 
   } catch (err) {
     console.warn('Could not update photo grids:', err.message);
+  }
+}
+
+
+// ── Update RSS feed.xml ───────────────────────────────────────
+async function updateRssFeed({ title, slug, fmtDate, excerpt }) {
+  try {
+    const fileRes = await ghFetch('contents/feed.xml');
+    if (!fileRes.ok) return;
+    const fileJson = await fileRes.json();
+    let xml = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+    const sha = fileJson.sha;
+
+    const url = `https://emmericanadventure.com/posts/${slug}.html`;
+
+    // Don't add duplicate
+    if (xml.includes(`<guid isPermaLink="true">${url}</guid>`)) return;
+
+    // Build RFC 822 date
+    const now = new Date().toUTCString();
+
+    const newItem = `    <item>
+      <title>${title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</title>
+      <link>${url}</link>
+      <guid isPermaLink="true">${url}</guid>
+      <pubDate>${now}</pubDate>
+      <description>${excerpt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</description>
+    </item>`;
+
+    // Insert after <channel> opening tags, before first <item>
+    const insertPoint = xml.indexOf('    <item>');
+    if (insertPoint !== -1) {
+      xml = xml.substring(0, insertPoint) + newItem + '\n' + xml.substring(insertPoint);
+    } else {
+      xml = xml.replace('  </channel>', newItem + '\n  </channel>');
+    }
+
+    // Update lastBuildDate
+    xml = xml.replace(
+      /<lastBuildDate>[^<]+<\/lastBuildDate>/,
+      `<lastBuildDate>${now}</lastBuildDate>`
+    );
+
+    await ghFetch('contents/feed.xml', 'PUT', {
+      message: `Update RSS feed: ${title}`,
+      content: btoa(unescape(encodeURIComponent(xml))),
+      sha,
+      branch: CONFIG.branch,
+    });
+  } catch (err) {
+    console.warn('Could not update RSS feed:', err.message);
   }
 }
 
