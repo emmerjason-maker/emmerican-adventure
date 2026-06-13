@@ -234,6 +234,20 @@
   .post-videos-grid { grid-template-columns: 1fr; }
 }
 
+/* ─── Consistent media spacing ──────────────────────────────── */
+.post-photo,
+.post-gallery,
+.post-video,
+.post-videos-grid {
+  margin-bottom: 2rem;
+}
+.post-photo img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 2px;
+}
+
 /* ─── Post body lists ───────────────────────────────────────── */
 .post-body ul,
 .post-body ol {
