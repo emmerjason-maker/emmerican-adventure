@@ -490,17 +490,6 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
              : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
 
   let mediaHtml = '';
-  if (ytId) {
-    mediaHtml += `
-      <div class="post-video">
-        <div class="video-embed-wrap">
-          <iframe src="https://www.youtube.com/embed/${ytId}" title="${escHtml(title)}"
-            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowfullscreen></iframe>
-        </div>
-        <p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>
-      </div>`;
-  }
   if (uploadedImages && uploadedImages.length === 1) {
     mediaHtml += `
       <figure class="post-photo">
@@ -516,7 +505,17 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
         </figure>`).join('');
     mediaHtml += `<div class="post-gallery ${gridClass}">${items}</div>`;
   }
-
+  if (ytId) {
+    mediaHtml += `
+      <div class="post-video">
+        <div class="video-embed-wrap">
+          <iframe src="https://www.youtube.com/embed/${ytId}" title="${escHtml(title)}"
+            frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowfullscreen></iframe>
+        </div>
+        <p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>
+      </div>`;
+  }
   let linkBlock = linkUrl ? `<p><a href="${escHtml(linkUrl)}" target="_blank" rel="noopener">${escHtml(linkText || linkUrl)}</a></p>` : '';
   const autoExcerpt = body.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().substring(0, 155);
   const plainExcerpt = (seoExcerpt && seoExcerpt.trim()) ? seoExcerpt.trim() : autoExcerpt;
