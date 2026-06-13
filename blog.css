@@ -614,3 +614,17 @@
 @media (max-width: 600px) {
   .related-grid { grid-template-columns: 1fr; }
 }
+
+/* ─── Post footer ───────────────────────────────────────────── */
+.post-entry-footer {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  padding-top: 2rem;
+  border-top: 1px solid var(--paper-dark);
+  margin-top: 3rem;
+  flex-wrap: wrap;
+}
+.post-entry-footer a {
+  white-space: nowrap;
+}
