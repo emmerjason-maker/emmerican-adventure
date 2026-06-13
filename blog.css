@@ -237,8 +237,8 @@
 /* ─── Post body lists ───────────────────────────────────────── */
 .post-body ul,
 .post-body ol {
-  margin: 1rem 0 1rem 1.5rem;
-  padding: 0;
+  margin: 1rem 0 1rem 0;
+  padding-left: 1.5rem;
 }
 .post-body ul { list-style-type: disc; }
 .post-body ol { list-style-type: decimal; }
@@ -248,7 +248,11 @@
   color: var(--ink);
 }
 .post-body li p { margin: 0; display: inline; }
-.post-body li b, .post-body li strong { font-weight: 700; }
+.post-body li b, .post-body li strong { font-weight: 700 !important; }
+
+.post-body p {
+  margin-bottom: 1rem;
+}
 
 /* ─── Force override any pasted inline styles ───────────────────── */
 .post-body * {
