@@ -807,6 +807,12 @@ async function handlePublish() {
       await updatePhotoGrids({ title, uploadedImages });
     }
 
+    // 9b. Update homepage video grid if post has YouTube
+    if (ytVideos && ytVideos.length > 0) {
+      showStatus('Updating video gallery…', false, true);
+      await updateVideoGrid({ title, slug, ytVideos });
+    }
+
     // 10. Update sitemap
     showStatus('Updating sitemap…', false, true);
     await updateSitemap({ slug, date });
@@ -990,6 +996,58 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
   }
 }
 
+
+
+// ── Update homepage video grid ────────────────────────────────
+async function updateVideoGrid({ title, slug, ytVideos }) {
+  try {
+    const fileRes = await ghFetch('contents/index.html');
+    if (!fileRes.ok) return;
+    const fileJson = await fileRes.json();
+    let html = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+    const sha = fileJson.sha;
+
+    const marker = '<!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->';
+    if (!html.includes(marker)) return;
+
+    // Build video cards for each YouTube video
+    const newCards = ytVideos.map(v => `
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe
+              src="https://www.youtube.com/embed/${v.id}"
+              title="${escHtml(v.label || title)}"
+              frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen>
+            </iframe>
+          </div>
+          <div class="video-card-body">
+            <h3 class="video-card-title">${escHtml(v.label || title)}</h3>
+            <p class="video-card-desc">${escHtml(title)}</p>
+          </div>
+        </div>`).join('\n');
+
+    // Insert before marker
+    let updated = html.replace(marker, newCards + '\n        ' + marker);
+
+    // Trim to 6 most recent video cards
+    const parts = updated.split('<div class="video-card">');
+    if (parts.length - 1 > 6) {
+      updated = parts.slice(0, 7).join('<div class="video-card">') +
+                updated.substring(updated.lastIndexOf(parts[7] || ''));
+    }
+
+    await ghFetch('contents/index.html', 'PUT', {
+      message: `Update homepage videos: ${title}`,
+      content: btoa(unescape(encodeURIComponent(updated))),
+      sha,
+      branch: CONFIG.branch,
+    });
+  } catch (err) {
+    console.warn('Could not update video grid:', err.message);
+  }
+}
 
 // ── Update photo grids on index.html and photos.html ─────────────
 async function updatePhotoGrids({ title, uploadedImages }) {
