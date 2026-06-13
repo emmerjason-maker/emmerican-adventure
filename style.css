@@ -785,6 +785,8 @@ img { max-width: 100%; display: block; }
   border: 1px solid rgba(255,255,255,0.1);
   overflow: hidden;
   transition: transform 0.25s, border-color 0.25s;
+  display: flex;
+  flex-direction: column;
 }
 .video-card:hover {
   transform: translateY(-4px);
@@ -811,6 +813,7 @@ img { max-width: 100%; display: block; }
   flex-direction: column;
   gap: 0.5rem;
   background: var(--white);
+  flex: 1;
 }
 .video-title {
   font-family: var(--font-display);
