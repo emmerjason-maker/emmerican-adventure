@@ -335,17 +335,32 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Name</label>
-              <input type="text" class="field-input" id="advName" placeholder="e.g. Mos Burger, Kamakura, Japan" />
+              <label class="field-label">Search Location <span class="optional">start here — fills everything below</span></label>
+              <input type="text" class="field-input" id="advPlaceSearch" placeholder="Search for a restaurant, place, or city…" autocomplete="off" />
+              <div id="advPlaceSuggestions" class="adv-place-suggestions hidden"></div>
+              <p class="field-hint">Search Google Maps to auto-fill name, city, country, and coordinates.</p>
+              <!-- Hidden lat/lng filled by place search -->
+              <input type="hidden" id="advLat" />
+              <input type="hidden" id="advLng" />
+              <!-- Mini map preview -->
+              <div id="advMapPreview" class="adv-map-preview hidden">
+                <div id="advMapPreviewInner"></div>
+                <p class="adv-map-coords" id="advMapCoords"></p>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Name <span class="optional">auto-filled from search, or type manually</span></label>
+              <input type="text" class="field-input" id="advName" placeholder="e.g. Mos Burger Yokosuka" />
             </div>
 
             <div class="field-row">
               <div class="field-group">
-                <label class="field-label">City <span class="optional">optional</span></label>
+                <label class="field-label">City <span class="optional">auto-filled</span></label>
                 <input type="text" class="field-input" id="advCity" placeholder="Yokosuka" />
               </div>
               <div class="field-group">
-                <label class="field-label">Country</label>
+                <label class="field-label">Country <span class="optional">auto-filled</span></label>
                 <input type="text" class="field-input" id="advCountry" placeholder="Japan" />
               </div>
             </div>
@@ -496,32 +511,7 @@
               <div id="advYtList" class="adv-yt-list"></div>
             </div>
 
-            <div class="field-group">
-              <label class="field-label">Search Location <span class="optional">optional — finds lat/lng automatically</span></label>
-              <input type="text" class="field-input" id="advPlaceSearch" placeholder="Search for a place, restaurant, or city…" autocomplete="off" />
-              <div id="advPlaceSuggestions" class="adv-place-suggestions hidden"></div>
-              <p class="field-hint">Start typing to search Google Maps. Selecting a result fills the coordinates automatically.</p>
-            </div>
 
-            <div class="field-group">
-              <label class="field-label">Place Name <span class="optional">optional — displayed on map popup</span></label>
-              <input type="text" class="field-input" id="advPlaceName" placeholder="e.g. Mos Burger Yokosuka" />
-            </div>
-
-            <!-- Hidden lat/lng — filled by place search -->
-            <input type="hidden" id="advLat" />
-            <input type="hidden" id="advLng" />
-
-            <!-- Mini map preview -->
-            <div id="advMapPreview" class="adv-map-preview hidden">
-              <div id="advMapPreviewInner"></div>
-              <p class="adv-map-coords" id="advMapCoords"></p>
-            </div>
-
-            <div class="field-group" style="display:none;">
-              <label class="field-label">Longitude</label>
-              <input type="number" step="any" class="field-input" id="advLngDisplay" placeholder="e.g. 139.6724" />
-            </div>
 
             <div class="field-group">
               <label class="field-label">Link to Blog Post <span class="optional">optional</span></label>
