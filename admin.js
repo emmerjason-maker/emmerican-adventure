@@ -474,16 +474,14 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
     : '';
 
   // Build location HTML — supports plain text, URL, or "Label | URL" format
+  const postLat = $('postLat')?.value || '';
+  const postLng = $('postLng')?.value || '';
   let locationHtml = '';
   if (location) {
-    if (location.startsWith('http') || location.startsWith('maps.')) {
-      locationHtml = `<div class="post-location"><a href="${escHtml(location)}" target="_blank" rel="noopener">📍 View on Maps</a></div>`;
-    } else if (location.includes('|')) {
-      const parts = location.split('|').map(s => s.trim());
-      locationHtml = `<div class="post-location"><a href="${escHtml(parts[1])}" target="_blank" rel="noopener">📍 ${escHtml(parts[0])}</a></div>`;
-    } else {
-      locationHtml = `<div class="post-location">📍 ${escHtml(location)}</div>`;
-    }
+    const mapsUrl = (postLat && postLng)
+      ? `https://www.google.com/maps?q=${postLat},${postLng}`
+      : `https://www.google.com/maps/search/${encodeURIComponent(location)}`;
+    locationHtml = `<div class="post-location"><a href="${escHtml(mapsUrl)}" target="_blank" rel="noopener">📍 ${escHtml(location)}</a></div>`;
   }
 
   let imgSrc = uploadedImages && uploadedImages.length > 0 ? uploadedImages[0].path
