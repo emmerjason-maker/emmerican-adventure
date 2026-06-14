@@ -125,6 +125,20 @@
     .photos-search:focus { border-color: var(--gold); }
     .photos-search::placeholder { color: var(--ink-faint); }
 
+    .photos-filter-select {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.4rem 0.75rem;
+      background: var(--paper-warm);
+      border: 1px solid var(--paper-dark);
+      color: var(--ink);
+      cursor: pointer;
+      outline: none;
+      max-width: 220px;
+    }
+
     /* Grid */
     .photo-grid {
       display: grid;
@@ -377,6 +391,9 @@
       <div class="photos-pills" id="tagPills">
         <button class="photos-pill active" data-tag="all" onclick="setTag('all', this)">All</button>
       </div>
+      <select class="photos-filter-select" id="tagDropdown" onchange="setTagFromDropdown(this)">
+        <option value="all">Filter by post…</option>
+      </select>
       <input type="search" class="photos-search" id="photoSearch" placeholder="Search photos…" />
     </div>
 
@@ -475,15 +492,42 @@
     allPhotos.forEach(p => (p.tags || []).forEach(t => tagSet.add(t)));
     const tags = Array.from(tagSet).sort();
 
-    const pills = $('tagPills');
+    // Short tags (<=15 chars) go in pills, long tags go in dropdown
+    const SHORT_MAX = 15;
+    const pills    = $('tagPills');
+    const dropdown = $('tagDropdown');
+
     tags.forEach(tag => {
-      const btn = document.createElement('button');
-      btn.className = 'photos-pill';
-      btn.dataset.tag = tag;
-      btn.textContent = tag;
-      btn.addEventListener('click', () => setTag(tag, btn));
-      pills.appendChild(btn);
+      if (tag.length <= SHORT_MAX) {
+        const btn = document.createElement('button');
+        btn.className = 'photos-pill';
+        btn.dataset.tag = tag;
+        btn.textContent = tag;
+        btn.addEventListener('click', () => setTag(tag, btn));
+        pills.appendChild(btn);
+      } else {
+        if (dropdown) {
+          const opt = document.createElement('option');
+          opt.value = tag;
+          opt.textContent = tag;
+          dropdown.appendChild(opt);
+        }
+      }
     });
+
+    // Hide dropdown if no long tags
+    if (dropdown && dropdown.options.length <= 1) dropdown.style.display = 'none';
+  }
+
+  function setTagFromDropdown(sel) {
+    const tag = sel.value;
+    // Deactivate all pills
+    document.querySelectorAll('.photos-pill').forEach(p => p.classList.remove('active'));
+    if (tag === 'all') {
+      document.querySelector('.photos-pill[data-tag="all"]')?.classList.add('active');
+    }
+    activeTag = tag;
+    renderPhotos();
   }
 
   function setTag(tag, btn) {
@@ -498,6 +542,10 @@
     const query = ($('photoSearch')?.value || '').toLowerCase().trim();
 
     if (activeTag === undefined) activeTag = 'all';
+  if (!allPhotos.length) { 
+    $('photosEmpty').classList.add('hidden');
+    return;
+  }
   filteredPhotos = allPhotos.filter(p => {
       if (activeTag !== 'all' && !(p.tags || []).includes(activeTag)) return false;
       if (query) {
