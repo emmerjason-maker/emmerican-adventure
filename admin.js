@@ -1401,7 +1401,11 @@ async function loadPostForEditing(filename, sha) {
     // ── Populate edit form ──────────────────────────────────────
     $('editTitle').value = title;
     setTimeout(() => { $('editBody').innerHTML = bodyHtml; }, 50);
-    if ($('editLocation')) $('editLocation').value = existingLocation;
+    // Pre-fill edit location — target PlaceAutocompleteElement if it replaced the input
+    const editAutoEl = document.getElementById('editPlaceAutocomplete');
+    if (editAutoEl) editAutoEl.value = existingLocation;
+    else if ($('editLocationSearch')) $('editLocationSearch').value = existingLocation;
+    if ($('editLocationName')) $('editLocationName').value = existingLocation;
     $('editPostTitle').textContent = `Editing: ${title}`;
 
     // Render photo and video lists
