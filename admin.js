@@ -1520,7 +1520,9 @@ function removeEditYtVideo(id) {
 async function savePostEdit(filename) {
   const newTitle    = $('editTitle').value.trim();
   const newBody     = $('editBody').innerHTML.trim();
-  const newLocation = $('editLocation') ? $('editLocation').value.trim() : '';
+  const newLocation = $('editLocationName')?.value.trim()
+    || $('editPlaceAutocomplete')?.value?.trim()
+    || $('editLocationSearch')?.value?.trim() || '';
 
   if (!newTitle) { alert('Title cannot be empty'); return; }
 
