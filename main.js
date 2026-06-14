@@ -208,7 +208,10 @@ document.addEventListener('DOMContentLoaded', () => {
       if (e.key === 'Enter') {
         const q = searchInput.value.trim();
         if (q) {
-          window.location.href = `search.html?q=${encodeURIComponent(q)}`;
+          // Resolve search.html relative to site root, works from any subdirectory
+          const depth = window.location.pathname.split('/').filter(Boolean).length;
+          const prefix = window.location.pathname.startsWith('/posts/') ? '../' : '';
+          window.location.href = `${prefix}search.html?q=${encodeURIComponent(q)}`;
         }
       }
       if (e.key === 'Escape') closeSearch();
