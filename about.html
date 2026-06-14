@@ -212,14 +212,6 @@
   <div class="bg-kanji" aria-hidden="true">家</div>
 
   <header class="site-header">
-      <!-- ── Search overlay ──────────────────────────────────── -->
-      <div class="header-search-bar" id="headerSearchBar" role="search">
-        <input type="search" class="header-search-input" id="headerSearchInput"
-          placeholder="Search posts, places, adventures…"
-          aria-label="Search site" />
-        <span class="header-search-hint">Press Enter to search</span>
-        <button class="header-search-close" id="headerSearchClose" aria-label="Close search">✕</button>
-      </div>
     <div class="header-inner">
       <a href="index.html" class="logo">
         <span class="logo-kanji">日本</span>
@@ -241,6 +233,14 @@
       <button class="mobile-menu-btn" aria-label="Menu">☰</button>
     </div>
   </header>
+  <!-- ── Search overlay (outside header so it doesn't affect header height) ── -->
+  <div class="header-search-bar" id="headerSearchBar" role="search">
+    <input type="search" class="header-search-input" id="headerSearchInput"
+      placeholder="Search posts, places, adventures…"
+      aria-label="Search site" />
+    <span class="header-search-hint">Press Enter to search</span>
+    <button class="header-search-close" id="headerSearchClose" aria-label="Close search">✕</button>
+  </div>
 
   <main>
 
