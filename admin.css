@@ -1295,3 +1295,45 @@ select.field-input { cursor: pointer; }
   align-items: center;
   justify-content: space-between;
 }
+
+
+/* ── Adventure location override disclosure ──────────────────── */
+.adv-location-override {
+  margin-bottom: 1rem;
+}
+
+.adv-location-override-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: rgba(255,255,255,0.35);
+  cursor: pointer;
+  list-style: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  user-select: none;
+}
+
+.adv-location-override-label::-webkit-details-marker { display: none; }
+
+.adv-location-override-label::before {
+  content: '▶';
+  font-size: 0.5rem;
+  transition: transform 0.15s;
+}
+
+.adv-location-override[open] .adv-location-override-label::before {
+  transform: rotate(90deg);
+}
+
+.adv-location-override-label:hover {
+  color: rgba(255,255,255,0.6);
+}
+
+.adv-location-override .optional {
+  color: rgba(255,255,255,0.25);
+  text-transform: none;
+  letter-spacing: 0;
+}
