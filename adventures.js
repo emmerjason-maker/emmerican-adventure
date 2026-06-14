@@ -213,7 +213,15 @@ function renderCard(a) {
   const badges = [];
   if (a.kid_friendly === true)  badges.push(`<span class="adv-badge kid-yes">👶 Kid-friendly</span>`);
   if (a.would_return === true)  badges.push(`<span class="adv-badge would-return">↩ Would return</span>`);
-  const priceHtml = a.price_range ? `<span class="adv-price">${escHtml(a.price_range)}</span>` : '';
+  const priceLabels = {
+    budget:   '🟢 Budget',
+    moderate: '🟡 Moderate',
+    splurge:  '🟠 Splurge',
+    special:  '🔴 Special Occasion',
+  };
+  const priceHtml = a.price_range
+    ? `<span class="adv-price">${escHtml(priceLabels[a.price_range] || a.price_range)}</span>`
+    : '';
   const blogLinkHtml = a.post_url
     ? `<a href="${escHtml(a.post_url)}" class="adv-card-blog-link">Read post →</a>`
     : '';
