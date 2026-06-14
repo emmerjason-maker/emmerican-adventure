@@ -45,6 +45,8 @@ img { max-width: 100%; display: block; }
   background: var(--paper);
   border-bottom: 1px solid var(--paper-dark);
   backdrop-filter: blur(8px);
+  /* needed for search overlay absolute positioning */
+  isolation: isolate;
 }
 
 .header-inner {
