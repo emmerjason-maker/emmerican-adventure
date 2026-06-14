@@ -118,6 +118,10 @@
         🌏 Countries <span class="map-count" id="countCountry">0</span>
       </button>
     </div>
+    <input type="search" id="mapSearch" placeholder="Search locations…"
+      style="font-family:var(--font-mono);font-size:0.65rem;padding:0.35rem 0.85rem;
+      background:var(--paper-warm);border:1px solid var(--paper-dark);
+      color:var(--ink);outline:none;width:200px;flex-shrink:0;" />
     <a href="adventures.html" style="font-family:var(--font-mono);font-size:0.65rem;color:var(--ink-faint);text-decoration:none;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;">← Adventures</a>
   </div>
 
@@ -155,6 +159,7 @@ async function initMap() {
   infoWindow = new google.maps.InfoWindow({ maxWidth: 280 });
   await loadAdventures();
   document.getElementById('mapLoading').style.display = 'none';
+  initMapSearch();
 }
 
 async function loadAdventures() {
@@ -266,6 +271,39 @@ function mapStyles() {
     { featureType: 'poi', stylers: [{ visibility: 'off' }] },
     { featureType: 'transit', stylers: [{ visibility: 'off' }] },
   ];
+}
+
+function initMapSearch() {
+  const input = document.getElementById('mapSearch');
+  if (!input) return;
+  let debounce;
+  input.addEventListener('input', () => {
+    clearTimeout(debounce);
+    debounce = setTimeout(() => {
+      const q = input.value.toLowerCase().trim();
+      if (!q) {
+        // Show all active types
+        allMarkers.forEach(m => {
+          m.marker.setMap(activeTypes[m.type] ? map : null);
+        });
+        fitMapBounds();
+        return;
+      }
+      // Show only markers whose adventure name matches
+      let matched = 0;
+      allMarkers.forEach((m, i) => {
+        const a = allAdventures.find(adv => {
+          const lat = parseFloat(adv.lat), lng = parseFloat(adv.lng);
+          const pos = m.marker.getPosition();
+          return Math.abs(lat - pos.lat()) < 0.0001 && Math.abs(lng - pos.lng()) < 0.0001;
+        });
+        const name = a ? (a.name + ' ' + (a.location_city || '') + ' ' + (a.location_country || '')).toLowerCase() : '';
+        const show = name.includes(q) && activeTypes[m.type];
+        m.marker.setMap(show ? map : null);
+        if (show) matched++;
+      });
+    }, 200);
+  });
 }
 
 function esc(s) {
