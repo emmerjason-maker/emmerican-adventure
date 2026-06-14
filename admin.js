@@ -1816,7 +1816,8 @@ async function advSave() {
     would_return:     type === 'restaurant' ? ($('advWouldReturn')?.checked  ?? null) : null,
     notes:            $('advNotes')?.value.trim()    || null,
     tags:             tags.length ? tags : null,
-    photos:           photos.length ? photos : null,
+    photos:           allAdvPhotos().length ? allAdvPhotos() : null,
+    youtube_videos:   advYtVideos.length ? advYtVideos : null,
     place_name:       $('advPlaceName')?.value.trim()  || null,
     lat:              parseFloat($('advLat')?.value)  || null,
     lng:              parseFloat($('advLng')?.value)  || null,
@@ -1898,6 +1899,8 @@ function advEdit(id) {
   $('advNotes').value      = a.notes || '';
   $('advTags').value       = (a.tags || []).join(', ');
   $('advPhotos').value     = (a.photos || []).join('\n');
+  advYtVideos = a.youtube_videos || [];
+  renderAdvYtList();
   $('advLat').value        = a.lat || '';
   $('advLng').value        = a.lng || '';
   $('advPlaceName').value  = a.place_name || '';
@@ -1974,6 +1977,12 @@ function advResetForm() {
   $('advNotes').value            = '';
   $('advTags').value             = '';
   $('advPhotos').value           = '';
+  $('advYtUrl').value            = '';
+  $('advYtLabel').value          = '';
+  advImages = [];
+  advYtVideos = [];
+  renderAdvImageList();
+  renderAdvYtList();
   $('advLat').value              = '';
   $('advLng').value              = '';
   $('advPlaceName').value        = '';
@@ -2262,4 +2271,295 @@ function adminMapStyles() {
     { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#0d1117' }] },
     { featureType: 'poi', stylers: [{ visibility: 'off' }] },
   ];
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Adventure Photo Upload + YouTube + Existing Photo Browser
+   ═══════════════════════════════════════════════════════════════ */
+
+let advImages    = [];   // uploaded File objects for adventures
+let advYtVideos  = [];   // [{id, label}] for adventures
+
+// ── Init adventure upload zone ────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  const zone = document.getElementById('advUploadZone');
+  const input = document.getElementById('advPhotoInput');
+
+  if (input) input.addEventListener('change', e => advAddFiles(e.target.files));
+
+  if (zone) {
+    zone.addEventListener('dragover',  e => { e.preventDefault(); zone.classList.add('drag-over'); });
+    zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+    zone.addEventListener('drop', e => {
+      e.preventDefault();
+      zone.classList.remove('drag-over');
+      advAddFiles(e.dataTransfer.files);
+    });
+  }
+});
+
+// ── Adventure image handling ──────────────────────────────────────
+function advAddFiles(fileList) {
+  Array.from(fileList).filter(f => f.type.startsWith('image/')).forEach(file => {
+    const id = 'adv_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    const reader = new FileReader();
+    reader.onload = ev => {
+      advImages.push({ id, file, dataUrl: ev.target.result, name: file.name });
+      renderAdvImageList();
+    };
+    reader.readAsDataURL(file);
+  });
+  const inp = document.getElementById('advPhotoInput');
+  if (inp) inp.value = '';
+}
+
+function renderAdvImageList() {
+  const list = document.getElementById('advImageList');
+  if (!list) return;
+  if (!advImages.length) { list.innerHTML = ''; return; }
+  list.innerHTML = advImages.map(img => `
+    <div class="adv-image-item">
+      <img src="${img.dataUrl}" alt="${escHtmlAdmin(img.name)}" class="adv-image-thumb" />
+      <span class="adv-image-name">${escHtmlAdmin(img.name)}</span>
+      <button class="btn-ghost btn-sm btn-danger" onclick="advRemoveImage('${img.id}')">✕</button>
+    </div>`).join('');
+}
+
+function advRemoveImage(id) {
+  advImages = advImages.filter(i => i.id !== id);
+  renderAdvImageList();
+}
+
+// Returns all photo URLs: uploaded (after push) + pasted
+function allAdvPhotos() {
+  const pasted = (document.getElementById('advPhotos')?.value || '')
+    .split('\n').map(s => s.trim()).filter(Boolean);
+  return pasted; // uploaded ones get pushed during save and appended
+}
+
+// Upload adventure images to GitHub and return URLs
+async function uploadAdvImages() {
+  const pat    = sessionStorage.getItem('ghPat') || localStorage.getItem('adminToken') || '';
+  const repo   = 'emmerjason-maker/emmerican-adventure';
+  const branch = 'main';
+  const urls   = [];
+
+  for (const img of advImages) {
+    try {
+      // Compress
+      const compressed = await compressAdvImage(img.file);
+      const b64 = compressed.split(',')[1];
+      const ts  = Date.now();
+      const ext = img.file.name.split('.').pop().toLowerCase() || 'jpg';
+      const filename = `${ts}-adv-${img.id.slice(-6)}.${ext}`;
+      const path = `images/${filename}`;
+
+      // Check for existing SHA
+      let sha = '';
+      try {
+        const check = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`,
+          { headers: { Authorization: `token ${pat}` } });
+        if (check.ok) { const d = await check.json(); sha = d.sha || ''; }
+      } catch {}
+
+      const body = { message: `feat: upload adventure image ${filename}`, content: b64, branch };
+      if (sha) body.sha = sha;
+
+      const res = await fetch(`https://api.github.com/repos/${repo}/contents/${path}`, {
+        method: 'PUT',
+        headers: { Authorization: `token ${pat}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        urls.push(`/images/${filename}`);
+      } else {
+        console.error('Upload failed for', filename);
+      }
+    } catch(err) {
+      console.error('Image upload error:', err);
+    }
+  }
+
+  return urls;
+}
+
+async function compressAdvImage(file) {
+  return new Promise(resolve => {
+    const canvas = document.createElement('canvas');
+    const img    = new Image();
+    img.onload   = () => {
+      const MAX = 1200;
+      let w = img.width, h = img.height;
+      if (w > MAX || h > MAX) {
+        if (w > h) { h = Math.round(h * MAX / w); w = MAX; }
+        else       { w = Math.round(w * MAX / h); h = MAX; }
+      }
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      resolve(canvas.toDataURL('image/jpeg', 0.82));
+    };
+    img.src = URL.createObjectURL(file);
+  });
+}
+
+// Hook into advSave to upload images first
+const _origAdvSave = window.advSave || advSave;
+async function advSaveWithUpload() {
+  // Upload any queued images first
+  if (advImages.length) {
+    showStatus('Uploading photos…', false);
+    const uploaded = await uploadAdvImages();
+    // Append uploaded URLs to the pasted textarea
+    const textarea = document.getElementById('advPhotos');
+    if (textarea && uploaded.length) {
+      const existing = textarea.value.trim();
+      textarea.value = (existing ? existing + '\n' : '') + uploaded.join('\n');
+    }
+    advImages = [];
+    renderAdvImageList();
+  }
+  // Also inject youtube_videos into payload via global
+  await advSave();
+}
+
+// Override the save button to use upload wrapper
+document.addEventListener('DOMContentLoaded', () => {
+  const btn = document.getElementById('advSaveBtn');
+  if (btn) {
+    btn.removeEventListener('click', advSave);
+    btn.addEventListener('click', advSaveWithUpload);
+  }
+});
+
+// ── Adventure YouTube ─────────────────────────────────────────────
+function advAddYt() {
+  const urlVal  = document.getElementById('advYtUrl')?.value.trim() || '';
+  const label   = document.getElementById('advYtLabel')?.value.trim() || '';
+  const id      = extractYouTubeId(urlVal) || urlVal;
+  if (!id) { alert('Enter a valid YouTube URL or video ID.'); return; }
+  if (advYtVideos.find(v => v.id === id)) { alert('Already added.'); return; }
+  advYtVideos.push({ id, label });
+  document.getElementById('advYtUrl').value   = '';
+  document.getElementById('advYtLabel').value = '';
+  renderAdvYtList();
+}
+
+function advRemoveYt(id) {
+  advYtVideos = advYtVideos.filter(v => v.id !== id);
+  renderAdvYtList();
+}
+
+function renderAdvYtList() {
+  const list = document.getElementById('advYtList');
+  if (!list) return;
+  if (!advYtVideos.length) { list.innerHTML = ''; return; }
+  list.innerHTML = advYtVideos.map(v => `
+    <div class="adv-yt-item">
+      <span class="adv-yt-thumb">▶</span>
+      <span class="adv-yt-id">${escHtmlAdmin(v.label || v.id)}</span>
+      <a href="https://youtu.be/${escHtmlAdmin(v.id)}" target="_blank" class="adv-yt-link">↗</a>
+      <button class="btn-ghost btn-sm btn-danger" onclick="advRemoveYt('${v.id}')">✕</button>
+    </div>`).join('');
+}
+
+// ── Existing Photo Browser (for new posts) ────────────────────────
+let allExistingPhotos = [];
+
+async function openExistingPhotoBrowser() {
+  const modal = document.getElementById('existingPhotoBrowser');
+  if (!modal) return;
+  modal.classList.remove('hidden');
+
+  const grid = document.getElementById('existingPhotoGrid');
+  grid.innerHTML = '<p class="preview-empty">Loading…</p>';
+
+  try {
+    const res = await fetch(
+      ADV_SUPABASE_URL + '/rest/v1/post_images?select=*&order=taken_date.desc,sort_order.asc',
+      { headers: { 'apikey': ADV_SUPABASE_ANON, 'Authorization': 'Bearer ' + ADV_SUPABASE_ANON } }
+    );
+    if (!res.ok) throw new Error(res.status);
+    const data = await res.json();
+
+    // Deduplicate by URL
+    const seen = new Set();
+    allExistingPhotos = data.filter(p => {
+      if (seen.has(p.url)) return false;
+      seen.add(p.url);
+      return true;
+    });
+
+    renderExistingPhotoGrid(allExistingPhotos);
+
+    // Search
+    const search = document.getElementById('existingPhotoSearch');
+    if (search) {
+      search.value = '';
+      search.oninput = () => {
+        const q = search.value.toLowerCase();
+        const filtered = !q ? allExistingPhotos : allExistingPhotos.filter(p => {
+          return [p.alt_text, ...(p.tags||[])].filter(Boolean).join(' ').toLowerCase().includes(q);
+        });
+        renderExistingPhotoGrid(filtered);
+      };
+    }
+  } catch(err) {
+    grid.innerHTML = `<p class="preview-empty" style="color:var(--red)">Error: ${err.message}</p>`;
+  }
+}
+
+function renderExistingPhotoGrid(photos) {
+  const grid = document.getElementById('existingPhotoGrid');
+  const count = document.getElementById('existingPhotoCount');
+  if (count) count.textContent = `${photos.length} photos`;
+
+  if (!photos.length) { grid.innerHTML = '<p class="preview-empty">No photos found.</p>'; return; }
+
+  grid.innerHTML = photos.map(p => {
+    const fullUrl = p.url.startsWith('http') ? p.url : `https://emmericanadventure.com${p.url}`;
+    return `
+      <div class="existing-photo-item" onclick="selectExistingPhoto('${escHtmlAdmin(fullUrl)}', this)"
+        title="${escHtmlAdmin(p.alt_text || '')}">
+        <img src="${escHtmlAdmin(p.url)}" alt="${escHtmlAdmin(p.alt_text || '')}" loading="lazy" />
+        <div class="existing-photo-check hidden">✓</div>
+      </div>`;
+  }).join('');
+}
+
+function selectExistingPhoto(url, el) {
+  el.classList.toggle('selected');
+  el.querySelector('.existing-photo-check').classList.toggle('hidden');
+}
+
+function closeExistingPhotoBrowser() {
+  // Collect selected photos and add to post image queue
+  const selected = document.querySelectorAll('.existing-photo-item.selected');
+  selected.forEach(el => {
+    const img = el.querySelector('img');
+    if (!img) return;
+    const url = img.src;
+    // Add as a "URL" type image to the post's image list
+    const id = 'existing_' + Date.now() + '_' + Math.random().toString(36).slice(2,6);
+    // Download and add to images array as a blob
+    fetch(url)
+      .then(r => r.blob())
+      .then(blob => {
+        const file = new File([blob], url.split('/').pop(), { type: blob.type });
+        const reader = new FileReader();
+        reader.onload = ev => {
+          images.push({ id, file, dataUrl: ev.target.result, name: file.name, caption: '' });
+          renderImageList();
+        };
+        reader.readAsDataURL(file);
+      })
+      .catch(() => {
+        // Fallback: just add the URL to the post's image list directly
+        images.push({ id, file: null, dataUrl: url, name: url.split('/').pop(), caption: '', existingUrl: url });
+        renderImageList();
+      });
+  });
+
+  document.getElementById('existingPhotoBrowser').classList.add('hidden');
 }
