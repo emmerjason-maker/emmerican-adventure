@@ -1243,8 +1243,8 @@ let editBodyHtml  = '';
 
 // ── Tab switching ─────────────────────────────────────────────
 function switchTab(tab) {
-  const panels = ['panelNew', 'panelEdit', 'panelAdventures'];
-  const tabs   = ['tabNew', 'tabEdit', 'tabAdventures'];
+  const panels = ['panelNew', 'panelEdit', 'panelAdventures', 'panelImages'];
+  const tabs   = ['tabNew', 'tabEdit', 'tabAdventures', 'tabImages'];
 
   panels.forEach(id => $(id)?.classList.add('hidden'));
   tabs.forEach(id   => $(id)?.classList.remove('active'));
@@ -1260,6 +1260,10 @@ function switchTab(tab) {
     $('panelAdventures')?.classList.remove('hidden');
     $('tabAdventures')?.classList.add('active');
     advAdminLoad();
+  } else if (tab === 'images') {
+    $('panelImages')?.classList.remove('hidden');
+    $('tabImages')?.classList.add('active');
+    imgAdminLoad();
   }
 }
 
@@ -1974,4 +1978,181 @@ function escHtmlAdmin(str) {
     .replace(/&/g, '&amp;').replace(/</g, '&lt;')
     .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     .replace(/'/g, '&#39;');
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Images Admin — Supabase CRUD for post_images table
+   ═══════════════════════════════════════════════════════════════ */
+
+const IMG_SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
+const IMG_SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
+const IMG_ADMIN_ID      = '3fd413d3-d92d-440f-b0ff-ca98b36cf251';
+
+let imgAllEntries = [];
+let imgSearchDebounce;
+
+// ── Load ──────────────────────────────────────────────────────────
+async function imgAdminLoad() {
+  const list = $('imgAdminList');
+  if (!list) return;
+  list.innerHTML = '<p class="preview-empty">Loading…</p>';
+
+  try {
+    const res = await fetch(
+      `${IMG_SUPABASE_URL}/rest/v1/post_images?select=*&order=taken_date.desc,sort_order.asc`,
+      { headers: { 'apikey': IMG_SUPABASE_ANON, 'Authorization': `Bearer ${IMG_SUPABASE_ANON}` } }
+    );
+    if (!res.ok) throw new Error('Failed to load');
+    imgAllEntries = await res.json();
+    imgRenderList();
+  } catch (err) {
+    list.innerHTML = `<p class="preview-empty" style="color:var(--red)">Error: ${err.message}</p>`;
+  }
+
+  // Bind search
+  $('imgSearch')?.addEventListener('input', () => {
+    clearTimeout(imgSearchDebounce);
+    imgSearchDebounce = setTimeout(imgRenderList, 200);
+  });
+}
+
+function imgRenderList() {
+  const list = $('imgAdminList');
+  if (!list) return;
+
+  const query = ($('imgSearch')?.value || '').toLowerCase().trim();
+
+  const filtered = imgAllEntries.filter(img => {
+    if (!query) return true;
+    const hay = [img.alt_text, img.post_url, ...(img.tags || [])].filter(Boolean).join(' ').toLowerCase();
+    return hay.includes(query);
+  });
+
+  $('imgCount').textContent = `${filtered.length} of ${imgAllEntries.length}`;
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<p class="preview-empty">No images match.</p>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(img => {
+    const tags = (img.tags || []).map(t => `<span class="adv-tag">${escHtmlAdmin(t)}</span>`).join('');
+    const featured = img.featured ? '<span class="img-featured-badge">★ cover</span>' : '';
+    const altDisplay = img.alt_text || '<span style="color:rgba(255,255,255,0.25);font-style:italic;">no alt text</span>';
+    return `
+      <div class="img-admin-entry ${img.id === $('imgEditId')?.value ? 'active' : ''}" onclick="imgEdit('${img.id}')">
+        <div class="img-admin-thumb">
+          <img src="${escHtmlAdmin(img.url)}" alt="${escHtmlAdmin(img.alt_text || '')}" loading="lazy" />
+        </div>
+        <div class="img-admin-info">
+          <div class="img-admin-alt">${altDisplay} ${featured}</div>
+          <div class="img-admin-post">${escHtmlAdmin(img.post_url || '—')}</div>
+          <div class="img-admin-tags">${tags}</div>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Edit ──────────────────────────────────────────────────────────
+function imgEdit(id) {
+  const img = imgAllEntries.find(i => i.id === id);
+  if (!img) return;
+
+  $('imgEditId').value    = img.id;
+  $('imgAltText').value   = img.alt_text || '';
+  $('imgTags').value      = (img.tags || []).join(', ');
+  $('imgPostUrl').value   = img.post_url || '';
+  $('imgAdventureId').value = img.adventure_id || '';
+  $('imgFeatured').checked  = !!img.featured;
+  $('imgFormTitle').textContent = 'Edit Image';
+  $('imgSaveLabel').textContent = 'Save Changes →';
+  $('imgSaveBtn').disabled = false;
+  $('imgCancelBtn').style.display = '';
+
+  // Show preview
+  const wrap = $('imgPreviewWrap');
+  if (wrap) {
+    wrap.innerHTML = `<img src="${escHtmlAdmin(img.url)}" alt="${escHtmlAdmin(img.alt_text || '')}"
+      style="max-width:100%;max-height:200px;object-fit:contain;display:block;" />`;
+  }
+
+  // Highlight active row
+  document.querySelectorAll('.img-admin-entry').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.img-admin-entry').forEach(el => {
+    if (el.onclick?.toString().includes(id)) el.classList.add('active');
+  });
+}
+
+// ── Save ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  $('imgSaveBtn')?.addEventListener('click', imgSave);
+  $('imgCancelBtn')?.addEventListener('click', imgCancelEdit);
+});
+
+async function imgSave() {
+  const id = $('imgEditId')?.value;
+  if (!id) return;
+
+  const tagsRaw = $('imgTags')?.value || '';
+  const tags = tagsRaw.split(',').map(s => s.trim()).filter(Boolean);
+  const adventureId = $('imgAdventureId')?.value.trim() || null;
+
+  const payload = {
+    alt_text:     $('imgAltText')?.value.trim()  || null,
+    tags:         tags.length ? tags : null,
+    post_url:     $('imgPostUrl')?.value.trim()  || null,
+    adventure_id: adventureId,
+    featured:     $('imgFeatured')?.checked ?? false,
+  };
+
+  $('imgSaveLabel').textContent = 'Saving…';
+  $('imgSaveBtn').disabled = true;
+
+  try {
+    const res = await fetch(
+      `${IMG_SUPABASE_URL}/rest/v1/post_images?id=eq.${id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          'apikey': IMG_SUPABASE_ANON,
+          'Authorization': `Bearer ${IMG_SUPABASE_ANON}`,
+          'Content-Type': 'application/json',
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `HTTP ${res.status}`);
+    }
+
+    showStatus('✓ Image updated!', false);
+    imgCancelEdit();
+    imgAdminLoad();
+
+  } catch (err) {
+    showStatus('✗ Error: ' + err.message, true);
+  } finally {
+    $('imgSaveLabel').textContent = 'Save Changes →';
+    $('imgSaveBtn').disabled = false;
+  }
+}
+
+function imgCancelEdit() {
+  $('imgEditId').value      = '';
+  $('imgAltText').value     = '';
+  $('imgTags').value        = '';
+  $('imgPostUrl').value     = '';
+  $('imgAdventureId').value = '';
+  $('imgFeatured').checked  = false;
+  $('imgFormTitle').textContent  = 'Edit Image';
+  $('imgSaveLabel').textContent  = 'Select an image to edit';
+  $('imgSaveBtn').disabled  = true;
+  $('imgCancelBtn').style.display = 'none';
+  const wrap = $('imgPreviewWrap');
+  if (wrap) wrap.innerHTML = '<span style="color:rgba(255,255,255,0.2);font-size:0.75rem;font-family:var(--font-mono);">Select an image →</span>';
+  document.querySelectorAll('.img-admin-entry').forEach(el => el.classList.remove('active'));
 }
