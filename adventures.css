@@ -87,6 +87,7 @@
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+  order: 2;
   flex: 1;
 }
 
@@ -117,6 +118,7 @@
 
 .adv-search-wrap {
   flex-shrink: 0;
+  order: 1;
 }
 
 .adv-search {
@@ -126,7 +128,7 @@
   background: var(--paper-warm);
   border: 1px solid var(--paper-dark);
   color: var(--ink);
-  width: 200px;
+  width: 280px;
   outline: none;
   transition: border-color 0.2s;
 }
