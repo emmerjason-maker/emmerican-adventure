@@ -1894,25 +1894,25 @@ function advEdit(id) {
   const a = advAllEntries.find(e => e.id === id);
   if (!a) return;
 
-  $('advEditId').value     = a.id;
-  $('advFormTitle').textContent = 'Edit Adventure';
-  $('advType').value       = a.type;
-  $('advName').value       = a.name || '';
-  $('advCity').value       = a.location_city || '';
-  $('advCountry').value    = a.location_country || '';
-  $('advDate').value       = a.visited_date || '';
-  $('advCuisine').value    = a.cuisine || '';
-  $('advPrice').value      = a.price_range || '';
-  $('advRating').value     = a.rating || '';
-  $('advKidFriendly').checked  = !!a.kid_friendly;
-  $('advWouldReturn').checked  = !!a.would_return;
-  $('advNotes').value      = a.notes || '';
-  $('advTags').value       = (a.tags || []).join(', ');
-  $('advPhotos').value     = (a.photos || []).join('\n');
+  if ($('advEditId'))    $('advEditId').value          = a.id;
+  if ($('advFormTitle')) $('advFormTitle').textContent  = 'Edit Adventure';
+  if ($('advType'))      $('advType').value             = a.type;
+  if ($('advName'))      $('advName').value             = a.name || '';
+  if ($('advCity'))      $('advCity').value             = a.location_city || '';
+  if ($('advCountry'))   $('advCountry').value          = a.location_country || '';
+  if ($('advDate'))      $('advDate').value             = a.visited_date || '';
+  if ($('advCuisine'))   $('advCuisine').value          = a.cuisine || '';
+  if ($('advPrice'))     $('advPrice').value            = a.price_range || '';
+  if ($('advRating'))    $('advRating').value           = a.rating || '';
+  if ($('advKidFriendly')) $('advKidFriendly').checked = !!a.kid_friendly;
+  if ($('advWouldReturn')) $('advWouldReturn').checked  = !!a.would_return;
+  if ($('advNotes'))     $('advNotes').value            = a.notes || '';
+  if ($('advTags'))      $('advTags').value             = (a.tags || []).join(', ');
+  if ($('advPhotos'))    $('advPhotos').value           = (a.photos || []).join('\n');
   advYtVideos = a.youtube_videos || [];
   renderAdvYtList();
-  $('advLat').value        = a.lat || '';
-  $('advLng').value        = a.lng || '';
+  if ($('advLat'))       $('advLat').value              = a.lat || '';
+  if ($('advLng'))       $('advLng').value              = a.lng || '';
   // place_name stored in advName; no separate advPlaceName field
   // Set value on PlaceAutocompleteElement (may have replaced advPlaceSearch)
   const advAutoEl = document.getElementById('advPlaceAutocomplete');
@@ -1921,7 +1921,7 @@ function advEdit(id) {
   if (a.lat && a.lng) {
     showAdminMapPreview(parseFloat(a.lat), parseFloat(a.lng), a.place_name || a.name);
   }
-  $('advPostUrl').value    = a.post_url || '';
+  if ($('advPostUrl')) $('advPostUrl').value = a.post_url || '';
 
   // Family reactions
   ['jason','megan','john','kate'].forEach(n => {
