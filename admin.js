@@ -2031,7 +2031,7 @@ async function imgAdminLoad() {
 
   try {
     const res = await fetch(
-      `${IMG_SUPABASE_URL}/rest/v1/post_images?select=*&order=taken_date.desc,sort_order.asc`,
+      `${IMG_SUPABASE_URL}/rest/v1/post_images?select=*&order=taken_date.desc,created_at.desc`,
       { headers: { 'apikey': IMG_SUPABASE_ANON, 'Authorization': `Bearer ${IMG_SUPABASE_ANON}` } }
     );
     if (!res.ok) throw new Error('Failed to load');
