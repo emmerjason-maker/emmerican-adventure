@@ -68,6 +68,7 @@
       <div class="admin-tabs">
         <button class="admin-tab active" id="tabNew" onclick="switchTab('new')">✏️ New Post</button>
         <button class="admin-tab" id="tabEdit" onclick="switchTab('edit')">📝 Edit Posts</button>
+        <button class="admin-tab" id="tabAdventures" onclick="switchTab('adventures')">🗺️ Adventures</button>
       </div>
 
       <!-- ── NEW POST PANEL ─────────────────────────────────────── -->
@@ -289,9 +290,206 @@
         </div>
       </div><!-- end panelEdit -->
 
+
+      <!-- ── ADVENTURES PANEL ──────────────────────────────────── -->
+      <div id="panelAdventures" class="hidden">
+        <div class="adv-admin-layout">
+
+          <!-- Left: form -->
+          <div class="editor-panel">
+            <h2 class="panel-title" id="advFormTitle">New Adventure</h2>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label">Type</label>
+                <select class="field-input" id="advType">
+                  <option value="restaurant">🍜 Restaurant</option>
+                  <option value="place">📍 Place</option>
+                  <option value="country">🌏 Country</option>
+                </select>
+              </div>
+              <div class="field-group">
+                <label class="field-label">Date Visited</label>
+                <input type="date" class="field-input" id="advDate" />
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Name</label>
+              <input type="text" class="field-input" id="advName" placeholder="e.g. Mos Burger, Kamakura, Japan" />
+            </div>
+
+            <div class="field-row">
+              <div class="field-group">
+                <label class="field-label">City <span class="optional">optional</span></label>
+                <input type="text" class="field-input" id="advCity" placeholder="Yokosuka" />
+              </div>
+              <div class="field-group">
+                <label class="field-label">Country</label>
+                <input type="text" class="field-input" id="advCountry" placeholder="Japan" />
+              </div>
+            </div>
+
+            <!-- Restaurant-only fields -->
+            <div id="advRestaurantFields">
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">Cuisine <span class="optional">optional</span></label>
+                  <input type="text" class="field-input" id="advCuisine" placeholder="Japanese, Korean…" />
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Price Range <span class="optional">optional</span></label>
+                  <select class="field-input" id="advPrice">
+                    <option value="">— select —</option>
+                    <option value="$">$ — cheap eats</option>
+                    <option value="640">640 — mid-range</option>
+                    <option value="640$">640$ — splurge</option>
+                    <option value="640640">640640 — special occasion</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="field-row">
+                <div class="field-group">
+                  <label class="field-label">Rating <span class="optional">optional</span></label>
+                  <select class="field-input" id="advRating">
+                    <option value="">— no rating —</option>
+                    <option value="5">★★★★★ — 5/5</option>
+                    <option value="4">★★★★☆ — 4/5</option>
+                    <option value="3">★★★☆☆ — 3/5</option>
+                    <option value="2">★★☆☆☆ — 2/5</option>
+                    <option value="1">★☆☆☆☆ — 1/5</option>
+                  </select>
+                </div>
+                <div class="field-group">
+                  <label class="field-label" style="gap:1.5rem;">
+                    <span>Kid-friendly?</span>
+                    <input type="checkbox" id="advKidFriendly" style="width:auto;" />
+                  </label>
+                  <label class="field-label" style="gap:1.5rem;margin-top:0.5rem;">
+                    <span>Would return?</span>
+                    <input type="checkbox" id="advWouldReturn" style="width:auto;" />
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- Family reactions -->
+            <div class="field-group">
+              <label class="field-label">Family Reactions <span class="optional">only include who was there</span></label>
+              <div class="adv-reactions-grid">
+                <div class="adv-reaction-row">
+                  <label class="adv-reaction-who">
+                    <input type="checkbox" id="reactionJasonOn" /> Jason
+                  </label>
+                  <select class="field-input adv-reaction-stars" id="reactionJason">
+                    <option value="5">★★★★★</option>
+                    <option value="4">★★★★☆</option>
+                    <option value="3">★★★☆☆</option>
+                    <option value="2">★★☆☆☆</option>
+                    <option value="1">★☆☆☆☆</option>
+                  </select>
+                </div>
+                <div class="adv-reaction-row">
+                  <label class="adv-reaction-who">
+                    <input type="checkbox" id="reactionMeganOn" /> Megan
+                  </label>
+                  <select class="field-input adv-reaction-stars" id="reactionMegan">
+                    <option value="5">★★★★★</option>
+                    <option value="4">★★★★☆</option>
+                    <option value="3">★★★☆☆</option>
+                    <option value="2">★★☆☆☆</option>
+                    <option value="1">★☆☆☆☆</option>
+                  </select>
+                </div>
+                <div class="adv-reaction-row">
+                  <label class="adv-reaction-who">
+                    <input type="checkbox" id="reactionJohnOn" /> John
+                  </label>
+                  <select class="field-input adv-reaction-stars" id="reactionJohn">
+                    <option value="5">★★★★★</option>
+                    <option value="4">★★★★☆</option>
+                    <option value="3">★★★☆☆</option>
+                    <option value="2">★★☆☆☆</option>
+                    <option value="1">★☆☆☆☆</option>
+                  </select>
+                </div>
+                <div class="adv-reaction-row">
+                  <label class="adv-reaction-who">
+                    <input type="checkbox" id="reactionKateOn" /> Kate
+                  </label>
+                  <select class="field-input adv-reaction-stars" id="reactionKate">
+                    <option value="5">★★★★★</option>
+                    <option value="4">★★★★☆</option>
+                    <option value="3">★★★☆☆</option>
+                    <option value="2">★★☆☆☆</option>
+                    <option value="1">★☆☆☆☆</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Notes / Journal Entry <span class="optional">optional</span></label>
+              <textarea class="field-input" id="advNotes" rows="4" placeholder="What did you think? What did the kids say? Any must-order dishes?"></textarea>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Tags <span class="optional">optional — comma separated</span></label>
+              <input type="text" class="field-input" id="advTags" placeholder="ramen, date night, John loved it" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Photos <span class="optional">optional — paste URLs, one per line</span></label>
+              <textarea class="field-input" id="advPhotos" rows="3" placeholder="https://…&#10;https://…"></textarea>
+              <p class="field-hint">Upload to your GitHub images folder first, then paste the URLs here.</p>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Latitude <span class="optional">optional</span></label>
+              <input type="number" step="any" class="field-input" id="advLat" placeholder="e.g. 35.2767" />
+            </div>
+            <div class="field-group">
+              <label class="field-label">Longitude <span class="optional">optional</span></label>
+              <input type="number" step="any" class="field-input" id="advLng" placeholder="e.g. 139.6724" />
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">Link to Blog Post <span class="optional">optional</span></label>
+              <input type="text" class="field-input" id="advPostUrl" placeholder="posts/my-post.html" />
+            </div>
+
+            <input type="hidden" id="advEditId" value="" />
+
+            <div class="publish-row">
+              <button class="btn-ghost" id="advCancelBtn" style="display:none;">Cancel Edit</button>
+              <button class="btn-publish" id="advSaveBtn">
+                <span id="advSaveLabel">Save Adventure →</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Right: entries list -->
+          <div class="editor-panel" style="min-width:0;">
+            <h2 class="panel-title">All Adventures</h2>
+            <div class="adv-admin-filter">
+              <button class="adv-pill active" data-atype="all" onclick="filterAdvAdmin(this, 'all')">All</button>
+              <button class="adv-pill" data-atype="restaurant" onclick="filterAdvAdmin(this, 'restaurant')">Restaurants</button>
+              <button class="adv-pill" data-atype="place" onclick="filterAdvAdmin(this, 'place')">Places</button>
+              <button class="adv-pill" data-atype="country" onclick="filterAdvAdmin(this, 'country')">Countries</button>
+            </div>
+            <div id="advAdminList" class="adv-admin-list">
+              <p class="preview-empty">No adventures yet.</p>
+            </div>
+          </div>
+
+        </div>
+      </div><!-- end panelAdventures -->
+
     </main>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
   <script src="admin.js"></script>
 
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
@@ -303,3 +501,5 @@
   </script>
 </body>
 </html>
+
+
