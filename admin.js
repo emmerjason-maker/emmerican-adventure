@@ -2270,6 +2270,11 @@ window.initAdminMapsReady = async function() {
     const countryField = document.getElementById('advCountry');
     if (cityField    && !cityField.value)    cityField.value    = city;
     if (countryField && !countryField.value) countryField.value = country;
+    // Auto-open the override disclosure so user can see what was filled
+    if (city || country) {
+      const disc = document.querySelector('.adv-location-override');
+      if (disc) disc.open = true;
+    }
 
     // Store place name for map popup (use full name)
     const placeNameField = document.getElementById('advPlaceName');
