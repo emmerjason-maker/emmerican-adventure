@@ -299,6 +299,22 @@
 
     .lightbox-post-link:hover { opacity: 0.8; }
 
+    .lightbox-url-input {
+      display: block;
+      margin-top: 0.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      color: rgba(255,255,255,0.45);
+      background: rgba(255,255,255,0.08);
+      border: 1px solid rgba(255,255,255,0.15);
+      padding: 0.3rem 0.5rem;
+      width: 100%;
+      max-width: 420px;
+      cursor: pointer;
+      letter-spacing: 0.02em;
+    }
+    .lightbox-url-input:focus { outline: none; border-color: var(--gold); color: rgba(255,255,255,0.75); }
+
     @media (max-width: 640px) {
       .photos-controls { flex-direction: column; align-items: stretch; }
       .photos-search { width: 100%; }
@@ -546,7 +562,9 @@
     const postLink = p.post_url
       ? `<a href="${esc(p.post_url)}" class="lightbox-post-link">Read the post →</a>`
       : '';
-    $('lightboxCaption').innerHTML = `${esc(p.alt_text || '')}${postLink ? '<br>' + postLink : ''}`;
+    const fullUrl = p.url.startsWith('http') ? p.url : `https://emmericanadventure.com${p.url}`;
+    $('lightboxCaption').innerHTML = `${esc(p.alt_text || '')}${postLink ? '<br>' + postLink : ''}`
+      + `<br><input class="lightbox-url-input" value="${esc(fullUrl)}" readonly onclick="this.select()" title="Click to select URL" />`;
     $('lightboxPrev').style.display = filteredPhotos.length > 1 ? '' : 'none';
     $('lightboxNext').style.display = filteredPhotos.length > 1 ? '' : 'none';
   }
