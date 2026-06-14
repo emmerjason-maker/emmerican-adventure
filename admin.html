@@ -108,9 +108,18 @@
           <!-- Location -->
           <div class="field-group">
             <label class="field-label">Location <span class="optional">optional</span></label>
-            <input type="text" class="field-input" id="postLocation"
-              placeholder="e.g. Jacksonville, FL  or  Naval Air Station Jacksonville, FL | https://maps.app.goo.gl/xxx" />
-            <p class="field-hint">Plain text, a Maps URL, or <strong>Label | Maps URL</strong> for a clickable link.</p>
+            <input type="text" class="field-input" id="postLocationSearch"
+              placeholder="Search for a place, city, or address…" autocomplete="off" />
+            <p class="field-hint">Start typing to search Google Maps. Coordinates saved automatically.</p>
+            <!-- Hidden fields filled by place search -->
+            <input type="hidden" id="postLocationName" />
+            <input type="hidden" id="postLat" />
+            <input type="hidden" id="postLng" />
+            <!-- Mini map preview -->
+            <div id="postMapPreview" class="adv-map-preview hidden">
+              <div id="postMapPreviewInner"></div>
+              <p class="adv-map-coords" id="postMapCoords"></p>
+            </div>
           </div>
 
           <!-- Body -->
