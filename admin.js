@@ -1243,22 +1243,23 @@ let editBodyHtml  = '';
 
 // ── Tab switching ─────────────────────────────────────────────
 function switchTab(tab) {
-  const panelNew  = $('panelNew');
-  const panelEdit = $('panelEdit');
-  const tabNew    = $('tabNew');
-  const tabEdit   = $('tabEdit');
+  const panels = ['panelNew', 'panelEdit', 'panelAdventures'];
+  const tabs   = ['tabNew', 'tabEdit', 'tabAdventures'];
+
+  panels.forEach(id => $(id)?.classList.add('hidden'));
+  tabs.forEach(id   => $(id)?.classList.remove('active'));
 
   if (tab === 'new') {
-    panelNew.classList.remove('hidden');
-    panelEdit.classList.add('hidden');
-    tabNew.classList.add('active');
-    tabEdit.classList.remove('active');
-  } else {
-    panelNew.classList.add('hidden');
-    panelEdit.classList.remove('hidden');
-    tabNew.classList.remove('active');
-    tabEdit.classList.add('active');
+    $('panelNew')?.classList.remove('hidden');
+    $('tabNew')?.classList.add('active');
+  } else if (tab === 'edit') {
+    $('panelEdit')?.classList.remove('hidden');
+    $('tabEdit')?.classList.add('active');
     loadPostsList();
+  } else if (tab === 'adventures') {
+    $('panelAdventures')?.classList.remove('hidden');
+    $('tabAdventures')?.classList.add('active');
+    advAdminLoad();
   }
 }
 
@@ -1656,4 +1657,321 @@ function editToolbar(action) {
   if (action === 'bold')   document.execCommand('bold');
   if (action === 'italic') document.execCommand('italic');
   if (action === 'h3')     document.execCommand('formatBlock', false, 'h3');
+}
+
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Adventures Admin — Supabase CRUD
+   ═══════════════════════════════════════════════════════════════ */
+
+const ADV_SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
+const ADV_SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
+const ADV_ADMIN_ID      = '3fd413d3-d92d-440f-b0ff-ca98b36cf251';
+
+let advAllEntries    = [];
+let advFilterType    = 'all';
+
+// ── Init ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  // Type toggle — show/hide restaurant-only fields
+  $('advType')?.addEventListener('change', toggleAdvFields);
+
+  // Reactions checkboxes toggle their selects
+  ['Jason','Megan','John','Kate'].forEach(name => {
+    $(`reaction${name}On`)?.addEventListener('change', e => {
+      const sel = $(`reaction${name}`);
+      if (sel) sel.disabled = !e.target.checked;
+    });
+    // Init disabled
+    const sel = $(`reaction${name}`);
+    if (sel) sel.disabled = true;
+  });
+
+  $('advSaveBtn')?.addEventListener('click', advSave);
+  $('advCancelBtn')?.addEventListener('click', advCancelEdit);
+
+  // Set default date to today
+  if ($('advDate')) $('advDate').value = new Date().toISOString().split('T')[0];
+});
+
+function toggleAdvFields() {
+  const type = $('advType')?.value;
+  const fields = $('advRestaurantFields');
+  if (fields) fields.style.display = type === 'restaurant' ? '' : 'none';
+}
+
+// ── Load all entries ──────────────────────────────────────────────
+async function advAdminLoad() {
+  const list = $('advAdminList');
+  if (!list) return;
+  list.innerHTML = '<p class="preview-empty">Loading…</p>';
+
+  try {
+    const res = await fetch(
+      `${ADV_SUPABASE_URL}/rest/v1/adventures?select=*&order=visited_date.desc`,
+      { headers: { 'apikey': ADV_SUPABASE_ANON, 'Authorization': `Bearer ${ADV_SUPABASE_ANON}` } }
+    );
+    if (!res.ok) throw new Error('Failed to load');
+    advAllEntries = await res.json();
+    advRenderList();
+  } catch (err) {
+    list.innerHTML = `<p class="preview-empty" style="color:var(--red)">Error: ${err.message}</p>`;
+  }
+}
+
+function filterAdvAdmin(btn, type) {
+  document.querySelectorAll('.adv-admin-filter .adv-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  advFilterType = type;
+  advRenderList();
+}
+
+function advRenderList() {
+  const list = $('advAdminList');
+  if (!list) return;
+
+  const filtered = advFilterType === 'all'
+    ? advAllEntries
+    : advAllEntries.filter(a => a.type === advFilterType);
+
+  if (filtered.length === 0) {
+    list.innerHTML = '<p class="preview-empty">No entries yet.</p>';
+    return;
+  }
+
+  list.innerHTML = filtered.map(a => {
+    const typeEmoji = { restaurant: '🍜', place: '📍', country: '🌏' }[a.type] || '•';
+    const date = a.visited_date
+      ? new Date(a.visited_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+      : '';
+    const loc = [a.location_city, a.location_country].filter(Boolean).join(', ');
+    return `
+      <div class="adv-admin-entry">
+        <div class="adv-admin-entry-info">
+          <span class="adv-admin-type">${typeEmoji}</span>
+          <div>
+            <strong>${escHtmlAdmin(a.name)}</strong>
+            <span class="adv-admin-meta">${loc ? loc + ' · ' : ''}${date}</span>
+          </div>
+        </div>
+        <div class="adv-admin-actions">
+          <button class="btn-ghost btn-sm" onclick="advEdit('${a.id}')">Edit</button>
+          <button class="btn-ghost btn-sm btn-danger" onclick="advDelete('${a.id}', '${escHtmlAdmin(a.name)}')">Delete</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// ── Save (insert or update) ───────────────────────────────────────
+async function advSave() {
+  const editId = $('advEditId')?.value;
+  const isEdit = !!editId;
+
+  const name    = $('advName')?.value.trim();
+  const type    = $('advType')?.value;
+  if (!name)    { showStatus('Name is required.', true); return; }
+  if (!type)    { showStatus('Type is required.', true); return; }
+
+  // Build family_reactions object — only checked members
+  const reactions = {};
+  ['jason','megan','john','kate'].forEach(n => {
+    const cap = n.charAt(0).toUpperCase() + n.slice(1);
+    if ($(`reaction${cap}On`)?.checked) {
+      reactions[n] = parseInt($(`reaction${cap}`)?.value || '5', 10);
+    }
+  });
+
+  // Photos — one URL per line
+  const photosRaw = $('advPhotos')?.value || '';
+  const photos = photosRaw.split('\n').map(s => s.trim()).filter(Boolean);
+
+  // Tags — comma separated
+  const tagsRaw = $('advTags')?.value || '';
+  const tags = tagsRaw.split(',').map(s => s.trim()).filter(Boolean);
+
+  const payload = {
+    type,
+    name,
+    location_city:    $('advCity')?.value.trim()    || null,
+    location_country: $('advCountry')?.value.trim() || null,
+    visited_date:     $('advDate')?.value            || null,
+    cuisine:          type === 'restaurant' ? ($('advCuisine')?.value.trim()  || null) : null,
+    price_range:      type === 'restaurant' ? ($('advPrice')?.value           || null) : null,
+    rating:           type === 'restaurant' ? (parseInt($('advRating')?.value) || null) : null,
+    kid_friendly:     type === 'restaurant' ? ($('advKidFriendly')?.checked ?? null) : null,
+    would_return:     type === 'restaurant' ? ($('advWouldReturn')?.checked  ?? null) : null,
+    notes:            $('advNotes')?.value.trim()    || null,
+    tags:             tags.length ? tags : null,
+    photos:           photos.length ? photos : null,
+    lat:              parseFloat($('advLat')?.value)  || null,
+    lng:              parseFloat($('advLng')?.value)  || null,
+    post_url:         $('advPostUrl')?.value.trim()   || null,
+    family_reactions: Object.keys(reactions).length ? reactions : null,
+    created_by:       ADV_ADMIN_ID,
+  };
+
+  const btn = $('advSaveBtn');
+  $('advSaveLabel').textContent = isEdit ? 'Saving…' : 'Saving…';
+  btn.disabled = true;
+
+  try {
+    let res;
+    if (isEdit) {
+      res = await fetch(
+        `${ADV_SUPABASE_URL}/rest/v1/adventures?id=eq.${editId}`,
+        {
+          method: 'PATCH',
+          headers: {
+            'apikey': ADV_SUPABASE_ANON,
+            'Authorization': `Bearer ${ADV_SUPABASE_ANON}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+    } else {
+      res = await fetch(
+        `${ADV_SUPABASE_URL}/rest/v1/adventures`,
+        {
+          method: 'POST',
+          headers: {
+            'apikey': ADV_SUPABASE_ANON,
+            'Authorization': `Bearer ${ADV_SUPABASE_ANON}`,
+            'Content-Type': 'application/json',
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+    }
+
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.message || `HTTP ${res.status}`);
+    }
+
+    showStatus(`✓ Adventure ${isEdit ? 'updated' : 'saved'}!`, false);
+    advResetForm();
+    advAdminLoad();
+
+  } catch (err) {
+    showStatus('✗ Error: ' + err.message, true);
+  } finally {
+    $('advSaveLabel').textContent = 'Save Adventure →';
+    btn.disabled = false;
+  }
+}
+
+// ── Edit ──────────────────────────────────────────────────────────
+function advEdit(id) {
+  const a = advAllEntries.find(e => e.id === id);
+  if (!a) return;
+
+  $('advEditId').value     = a.id;
+  $('advFormTitle').textContent = 'Edit Adventure';
+  $('advType').value       = a.type;
+  $('advName').value       = a.name || '';
+  $('advCity').value       = a.location_city || '';
+  $('advCountry').value    = a.location_country || '';
+  $('advDate').value       = a.visited_date || '';
+  $('advCuisine').value    = a.cuisine || '';
+  $('advPrice').value      = a.price_range || '';
+  $('advRating').value     = a.rating || '';
+  $('advKidFriendly').checked  = !!a.kid_friendly;
+  $('advWouldReturn').checked  = !!a.would_return;
+  $('advNotes').value      = a.notes || '';
+  $('advTags').value       = (a.tags || []).join(', ');
+  $('advPhotos').value     = (a.photos || []).join('\n');
+  $('advLat').value        = a.lat || '';
+  $('advLng').value        = a.lng || '';
+  $('advPostUrl').value    = a.post_url || '';
+
+  // Family reactions
+  ['jason','megan','john','kate'].forEach(n => {
+    const cap = n.charAt(0).toUpperCase() + n.slice(1);
+    const val = a.family_reactions?.[n];
+    const checkbox = $(`reaction${cap}On`);
+    const select   = $(`reaction${cap}`);
+    if (checkbox) checkbox.checked = !!val;
+    if (select) {
+      select.disabled = !val;
+      select.value = val || '5';
+    }
+  });
+
+  toggleAdvFields();
+  $('advCancelBtn').style.display = '';
+  $('advSaveLabel').textContent   = 'Update Adventure →';
+
+  // Scroll form into view
+  document.querySelector('#panelAdventures .editor-panel')?.scrollIntoView({ behavior: 'smooth' });
+}
+
+// ── Delete ────────────────────────────────────────────────────────
+async function advDelete(id, name) {
+  if (!confirm(`Delete "${name}"? This cannot be undone.`)) return;
+
+  try {
+    const res = await fetch(
+      `${ADV_SUPABASE_URL}/rest/v1/adventures?id=eq.${id}`,
+      {
+        method: 'DELETE',
+        headers: {
+          'apikey': ADV_SUPABASE_ANON,
+          'Authorization': `Bearer ${ADV_SUPABASE_ANON}`,
+          'Prefer': 'return=minimal',
+        },
+      }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    showStatus(`✓ "${name}" deleted.`, false);
+    advAdminLoad();
+  } catch (err) {
+    showStatus('✗ Delete failed: ' + err.message, true);
+  }
+}
+
+// ── Cancel Edit ───────────────────────────────────────────────────
+function advCancelEdit() {
+  advResetForm();
+}
+
+function advResetForm() {
+  $('advEditId').value          = '';
+  $('advFormTitle').textContent  = 'New Adventure';
+  $('advSaveLabel').textContent  = 'Save Adventure →';
+  $('advCancelBtn').style.display = 'none';
+  $('advName').value             = '';
+  $('advCity').value             = '';
+  $('advCountry').value          = '';
+  $('advDate').value             = new Date().toISOString().split('T')[0];
+  $('advCuisine').value          = '';
+  $('advPrice').value            = '';
+  $('advRating').value           = '';
+  $('advKidFriendly').checked    = false;
+  $('advWouldReturn').checked    = false;
+  $('advNotes').value            = '';
+  $('advTags').value             = '';
+  $('advPhotos').value           = '';
+  $('advLat').value              = '';
+  $('advLng').value              = '';
+  $('advPostUrl').value          = '';
+  ['jason','megan','john','kate'].forEach(n => {
+    const cap = n.charAt(0).toUpperCase() + n.slice(1);
+    const cb = $(`reaction${cap}On`);
+    const sel = $(`reaction${cap}`);
+    if (cb)  cb.checked = false;
+    if (sel) { sel.disabled = true; sel.value = '5'; }
+  });
+  toggleAdvFields();
+}
+
+function escHtmlAdmin(str) {
+  if (!str) return '';
+  return String(str)
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
 }
