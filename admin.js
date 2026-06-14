@@ -2013,7 +2013,9 @@ function advResetForm() {
   $('advLat').value              = '';
   $('advLng').value              = '';
   // advPlaceName removed
-  $('advPlaceSearch').value      = '';
+  const _autoEl = document.getElementById('advPlaceAutocomplete');
+  if (_autoEl) _autoEl.value = '';
+  else if ($('advPlaceSearch')) $('advPlaceSearch').value = '';
   document.getElementById('advMapPreview')?.classList.add('hidden');
   $('advPostUrl').value          = '';
   ['jason','megan','john','kate'].forEach(n => {
