@@ -2185,26 +2185,39 @@ let adminMapPreview   = null;
 let adminMapMarker    = null;
 
 function initAdminMaps() {
-  const input = document.getElementById('advPlaceSearch');
-  if (!input) return;
+  const inputWrap = document.getElementById('advPlaceSearch')?.parentElement;
+  if (!inputWrap) return;
 
-  adminAutocomplete = new google.maps.places.Autocomplete(input, {
-    fields: ['geometry', 'name', 'formatted_address'],
-  });
+  // Use new PlaceAutocompleteElement (replaces deprecated Autocomplete)
+  const placeAuto = new google.maps.places.PlaceAutocompleteElement();
+  placeAuto.id = 'advPlaceAutocomplete';
+  placeAuto.style.width = '100%';
+  placeAuto.style.fontFamily = 'var(--font-mono)';
 
-  adminAutocomplete.addListener('place_changed', () => {
-    const place = adminAutocomplete.getPlace();
-    if (!place.geometry || !place.geometry.location) return;
+  // Replace the text input with the new element
+  const oldInput = document.getElementById('advPlaceSearch');
+  if (oldInput) oldInput.replaceWith(placeAuto);
 
-    const lat = place.geometry.location.lat();
-    const lng = place.geometry.location.lng();
-    const name = place.name || '';
+  placeAuto.addEventListener('gmp-placeselect', async (e) => {
+    const place = e.placeName ? e : e.place;
+    // Fetch full details
+    const { Place } = await google.maps.importLibrary('places');
+    const p = new Place({ id: e.placeName || (place && place.id) || '' });
 
-    // Fill hidden fields
+    // Fallback: use viewport/location from event directly if available
+    let lat, lng, name;
+    if (e.place) {
+      await e.place.fetchFields({ fields: ['displayName', 'location'] });
+      lat  = e.place.location?.lat();
+      lng  = e.place.location?.lng();
+      name = e.place.displayName || '';
+    }
+
+    if (!lat || !lng) return;
+
     document.getElementById('advLat').value = lat;
     document.getElementById('advLng').value = lng;
 
-    // Fill place name if empty
     const placeNameField = document.getElementById('advPlaceName');
     if (placeNameField && !placeNameField.value) {
       placeNameField.value = name;
