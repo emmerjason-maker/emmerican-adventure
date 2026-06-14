@@ -119,11 +119,12 @@ function groupAdventures(data) {
 
   data.forEach(a => {
     const country = a.location_country || 'Location Unknown';
+    const state   = a.location_state   || '';
     const city    = a.location_city    || '';
-    const key     = city ? `${country}||${city}` : country;
+    const key     = city ? `${country}||${state}||${city}` : country;
 
     if (!map.has(key)) {
-      map.set(key, { country, city, items: [] });
+      map.set(key, { country, state, city, items: [] });
     }
     map.get(key).items.push(a);
   });
@@ -139,7 +140,8 @@ function groupAdventures(data) {
 }
 
 function renderGroup(group) {
-  const label = group.city ? `${group.city}, ${group.country}` : group.country;
+  const parts = [group.city, group.state, group.country].filter(Boolean);
+  const label = parts.length > 1 ? parts.join(', ') : group.country;
   const count = group.items.length;
   return `
     <div class="adv-group">
@@ -240,7 +242,7 @@ function renderCard(a) {
     </div>` : '';
 
   // Location line
-  const locParts = [a.location_city, a.location_country].filter(Boolean);
+  const locParts = [a.location_city, a.location_state, a.location_country].filter(Boolean);
   const locHtml = locParts.length
     ? `<p class="adv-card-location">${escHtml(locParts.join(', '))}</p>`
     : '';
