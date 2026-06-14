@@ -117,7 +117,8 @@
       background: var(--paper-warm);
       border: 1px solid var(--paper-dark);
       color: var(--ink);
-      width: 200px;
+      width: 100%;
+      max-width: 400px;
       outline: none;
       transition: border-color 0.2s;
     }
@@ -396,7 +397,7 @@
       <div class="photos-loading-kanji">写</div>
       <p>Loading photos…</p>
     </div>
-    <div id="photosEmpty" class="photos-empty hidden">No photos match.</div>
+    <div id="photosEmpty" class="photos-empty hidden" style="display:none;">No photos match.</div>
     <div class="photo-grid" id="photoGrid"></div>
 
   </main>
@@ -507,16 +508,16 @@
       return hay.includes(query);
     });
 
-    $('photosLoading').classList.add('hidden');
     $('photoCount').textContent = filteredPhotos.length;
 
+    const emptyEl = $('photosEmpty');
     if (filteredPhotos.length === 0) {
-      $('photosEmpty').classList.remove('hidden');
+      if (emptyEl) { emptyEl.style.display = ''; emptyEl.classList.remove('hidden'); }
       $('photoGrid').innerHTML = '';
       return;
     }
 
-    $('photosEmpty').classList.add('hidden');
+    if (emptyEl) { emptyEl.style.display = 'none'; emptyEl.classList.add('hidden'); }
 
     $('photoGrid').innerHTML = filteredPhotos.map((p, i) => {
       const tags = (p.tags || []).map(t => `<span class="photo-item-tag">${esc(t)}</span>`).join('');
