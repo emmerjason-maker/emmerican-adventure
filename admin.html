@@ -354,16 +354,19 @@
               <input type="text" class="field-input" id="advName" placeholder="e.g. Mos Burger Yokosuka" />
             </div>
 
-            <div class="field-row">
-              <div class="field-group">
-                <label class="field-label">City <span class="optional">auto-filled</span></label>
-                <input type="text" class="field-input" id="advCity" placeholder="Yokosuka" />
+            <details class="adv-location-override">
+              <summary class="adv-location-override-label">Override city / country <span class="optional">auto-filled from search</span></summary>
+              <div class="field-row" style="margin-top:0.75rem;">
+                <div class="field-group">
+                  <label class="field-label">City</label>
+                  <input type="text" class="field-input" id="advCity" placeholder="Yokosuka" />
+                </div>
+                <div class="field-group">
+                  <label class="field-label">Country</label>
+                  <input type="text" class="field-input" id="advCountry" placeholder="Japan" />
+                </div>
               </div>
-              <div class="field-group">
-                <label class="field-label">Country <span class="optional">auto-filled</span></label>
-                <input type="text" class="field-input" id="advCountry" placeholder="Japan" />
-              </div>
-            </div>
+            </details>
 
             <!-- Restaurant-only fields -->
             <div id="advRestaurantFields">
