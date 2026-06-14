@@ -2284,10 +2284,6 @@ window.initAdminMapsReady = async function() {
       if (disc) disc.open = true;
     }
 
-    // Store place name for map popup (use full name)
-    const placeNameField = document.getElementById('advPlaceName');
-    if (placeNameField) placeNameField.value = name;
-
     showAdminMapPreview(lat, lng, name);
   });
 }
