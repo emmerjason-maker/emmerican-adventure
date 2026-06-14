@@ -552,7 +552,14 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
 </head>
 <body>
   <div class="bg-kanji" aria-hidden="true">記</div>
-  <header class="site-header">
+  <header class="site-header" style="position:relative;">
+      <div class="header-search-bar" id="headerSearchBar" role="search">
+        <input type="search" class="header-search-input" id="headerSearchInput"
+          placeholder="Search posts, places, adventures…"
+          aria-label="Search site" />
+        <span class="header-search-hint">Press Enter to search</span>
+        <button class="header-search-close" id="headerSearchClose" aria-label="Close search">✕</button>
+      </div>
     <div class="header-inner">
       <div class="logo">
         <a href="../index.html" style="display:flex;align-items:center;gap:0.75rem;text-decoration:none;">
@@ -566,10 +573,12 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
       <nav class="nav">
         <a href="../index.html" class="nav-link">Home</a>
         <a href="../blog.html" class="nav-link active">Journal</a>
+        <a href="../adventures.html" class="nav-link">Adventures</a>
         <a href="../index.html#videos" class="nav-link">Videos</a>
-        <a href="../index.html#photos" class="nav-link">Photos</a>
-        <a href="../index.html#timeline" class="nav-link">Timeline</a>
+        <a href="../photos.html" class="nav-link">Photos</a>
+        <a href="../about.html" class="nav-link">About</a>
       </nav>
+      <button class="search-toggle" aria-label="Search" aria-expanded="false" aria-controls="headerSearchBar">🔍</button>
       <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode">🌙</button>
       <button class="mobile-menu-btn" aria-label="Menu">☰</button>
     </div>
