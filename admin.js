@@ -2235,7 +2235,7 @@ window.initAdminMapsReady = async function() {
   if (oldInput) oldInput.replaceWith(placeAuto);
 
   placeAuto.addEventListener('gmp-placeselect', async ({ place }) => {
-    await place.fetchFields({ fields: ['displayName', 'location'] });
+    await place.fetchFields({ fields: ['displayName', 'location', 'addressComponents'] });
 
     const lat  = place.location?.lat();
     const lng  = place.location?.lng();
@@ -2246,10 +2246,34 @@ window.initAdminMapsReady = async function() {
     document.getElementById('advLat').value = lat;
     document.getElementById('advLng').value = lng;
 
-    const placeNameField = document.getElementById('advPlaceName');
-    if (placeNameField && !placeNameField.value) {
-      placeNameField.value = name;
+    // Auto-fill name if empty
+    const nameField = document.getElementById('advName');
+    if (nameField && !nameField.value) nameField.value = name;
+
+    // Auto-fill city and country from address components
+    const components = place.addressComponents || [];
+    let city = '', country = '';
+    for (const c of components) {
+      const types = c.types || [];
+      if (types.includes('locality') || types.includes('postal_town')) {
+        city = c.longText || c.shortText || '';
+      }
+      if (types.includes('administrative_area_level_2') && !city) {
+        city = c.longText || '';
+      }
+      if (types.includes('country')) {
+        country = c.longText || '';
+      }
     }
+
+    const cityField    = document.getElementById('advCity');
+    const countryField = document.getElementById('advCountry');
+    if (cityField    && !cityField.value)    cityField.value    = city;
+    if (countryField && !countryField.value) countryField.value = country;
+
+    // Store place name for map popup (use full name)
+    const placeNameField = document.getElementById('advPlaceName');
+    if (placeNameField) placeNameField.value = name;
 
     showAdminMapPreview(lat, lng, name);
   });
