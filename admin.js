@@ -1703,7 +1703,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (sel) sel.disabled = true;
   });
 
-  $('advSaveBtn')?.addEventListener('click', advSave);
+  // advSaveBtn bound via advSaveWithUpload wrapper below
   $('advCancelBtn')?.addEventListener('click', advCancelEdit);
 
   // Set default date to today
@@ -1816,8 +1816,8 @@ async function advSave() {
   const payload = {
     type,
     name,
-    location_city:    $('advCity')?.value.trim()    || null,
-    location_country: $('advCountry')?.value.trim() || null,
+    location_city:    ($('advCity')?.value.trim() || $('advCity')?.dataset?.original || null),
+    location_country: ($('advCountry')?.value.trim() || $('advCountry')?.dataset?.original || null),
     visited_date:     $('advDate')?.value            || null,
     cuisine:          type === 'restaurant' ? ($('advCuisine')?.value.trim()  || null) : null,
     price_range:      type === 'restaurant' ? ($('advPrice')?.value           || null) : null,
@@ -1829,8 +1829,8 @@ async function advSave() {
     photos:           allAdvPhotos().length ? allAdvPhotos() : null,
     youtube_videos:   advYtVideos.length ? advYtVideos : null,
     place_name:       $('advName')?.value.trim()        || null,
-    lat:              ($('advLat')?.value && !isNaN(parseFloat($('advLat').value))) ? parseFloat($('advLat').value) : null,
-    lng:              ($('advLng')?.value && !isNaN(parseFloat($('advLng').value))) ? parseFloat($('advLng').value) : null,
+    lat:              parseFloat($('advLat')?.value || $('advLat')?.dataset?.original) || null,
+    lng:              parseFloat($('advLng')?.value || $('advLng')?.dataset?.original) || null,
     post_url:         $('advPostUrl')?.value.trim()   || null,
     family_reactions: Object.keys(reactions).length ? reactions : null,
     created_by:       ADV_ADMIN_ID,
@@ -1913,6 +1913,12 @@ function advEdit(id) {
   renderAdvYtList();
   if ($('advLat'))       $('advLat').value              = a.lat || '';
   if ($('advLng'))       $('advLng').value              = a.lng || '';
+  // Store original coords as data attrs so they survive without re-search
+  if ($('advLat'))       $('advLat').dataset.original   = a.lat || '';
+  if ($('advLng'))       $('advLng').dataset.original   = a.lng || '';
+  // Also store city/country originals
+  if ($('advCity'))      $('advCity').dataset.original  = a.location_city || '';
+  if ($('advCountry'))   $('advCountry').dataset.original = a.location_country || '';
   // Pre-fill location search with place name or city+country
   const advAutoEl = document.getElementById('advPlaceAutocomplete');
   const locationLabel = a.place_name || a.name || [a.location_city, a.location_country].filter(Boolean).join(', ');
