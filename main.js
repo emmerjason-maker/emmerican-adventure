@@ -227,6 +227,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
+
+  // ── Journal search ────────────────────────────────────────────
+  const blogSearch = document.getElementById('blogSearch');
+  if (blogSearch) {
+    blogSearch.addEventListener('input', () => {
+      const q = blogSearch.value.toLowerCase().trim();
+      document.querySelectorAll('.post-index-card').forEach(card => {
+        if (!q) {
+          card.classList.remove('hidden-by-search');
+          return;
+        }
+        const text = card.textContent.toLowerCase();
+        card.classList.toggle('hidden-by-search', !text.includes(q));
+      });
+    });
+  }
+
   // ── Show post-ad only when AdSense fills it ───────────────────
   const postAd = document.querySelector('.post-ad');
   if (postAd) {
