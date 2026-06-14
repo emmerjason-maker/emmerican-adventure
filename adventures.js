@@ -9,6 +9,7 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const $ = id => document.getElementById(id);
 
 let allAdventures = [];
+let adventuresLoaded = false;
 let activeType    = 'all';
 let lightboxPhotos = [];
 let lightboxIndex  = 0;
@@ -38,6 +39,7 @@ async function loadAdventures() {
     allAdventures = await res.json();
     const loadEl = $('advLoading');
     if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.add('hidden'); }
+    adventuresLoaded = true;
     renderAll();
   } catch (err) {
     console.error('Failed to load adventures:', err);
@@ -86,9 +88,7 @@ function renderAll() {
   updateStats(allAdventures);
 
   // Don't show empty state if data hasn't loaded yet
-  if (!allAdventures.length && filtered.length === 0) {
-    return;
-  }
+  if (!adventuresLoaded) return;
 
   const emptyEl = $('advEmpty');
   if (filtered.length === 0) {
