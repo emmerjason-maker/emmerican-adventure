@@ -247,9 +247,16 @@
               </div>
               <div class="field-group">
                 <label class="field-label">Location <span class="optional">optional</span></label>
-                <input type="text" class="field-input" id="editLocation"
-                  placeholder="Jacksonville, FL  or  Label | https://maps.app.goo.gl/xxx" />
-                <p class="field-hint">Plain text, Maps URL, or <strong>Label | Maps URL</strong></p>
+                <input type="text" class="field-input" id="editLocationSearch"
+                  placeholder="Search for a place, city, or address…" autocomplete="off" />
+                <p class="field-hint">Start typing to search Google Maps. Coordinates saved automatically.</p>
+                <input type="hidden" id="editLocationName" />
+                <input type="hidden" id="editLat" />
+                <input type="hidden" id="editLng" />
+                <div id="editMapPreview" class="adv-map-preview hidden">
+                  <div id="editMapPreviewInner"></div>
+                  <p class="adv-map-coords" id="editMapCoords"></p>
+                </div>
               </div>
               <div class="field-group">
                 <label class="field-label">YouTube Videos <span class="optional">optional</span></label>
