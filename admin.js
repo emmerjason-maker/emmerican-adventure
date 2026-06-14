@@ -669,7 +669,7 @@ function slugify(title) {
 async function handlePublish() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
-  const location = $('postLocation') ? $('postLocation').value.trim() : '';
+  const location = $('postLocationName')?.value.trim() || $('postLocationSearch')?.value.trim() || '';
   const body     = $('postBody').innerHTML.trim();
   const ytId     = (typeof ytVideos !== 'undefined' && ytVideos.length > 0) ? ytVideos[0].id : null;
   const linkUrl  = $('postLink').value.trim();
@@ -1224,7 +1224,7 @@ function resetForm() {
   $('postBody').innerHTML = '';
   if (typeof ytVideos !== 'undefined') { ytVideos = []; if ($('ytVideoList')) $('ytVideoList').innerHTML = ''; }
   $('postLink').value     = '';
-  if ($('postLocation')) $('postLocation').value = '';
+  if ($('postLocationSearch')) $('postLocationSearch').value = '';
   $('postLinkText').value = '';
   $('postDate').value     = new Date().toISOString().split('T')[0];
   images = [];
@@ -2194,6 +2194,7 @@ let adminMapPreview   = null;
 let adminMapMarker    = null;
 
 window.initAdminMapsReady = async function() {
+  initPostLocationSearch();
   const inputWrap = document.getElementById('advPlaceSearch')?.parentElement;
   if (!inputWrap) return;
 
@@ -2562,4 +2563,71 @@ function closeExistingPhotoBrowser() {
   });
 
   document.getElementById('existingPhotoBrowser').classList.add('hidden');
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Post Location — Google Places Autocomplete
+   ═══════════════════════════════════════════════════════════════ */
+
+let postMapPreview = null;
+let postMapMarker  = null;
+
+// Called by initAdminMapsReady (runs after Maps API loads)
+function initPostLocationSearch() {
+  const input = document.getElementById('postLocationSearch');
+  if (!input) return;
+
+  const placeAuto = new google.maps.places.PlaceAutocompleteElement();
+  placeAuto.id = 'postPlaceAutocomplete';
+  placeAuto.style.width = '100%';
+  placeAuto.style.fontFamily = 'var(--font-mono)';
+  input.replaceWith(placeAuto);
+
+  placeAuto.addEventListener('gmp-placeselect', async ({ place }) => {
+    await place.fetchFields({ fields: ['displayName', 'location', 'formattedAddress'] });
+
+    const lat  = place.location?.lat();
+    const lng  = place.location?.lng();
+    const name = place.displayName || place.formattedAddress || '';
+
+    if (!lat || !lng) return;
+
+    document.getElementById('postLocationName').value = name;
+    document.getElementById('postLat').value = lat;
+    document.getElementById('postLng').value = lng;
+
+    showPostMapPreview(lat, lng, name);
+  });
+}
+
+function showPostMapPreview(lat, lng, label) {
+  const wrap  = document.getElementById('postMapPreview');
+  const inner = document.getElementById('postMapPreviewInner');
+  const coords = document.getElementById('postMapCoords');
+  if (!wrap || !inner) return;
+
+  wrap.classList.remove('hidden');
+
+  if (!postMapPreview) {
+    postMapPreview = new google.maps.Map(inner, {
+      zoom: 14,
+      center: { lat, lng },
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      styles: adminMapStyles(),
+    });
+    postMapMarker = new google.maps.Marker({
+      position: { lat, lng },
+      map: postMapPreview,
+      title: label,
+    });
+  } else {
+    postMapPreview.setCenter({ lat, lng });
+    postMapMarker.setPosition({ lat, lng });
+    postMapMarker.setTitle(label);
+  }
+
+  if (coords) coords.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
 }
