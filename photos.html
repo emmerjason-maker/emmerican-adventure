@@ -439,6 +439,10 @@
         return true;
       });
 
+      // Hide loading spinner before rendering
+      const loadEl = document.getElementById('photosLoading');
+      if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.add('hidden'); }
+
       buildTagPills();
       renderPhotos();
     } catch (err) {
