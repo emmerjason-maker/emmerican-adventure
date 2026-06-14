@@ -453,9 +453,28 @@
             </div>
 
             <div class="field-group">
-              <label class="field-label">Photos <span class="optional">optional — paste URLs, one per line</span></label>
-              <textarea class="field-input" id="advPhotos" rows="3" placeholder="https://…&#10;https://…"></textarea>
-              <p class="field-hint">Upload to your GitHub images folder first, then paste the URLs here.</p>
+              <label class="field-label">Photos <span class="optional">optional</span></label>
+              <div class="upload-zone adv-upload-zone" id="advUploadZone">
+                <input type="file" id="advPhotoInput" accept="image/*" multiple class="upload-input" />
+                <div class="upload-inner" id="advUploadInner">
+                  <span class="upload-icon">📷</span>
+                  <span class="upload-text">Tap to upload photos</span>
+                  <span class="upload-sub">Auto-compressed · JPG, PNG, WebP</span>
+                </div>
+              </div>
+              <div id="advImageList" class="adv-image-list"></div>
+              <p class="field-hint">Or paste URLs directly (one per line):</p>
+              <textarea class="field-input" id="advPhotos" rows="2" placeholder="https://…&#10;https://…"></textarea>
+            </div>
+
+            <div class="field-group">
+              <label class="field-label">YouTube Videos <span class="optional">optional</span></label>
+              <div class="adv-yt-row">
+                <input type="text" class="field-input" id="advYtUrl" placeholder="YouTube URL or video ID" style="flex:1;" />
+                <input type="text" class="field-input" id="advYtLabel" placeholder="Label (optional)" style="width:140px;" />
+                <button class="btn-ghost btn-sm" type="button" onclick="advAddYt()">+ Add</button>
+              </div>
+              <div id="advYtList" class="adv-yt-list"></div>
             </div>
 
             <div class="field-group">
@@ -587,6 +606,28 @@
 
         </div>
       </div><!-- end panelImages -->
+
+
+      <!-- ── Existing Photo Browser Modal ────────────────────── -->
+      <div id="existingPhotoBrowser" class="modal-overlay hidden">
+        <div class="modal-box">
+          <div class="modal-header">
+            <h3 class="modal-title">Pick Existing Photos</h3>
+            <button class="modal-close" onclick="closeExistingPhotoBrowser()">✕</button>
+          </div>
+          <div class="modal-search">
+            <input type="search" class="field-input" id="existingPhotoSearch"
+              placeholder="Search by tag or description…" style="font-size:0.75rem;" />
+          </div>
+          <div id="existingPhotoGrid" class="existing-photo-grid">
+            <p class="preview-empty">Loading…</p>
+          </div>
+          <div class="modal-footer">
+            <span id="existingPhotoCount" style="font-family:var(--font-mono);font-size:0.65rem;color:rgba(255,255,255,0.4);"></span>
+            <button class="btn-ghost" onclick="closeExistingPhotoBrowser()">Done</button>
+          </div>
+        </div>
+      </div>
 
     </main>
   </div>
