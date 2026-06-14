@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Our Map — Emmerican Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="darkmode.css" />
+  <script src="darkmode.js"></script>
+  <meta name="description" content="Every place the Emmerican family has visited — restaurants, attractions, and countries — mapped from Jacksonville to Japan." />
+  <meta property="og:title" content="Our Map — Emmerican Adventure" />
+  <meta property="og:url" content="https://emmericanadventure.com/map.html" />
+  <link rel="canonical" href="https://emmericanadventure.com/map.html" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <style>
+    html, body { height: 100%; margin: 0; }
+    .map-page { display: flex; flex-direction: column; height: 100vh; }
+
+    .map-header-bar {
+      background: var(--paper);
+      border-bottom: 1px solid var(--paper-dark);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+      position: relative;
+      z-index: 10;
+    }
+
+    .map-header-title {
+      font-family: var(--font-display);
+      font-size: 1.4rem;
+      color: var(--ink);
+      font-weight: 400;
+      white-space: nowrap;
+    }
+
+    .map-header-title a { color: inherit; text-decoration: none; }
+
+    .map-toggles { display: flex; gap: 0.5rem; flex-wrap: wrap; flex: 1; }
+
+    .map-toggle {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 0.35rem 0.85rem;
+      border: 1px solid var(--paper-dark);
+      background: transparent;
+      color: var(--ink-faint);
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      white-space: nowrap;
+    }
+
+    .map-toggle:hover { border-color: var(--ink-faint); color: var(--ink); }
+    .map-toggle.active-restaurant { background: var(--red);  border-color: var(--red);  color: #fff; }
+    .map-toggle.active-place      { background: var(--gold); border-color: var(--gold); color: var(--ink); }
+    .map-toggle.active-country    { background: var(--ink);  border-color: var(--ink);  color: var(--paper); }
+
+    .map-count { font-family: var(--font-mono); font-size: 0.62rem; }
+
+    .map-container { flex: 1; position: relative; }
+    #mainMap { width: 100%; height: 100%; }
+
+    .map-loading {
+      position: absolute; inset: 0;
+      display: flex; align-items: center; justify-content: center;
+      background: var(--paper); z-index: 5;
+      font-family: var(--font-mono); font-size: 0.8rem;
+      color: var(--ink-faint); flex-direction: column; gap: 1rem;
+    }
+
+    .map-loading-kanji { font-family: var(--font-body); font-size: 3rem; color: var(--paper-dark); }
+
+    /* Popup */
+    .map-popup { padding: 1rem 1.1rem 0.85rem; min-width: 200px; max-width: 260px; }
+    .map-popup-type { font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); margin-bottom: 0.3rem; }
+    .map-popup-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 400; color: var(--ink); line-height: 1.2; margin-bottom: 0.25rem; }
+    .map-popup-loc { font-family: var(--font-mono); font-size: 0.62rem; color: var(--ink-faint); margin-bottom: 0.5rem; }
+    .map-popup-stars { display: flex; gap: 2px; margin-bottom: 0.4rem; align-items: center; }
+    .map-popup-star { color: var(--gold); font-size: 0.8rem; }
+    .map-popup-star.empty { color: var(--paper-dark); }
+    .map-popup-notes { font-size: 0.78rem; color: var(--ink-faint); line-height: 1.5; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .map-popup-link { font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--red); text-decoration: none; }
+
+    @media (max-width: 640px) {
+      .map-header-bar { padding: 0.5rem 1rem; gap: 0.75rem; }
+      .map-header-title { font-size: 1.1rem; }
+      .map-toggle { font-size: 0.6rem; padding: 0.3rem 0.6rem; }
+    }
+  </style>
+</head>
+<body>
+<div class="map-page">
+
+  <div class="map-header-bar">
+    <div class="map-header-title">
+      <a href="index.html">Emmerican Adventure</a>
+      <span style="color:var(--ink-faint);"> — Our Map</span>
+    </div>
+    <div class="map-toggles">
+      <button class="map-toggle active-restaurant" data-type="restaurant" onclick="toggleType(this, 'restaurant')">
+        🍜 Restaurants <span class="map-count" id="countRestaurant">0</span>
+      </button>
+      <button class="map-toggle active-place" data-type="place" onclick="toggleType(this, 'place')">
+        📍 Places <span class="map-count" id="countPlace">0</span>
+      </button>
+      <button class="map-toggle active-country" data-type="country" onclick="toggleType(this, 'country')">
+        🌏 Countries <span class="map-count" id="countCountry">0</span>
+      </button>
+    </div>
+    <a href="adventures.html" style="font-family:var(--font-mono);font-size:0.65rem;color:var(--ink-faint);text-decoration:none;text-transform:uppercase;letter-spacing:0.1em;white-space:nowrap;">← Adventures</a>
+  </div>
+
+  <div class="map-container">
+    <div class="map-loading" id="mapLoading">
+      <div class="map-loading-kanji">地</div>
+      <span>Loading map…</span>
+    </div>
+    <div id="mainMap"></div>
+  </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
+
+let map, infoWindow;
+let allMarkers    = [];
+let activeTypes   = { restaurant: true, place: true, country: true };
+let allAdventures = [];
+
+const PIN_COLORS = { restaurant: '#c0392b', place: '#b8922a', country: '#1a1714' };
+
+async function initMap() {
+  map = new google.maps.Map(document.getElementById('mainMap'), {
+    zoom: 3,
+    center: { lat: 25, lng: 160 },
+    mapTypeControl: false,
+    streetViewControl: false,
+    fullscreenControl: true,
+    styles: mapStyles(),
+  });
+  infoWindow = new google.maps.InfoWindow({ maxWidth: 280 });
+  await loadAdventures();
+  document.getElementById('mapLoading').style.display = 'none';
+}
+
+async function loadAdventures() {
+  try {
+    const res = await fetch(
+      SUPABASE_URL + '/rest/v1/adventures?select=*&status=eq.visited&order=visited_date.desc',
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }
+    );
+    if (!res.ok) throw new Error(res.status);
+    allAdventures = (await res.json()).filter(a => a.lat && a.lng);
+    placeMarkers();
+    updateCounts();
+  } catch(err) {
+    document.getElementById('mapLoading').innerHTML =
+      '<span style="color:#c0392b">Failed to load: ' + err.message + '</span>';
+  }
+}
+
+function placeMarkers() {
+  allMarkers.forEach(m => m.marker.setMap(null));
+  allMarkers = [];
+
+  allAdventures.forEach(a => {
+    const marker = new google.maps.Marker({
+      position: { lat: parseFloat(a.lat), lng: parseFloat(a.lng) },
+      map: activeTypes[a.type] ? map : null,
+      title: a.name,
+      icon: {
+        path: google.maps.SymbolPath.CIRCLE,
+        scale: a.type === 'country' ? 10 : 8,
+        fillColor: PIN_COLORS[a.type] || '#666',
+        fillOpacity: 0.92,
+        strokeColor: '#fff',
+        strokeWeight: 1.5,
+      },
+    });
+
+    marker.addListener('click', () => {
+      infoWindow.setContent(buildPopup(a));
+      infoWindow.open(map, marker);
+    });
+
+    allMarkers.push({ marker, type: a.type });
+  });
+
+  fitMapBounds();
+}
+
+function fitMapBounds() {
+  const visible = allMarkers.filter(m => m.marker.getMap());
+  if (!visible.length) return;
+  if (visible.length === 1) { map.setCenter(visible[0].marker.getPosition()); map.setZoom(13); return; }
+  const bounds = new google.maps.LatLngBounds();
+  visible.forEach(m => bounds.extend(m.marker.getPosition()));
+  map.fitBounds(bounds, { padding: 60 });
+}
+
+function toggleType(btn, type) {
+  activeTypes[type] = !activeTypes[type];
+  btn.classList.toggle('active-' + type, activeTypes[type]);
+  allMarkers.forEach(m => { if (m.type === type) m.marker.setMap(activeTypes[type] ? map : null); });
+  fitMapBounds();
+}
+
+function updateCounts() {
+  const counts = { restaurant: 0, place: 0, country: 0 };
+  allAdventures.forEach(a => { if (counts[a.type] !== undefined) counts[a.type]++; });
+  document.getElementById('countRestaurant').textContent = counts.restaurant;
+  document.getElementById('countPlace').textContent      = counts.place;
+  document.getElementById('countCountry').textContent    = counts.country;
+}
+
+function buildPopup(a) {
+  const typeLabel = { restaurant: '🍜 Restaurant', place: '📍 Place', country: '🌏 Country' }[a.type] || a.type;
+  const loc = [a.location_city, a.location_country].filter(Boolean).join(', ');
+  let starsHtml = '';
+  if (a.rating) {
+    const r = parseFloat(a.rating);
+    starsHtml = '<div class="map-popup-stars">' +
+      [1,2,3,4,5].map(i => {
+        const fill = Math.min(1, Math.max(0, r - (i - 1)));
+        return '<span class="map-popup-star' + (fill < 0.25 ? ' empty' : '') + '">★</span>';
+      }).join('') +
+      '<span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--ink-faint);margin-left:4px;">' + r + '</span>' +
+    '</div>';
+  }
+  const notes = a.notes ? '<p class="map-popup-notes">' + esc(a.notes) + '</p>' : '';
+  const link  = a.post_url
+    ? '<a href="' + esc(a.post_url) + '" class="map-popup-link">Read the post →</a>'
+    : '<a href="adventures.html" class="map-popup-link">See all adventures →</a>';
+
+  return '<div class="map-popup">' +
+    '<div class="map-popup-type">' + typeLabel + '</div>' +
+    '<div class="map-popup-name">' + esc(a.name) + '</div>' +
+    (loc ? '<div class="map-popup-loc">' + esc(loc) + '</div>' : '') +
+    starsHtml + notes + link +
+  '</div>';
+}
+
+function mapStyles() {
+  return [
+    { elementType: 'geometry', stylers: [{ color: '#f5f0e8' }] },
+    { elementType: 'labels.text.fill', stylers: [{ color: '#1a1714' }] },
+    { elementType: 'labels.text.stroke', stylers: [{ color: '#f5f0e8' }] },
+    { featureType: 'administrative', elementType: 'geometry.stroke', stylers: [{ color: '#c9c0b0' }] },
+    { featureType: 'road', elementType: 'geometry', stylers: [{ color: '#e8e0d0' }] },
+    { featureType: 'road.highway', elementType: 'geometry', stylers: [{ color: '#d4c9b5' }] },
+    { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#c0d4e8' }] },
+    { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+    { featureType: 'transit', stylers: [{ visibility: 'off' }] },
+  ];
+}
+
+function esc(s) {
+  if (!s) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCbNcDKZqf-4SdsAG6qR2_DtblVWulvyZg&libraries=places&callback=initMap" async defer></script>
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date()); gtag('config', 'G-KRCW4S3G9P');
+</script>
+</body>
+</html>
