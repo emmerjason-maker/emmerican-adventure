@@ -356,7 +356,7 @@
     <!-- Controls -->
     <div class="photos-controls">
       <div class="photos-pills" id="tagPills">
-        <button class="photos-pill active" data-tag="all">All</button>
+        <button class="photos-pill active" data-tag="all" onclick="setTag('all', this)">All</button>
       </div>
       <input type="search" class="photos-search" id="photoSearch" placeholder="Search photos…" />
     </div>
@@ -478,7 +478,8 @@
   function renderPhotos() {
     const query = ($('photoSearch')?.value || '').toLowerCase().trim();
 
-    filteredPhotos = allPhotos.filter(p => {
+    if (activeTag === undefined) activeTag = 'all';
+  filteredPhotos = allPhotos.filter(p => {
       if (activeTag !== 'all' && !(p.tags || []).includes(activeTag)) return false;
       if (query) {
         const hay = [p.alt_text, p.post_url, ...(p.tags || [])].filter(Boolean).join(' ').toLowerCase();
@@ -571,9 +572,7 @@
       searchDebounce = setTimeout(renderPhotos, 200);
     });
 
-    document.querySelector('.photos-pill')?.addEventListener('click', function() {
-      setTag('all', this);
-    });
+    // All pill handled via data-tag attribute below
   });
 
   function esc(str) {
