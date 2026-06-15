@@ -3009,7 +3009,7 @@ function plRenderList() {
     return;
   }
   list.innerHTML = plAllEntries.map(p => {
-    const loc = [p.location_city, p.location_country].filter(Boolean).join(', ');
+    const loc = [p.location_city, p.location_region, p.location_country].filter(Boolean).join(', ');
     return '<div class="adv-admin-entry">' +
       '<div class="adv-admin-entry-info">' +
         '<span class="adv-admin-type">📌</span>' +
