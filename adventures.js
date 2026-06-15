@@ -192,7 +192,11 @@ function renderCard(a) {
   if (typeof photos === 'string') {
     try { photos = JSON.parse(photos); } catch(e) { photos = []; }
   }
+  if (!Array.isArray(photos)) photos = [];
   const coverPhoto = photos[0] || null;
+  if (a.name === 'St Patrick\'s Cathedral') {
+    console.log('[photo debug]', a.name, 'raw:', JSON.stringify(a.photos), 'parsed:', photos, 'cover:', coverPhoto);
+  }
 
   // Photo area
   let photoHtml;
