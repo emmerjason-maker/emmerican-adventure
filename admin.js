@@ -2853,13 +2853,17 @@ function initEditLocationSearch() {
     const lng  = place.location?.lng();
     const name = place.displayName || place.formattedAddress || '';
 
-    if (!lat || !lng) return;
+    console.log('[editLocation] selected:', name, lat, lng);
+
+    if (!lat || !lng) { console.warn('[editLocation] no coords'); return; }
 
     document.getElementById('editLocationName').value = name;
     document.getElementById('editLat').value = lat;
     document.getElementById('editLng').value = lng;
 
+    console.log('[editLocation] calling showEditMapPreview');
     showEditMapPreview(lat, lng, name);
+    console.log('[editLocation] done');
   });
 }
 
