@@ -714,8 +714,8 @@
             <input type="hidden" id="plEditId" value="" />
 
             <div class="publish-row">
-              <button class="btn-ghost" id="plCancelBtn" style="display:none;">Cancel Edit</button>
-              <button class="btn-publish" id="plSaveBtn">
+              <button class="btn-ghost" id="plCancelBtn" style="display:none;" onclick="plReset()">Cancel Edit</button>
+              <button class="btn-publish" id="plSaveBtn" onclick="plSave()">
                 <span id="plSaveLabel">Save Location →</span>
               </button>
             </div>
