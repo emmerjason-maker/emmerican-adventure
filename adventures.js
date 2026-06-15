@@ -39,6 +39,9 @@ async function loadAdventures() {
     if (!advRes.ok) throw new Error(`Supabase error: ${advRes.status}`);
     allAdventures    = await advRes.json();
     allPostLocations = postRes.ok ? await postRes.json() : [];
+    console.log('[Adventures] rows:', allAdventures.length);
+    console.log('[Adventures] statuses:', [...new Set(allAdventures.map(a => a.status))]);
+    console.log('[Adventures] countries:', [...new Set(allAdventures.map(a => a.location_country).filter(Boolean))]);
     const loadEl = $('advLoading');
     if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.add('hidden'); }
     adventuresLoaded = true;
