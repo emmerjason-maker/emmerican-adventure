@@ -2936,8 +2936,8 @@ function plRenderList() {
         '</div>' +
       '</div>' +
       '<div class="adv-admin-actions">' +
-        '<button class="btn-ghost btn-sm" onclick="plEdit('' + p.id + '')">Edit</button>' +
-        '<button class="btn-ghost btn-sm btn-danger" onclick="plDelete('' + p.id + '', '' + escHtmlAdmin(p.place_name || '') + '')">Delete</button>' +
+        `<button class="btn-ghost btn-sm" onclick="plEdit('${p.id}')">Edit</button>` +
+        `<button class="btn-ghost btn-sm btn-danger" onclick="plDelete('${p.id}', '${escHtmlAdmin(p.place_name || '')}')">Delete</button>` +
       '</div>' +
     '</div>';
   }).join('');
