@@ -1830,7 +1830,7 @@ function advRenderList() {
     const date = a.visited_date
       ? new Date(a.visited_date + 'T12:00:00').toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
       : '';
-    const loc = [a.location_city, a.location_country].filter(Boolean).join(', ');
+    const loc = [a.location_city, a.location_region, a.location_country].filter(Boolean).join(', ');
     return `
       <div class="adv-admin-entry">
         <div class="adv-admin-entry-info">
@@ -2029,7 +2029,7 @@ function advEdit(id) {
   if ($('advCountry'))   $('advCountry').dataset.original = a.location_country || '';
   // Pre-fill location search with place name or city+country
   const advAutoEl = document.getElementById('advPlaceAutocomplete');
-  const locationLabel = a.place_name || a.name || [a.location_city, a.location_country].filter(Boolean).join(', ');
+  const locationLabel = a.place_name || a.name || [a.location_city, a.location_region, a.location_country].filter(Boolean).join(', ');
   if (advAutoEl) advAutoEl.value = locationLabel;
   else if ($('advPlaceSearch')) $('advPlaceSearch').value = locationLabel;
 
