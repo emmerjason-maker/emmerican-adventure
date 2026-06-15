@@ -1637,8 +1637,7 @@ async function savePostEdit(filename) {
             },
             body: JSON.stringify(locPayload),
           });
-          console.log('[savePostEdit] location saved to Supabase:', locPayload);
-        } catch(locErr) {
+              } catch(locErr) {
           console.warn('[savePostEdit] location Supabase save failed:', locErr);
         }
       }
