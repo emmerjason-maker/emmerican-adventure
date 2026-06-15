@@ -1918,7 +1918,26 @@ function advEdit(id) {
   if ($('advWouldReturn')) $('advWouldReturn').checked  = !!a.would_return;
   if ($('advNotes'))     $('advNotes').value            = a.notes || '';
   if ($('advTags'))      $('advTags').value             = (a.tags || []).join(', ');
-  if ($('advPhotos'))    $('advPhotos').value           = (a.photos || []).join('\n');
+  // Populate photos — show existing as thumbnails in the image list
+  const existingPhotos = a.photos || [];
+  advImages = []; // clear any pending uploads
+  if ($('advPhotos')) $('advPhotos').value = ''; // clear paste field
+
+  const imgList = document.getElementById('advImageList');
+  if (imgList) {
+    if (existingPhotos.length) {
+      imgList.innerHTML = existingPhotos.map((url, i) => `
+        <div class="adv-image-item" data-existing="${url}">
+          <img src="${url}" alt="Photo ${i+1}" style="width:80px;height:60px;object-fit:cover;border:1px solid var(--border);" />
+          <span style="font-family:var(--font-mono);font-size:0.6rem;color:rgba(255,255,255,0.4);word-break:break-all;max-width:160px;">${url.split('/').pop()}</span>
+          <button type="button" onclick="removeExistingPhoto('${url}')" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.8rem;">✕</button>
+        </div>
+      `).join('');
+    } else {
+      imgList.innerHTML = '';
+    }
+  }
+
   advYtVideos = a.youtube_videos || [];
   renderAdvYtList();
   if ($('advLat'))       $('advLat').value              = a.lat || '';
@@ -2414,9 +2433,20 @@ function advRemoveImage(id) {
 
 // Returns all photo URLs: uploaded + pasted
 function allAdvPhotos(uploadedUrls = []) {
+  // Collect existing photos shown in the image list (on edit)
+  const existing = [];
+  document.querySelectorAll('#advImageList [data-existing]').forEach(el => {
+    existing.push(el.dataset.existing);
+  });
+  // Collect pasted URLs
   const pasted = (document.getElementById('advPhotos')?.value || '')
     .split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-  return [...uploadedUrls, ...pasted];
+  return [...existing, ...uploadedUrls, ...pasted];
+}
+
+function removeExistingPhoto(url) {
+  const el = document.querySelector(`#advImageList [data-existing="${CSS.escape(url)}"]`);
+  if (el) el.remove();
 }
 
 // Upload adventure images to GitHub and return URLs
