@@ -139,24 +139,23 @@ function updateStats(data) {
 }
 
 function groupAdventures(data) {
-  // Group by location_country → location_city
+  const UK_NATIONS = new Set(['Scotland', 'England', 'Wales', 'Northern Ireland']);
   const map = new Map();
 
   data.forEach(a => {
-    const country = a.location_country || 'Location Unknown';
-    const state   = a.location_state   || '';
+    const country = a.location_country || 'Unknown';
+    const region  = a.location_region  || '';
     const city    = a.location_city    || '';
-    const key     = city ? `${country}||${state}||${city}` : country;
-
+    const displayCountry = (country === 'United Kingdom' && UK_NATIONS.has(region))
+      ? region : country;
+    const key = city ? `${displayCountry}||${city}` : displayCountry;
     if (!map.has(key)) {
-      map.set(key, { country, state, city, items: [] });
+      map.set(key, { country: displayCountry, city, items: [] });
     }
     map.get(key).items.push(a);
   });
 
-  // Sort groups: US first, then chronologically by newest entry
   return Array.from(map.values()).sort((a, b) => {
-    // US entries first
     const aUs = a.country === 'United States' ? 0 : 1;
     const bUs = b.country === 'United States' ? 0 : 1;
     if (aUs !== bUs) return aUs - bUs;
@@ -165,8 +164,8 @@ function groupAdventures(data) {
 }
 
 function renderGroup(group) {
-  const parts = [group.city, group.state, group.country].filter(Boolean);
-  const label = parts.length > 1 ? parts.join(', ') : group.country;
+  const parts = [group.city, group.country].filter(Boolean);
+  const label = parts.filter((v, i, a) => a.indexOf(v) === i).join(', ') || group.country;
   const count = group.items.length;
   return `
     <div class="adv-group">
