@@ -2777,20 +2777,17 @@ function initPostLocationSearch() {
   const input = document.getElementById('postLocationSearch');
   if (!input) return;
 
-  const placeAuto = new google.maps.places.PlaceAutocompleteElement();
-  placeAuto.id = 'postPlaceAutocomplete';
-  placeAuto.style.width = '100%';
-  placeAuto.style.fontFamily = 'var(--font-mono)';
-  input.replaceWith(placeAuto);
+  const autocomplete = new google.maps.places.Autocomplete(input, {
+    fields: ['name', 'geometry', 'address_components'],
+  });
 
-  placeAuto.addEventListener('gmp-placeselect', async ({ place }) => {
-    await place.fetchFields({ fields: ['displayName', 'location', 'formattedAddress'] });
+  autocomplete.addListener('place_changed', () => {
+    const place = autocomplete.getPlace();
+    if (!place.geometry || !place.geometry.location) return;
 
-    const lat  = place.location?.lat();
-    const lng  = place.location?.lng();
-    const name = place.displayName || place.formattedAddress || '';
-
-    if (!lat || !lng) return;
+    const lat  = place.geometry.location.lat();
+    const lng  = place.geometry.location.lng();
+    const name = place.name || '';
 
     document.getElementById('postLocationName').value = name;
     document.getElementById('postLat').value = lat;
@@ -2840,30 +2837,24 @@ function initEditLocationSearch() {
   const input = document.getElementById('editLocationSearch');
   if (!input) return;
 
-  const placeAuto = new google.maps.places.PlaceAutocompleteElement();
-  placeAuto.id = 'editPlaceAutocomplete';
-  placeAuto.style.width = '100%';
-  placeAuto.style.fontFamily = 'var(--font-mono)';
-  input.replaceWith(placeAuto);
+  // Use classic Autocomplete — same as Adventures, proven to work
+  const autocomplete = new google.maps.places.Autocomplete(input, {
+    fields: ['name', 'geometry', 'address_components'],
+  });
 
-  placeAuto.addEventListener('gmp-placeselect', async ({ place }) => {
-    await place.fetchFields({ fields: ['displayName', 'location', 'formattedAddress'] });
+  autocomplete.addListener('place_changed', () => {
+    const place = autocomplete.getPlace();
+    if (!place.geometry || !place.geometry.location) return;
 
-    const lat  = place.location?.lat();
-    const lng  = place.location?.lng();
-    const name = place.displayName || place.formattedAddress || '';
-
-    console.log('[editLocation] selected:', name, lat, lng);
-
-    if (!lat || !lng) { console.warn('[editLocation] no coords'); return; }
+    const lat  = place.geometry.location.lat();
+    const lng  = place.geometry.location.lng();
+    const name = place.name || '';
 
     document.getElementById('editLocationName').value = name;
     document.getElementById('editLat').value = lat;
     document.getElementById('editLng').value = lng;
 
-    console.log('[editLocation] calling showEditMapPreview');
     showEditMapPreview(lat, lng, name);
-    console.log('[editLocation] done');
   });
 }
 
