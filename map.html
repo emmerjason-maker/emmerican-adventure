@@ -36,8 +36,8 @@
       text-transform: uppercase;
       letter-spacing: 0.1em;
       color: var(--ink-faint);
-      margin-left: auto;
       white-space: nowrap;
+      padding: 0.35rem 0.5rem;
     }
 
     .map-toggle {
@@ -129,6 +129,7 @@
   </header>
 
   <div class="map-toggles-bar">
+    <div class="map-countries-count">🌏 <span id="countCountry">0</span> countries</div>
     <button class="map-toggle active-restaurant" data-type="restaurant" onclick="toggleType(this, 'restaurant')">
       🍜 Restaurants <span class="map-count" id="countRestaurant">0</span>
     </button>
@@ -138,7 +139,6 @@
     <button class="map-toggle active-post" data-type="post" onclick="toggleType(this, 'post')">
       📝 Posts <span class="map-count" id="countPost">0</span>
     </button>
-    <div class="map-countries-count">🌏 <span id="countCountry">0</span> countries</div>
   </div>
 
   <div class="map-container">
