@@ -65,6 +65,7 @@
     .map-toggle.active-restaurant { background: var(--red);  border-color: var(--red);  color: #fff; }
     .map-toggle.active-place      { background: var(--gold); border-color: var(--gold); color: var(--ink); }
     .map-toggle.active-country    { background: var(--ink);  border-color: var(--ink);  color: var(--paper); }
+    .map-toggle.active-post       { background: #2980b9; border-color: #2980b9; color: #fff; }
 
     .map-count { font-family: var(--font-mono); font-size: 0.62rem; }
 
@@ -117,6 +118,9 @@
       <button class="map-toggle active-country" data-type="country" onclick="toggleType(this, 'country')">
         🌏 Countries <span class="map-count" id="countCountry">0</span>
       </button>
+      <button class="map-toggle active-post" data-type="post" onclick="toggleType(this, 'post')">
+        📝 Posts <span class="map-count" id="countPost">0</span>
+      </button>
     </div>
     <input type="search" id="mapSearch" placeholder="Search locations…"
       style="font-family:var(--font-mono);font-size:0.65rem;padding:0.35rem 0.85rem;
@@ -142,10 +146,10 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 let map, infoWindow;
 let allMarkers    = [];
-let activeTypes   = { restaurant: true, place: true, country: true };
+let activeTypes   = { restaurant: true, place: true, country: true, post: true };
 let allAdventures = [];
 
-const PIN_COLORS = { restaurant: '#c0392b', place: '#b8922a', country: '#1a1714' };
+const PIN_COLORS = { restaurant: '#c0392b', place: '#b8922a', country: '#1a1714', post: '#2980b9' };
 
 async function initMap() {
   map = new google.maps.Map(document.getElementById('mainMap'), {
@@ -164,12 +168,18 @@ async function initMap() {
 
 async function loadAdventures() {
   try {
-    const res = await fetch(
-      SUPABASE_URL + '/rest/v1/adventures?select=*&status=eq.visited&order=visited_date.desc',
-      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }
-    );
-    if (!res.ok) throw new Error(res.status);
-    allAdventures = (await res.json()).filter(a => a.lat && a.lng);
+    const [advRes, postRes] = await Promise.all([
+      fetch(SUPABASE_URL + '/rest/v1/adventures?select=*&status=eq.visited&order=visited_date.desc',
+        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }),
+      fetch(SUPABASE_URL + '/rest/v1/post_locations?select=*&order=created_at.desc',
+        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }),
+    ]);
+    if (!advRes.ok) throw new Error('adventures: ' + advRes.status);
+    const adventures = (await advRes.json()).filter(a => a.lat && a.lng);
+    const postLocs   = postRes.ok ? (await postRes.json()) : [];
+    // Tag post locations with type='post' for unified handling
+    const posts = postLocs.map(p => ({ ...p, type: 'post', name: p.place_name || p.post_title || 'Blog Post' }));
+    allAdventures = [...adventures, ...posts];
     placeMarkers();
     updateCounts();
   } catch(err) {
@@ -225,15 +235,16 @@ function toggleType(btn, type) {
 }
 
 function updateCounts() {
-  const counts = { restaurant: 0, place: 0, country: 0 };
+  const counts = { restaurant: 0, place: 0, country: 0, post: 0 };
   allAdventures.forEach(a => { if (counts[a.type] !== undefined) counts[a.type]++; });
   document.getElementById('countRestaurant').textContent = counts.restaurant;
   document.getElementById('countPlace').textContent      = counts.place;
   document.getElementById('countCountry').textContent    = counts.country;
+  document.getElementById('countPost').textContent       = counts.post;
 }
 
 function buildPopup(a) {
-  const typeLabel = { restaurant: '🍜 Restaurant', place: '📍 Place', country: '🌏 Country' }[a.type] || a.type;
+  const typeLabel = { restaurant: '🍜 Restaurant', place: '📍 Place', country: '🌏 Country', post: '📝 Blog Post' }[a.type] || a.type;
   const loc = [a.location_city, a.location_country].filter(Boolean).join(', ');
   let starsHtml = '';
   if (a.rating) {
@@ -247,9 +258,11 @@ function buildPopup(a) {
     '</div>';
   }
   const notes = a.notes ? '<p class="map-popup-notes">' + esc(a.notes) + '</p>' : '';
-  const link  = a.post_url
+  const link  = a.type === 'post' && a.post_url
     ? '<a href="' + esc(a.post_url) + '" class="map-popup-link">Read the post →</a>'
-    : '<a href="adventures.html" class="map-popup-link">See all adventures →</a>';
+    : a.post_url
+      ? '<a href="' + esc(a.post_url) + '" class="map-popup-link">Read the post →</a>'
+      : '<a href="adventures.html" class="map-popup-link">See all adventures →</a>';
 
   return '<div class="map-popup">' +
     '<div class="map-popup-type">' + typeLabel + '</div>' +
