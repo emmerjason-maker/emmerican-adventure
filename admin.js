@@ -1813,7 +1813,7 @@ async function advSave() {
   // Upload any queued image files first, get their GitHub URLs
   let uploadedPhotoUrls = [];
   if (advImages && advImages.length > 0) {
-    const pat = sessionStorage.getItem('ghPat') || localStorage.getItem('adminToken') || '';
+    const pat = localStorage.getItem('jm_gh_token') || sessionStorage.getItem('ghPat') || localStorage.getItem('adminToken') || '';
     if (!pat) {
       showStatus('✗ No GitHub token found — sign out and sign back in to upload photos.', true);
       $('advSaveLabel').textContent = 'Save Adventure →';
@@ -2464,7 +2464,7 @@ function removeExistingPhoto(url) {
 
 // Upload adventure images to GitHub and return URLs
 async function uploadAdvImages() {
-  const pat    = sessionStorage.getItem('ghPat') || localStorage.getItem('adminToken') || '';
+  const pat    = localStorage.getItem('jm_gh_token') || sessionStorage.getItem('ghPat') || localStorage.getItem('adminToken') || '';
   const repo   = 'emmerjason-maker/emmerican-adventure';
   const branch = 'main';
   const urls   = [];
@@ -2533,7 +2533,7 @@ const _origAdvSave = window.advSave || advSave;
 async function advSaveWithUpload() {
   // Upload any queued images first
   if (advImages.length) {
-    const pat = sessionStorage.getItem('ghPat') || localStorage.getItem('adminToken') || '';
+    const pat = localStorage.getItem('jm_gh_token') || sessionStorage.getItem('ghPat') || localStorage.getItem('adminToken') || '';
     if (!pat) {
       showStatus('✗ No GitHub token — sign out and sign back in to upload photos.', true);
       return;
