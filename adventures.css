@@ -88,6 +88,12 @@
   gap: 0.5rem;
   flex-wrap: wrap;
   flex: 1;
+  align-items: flex-start;
+}
+
+.adv-pill {
+  position: relative;
+  z-index: 1;
 }
 
 .adv-pill {
