@@ -827,7 +827,7 @@ async function handlePublish() {
 
     // 11. Update RSS feed
     showStatus('Updating RSS feed…', false, true);
-    await updateRssFeed({ title, slug, fmtDate, excerpt });
+    await updateRssFeed({ title, slug, fmtDate, excerpt, imgSrc });
 
     // 11. Update Search Index
     showStatus('Updating search index…', false, true);
@@ -1129,7 +1129,7 @@ async function updatePhotoGrids({ title, uploadedImages }) {
 
 
 // ── Update RSS feed.xml ───────────────────────────────────────
-async function updateRssFeed({ title, slug, fmtDate, excerpt }) {
+async function updateRssFeed({ title, slug, fmtDate, excerpt, imgSrc }) {
   try {
     const fileRes = await ghFetch('contents/feed.xml');
     if (!fileRes.ok) return;
@@ -1145,12 +1145,15 @@ async function updateRssFeed({ title, slug, fmtDate, excerpt }) {
     // Build RFC 822 date
     const now = new Date().toUTCString();
 
+    const enclosureTag = imgSrc
+      ? `\n      <enclosure url="${imgSrc}" type="image/jpeg" length="204800" />`
+      : '';
     const newItem = `    <item>
       <title>${title.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</title>
       <link>${url}</link>
       <guid isPermaLink="true">${url}</guid>
       <pubDate>${now}</pubDate>
-      <description>${excerpt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</description>
+      <description>${excerpt.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}</description>${enclosureTag}
     </item>`;
 
     // Insert after <channel> opening tags, before first <item>
