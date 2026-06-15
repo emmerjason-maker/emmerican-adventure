@@ -155,11 +155,11 @@ function groupAdventures(data) {
     map.get(key).items.push(a);
   });
 
+  // Sort groups by their newest entry's visited_date (newest group first)
   return Array.from(map.values()).sort((a, b) => {
-    const aUs = a.country === 'United States' ? 0 : 1;
-    const bUs = b.country === 'United States' ? 0 : 1;
-    if (aUs !== bUs) return aUs - bUs;
-    return a.country.localeCompare(b.country) || a.city.localeCompare(b.city);
+    const aDate = a.items.reduce((max, i) => i.visited_date > max ? i.visited_date : max, '');
+    const bDate = b.items.reduce((max, i) => i.visited_date > max ? i.visited_date : max, '');
+    return bDate.localeCompare(aDate);
   });
 }
 
