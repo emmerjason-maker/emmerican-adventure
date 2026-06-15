@@ -1413,6 +1413,30 @@ async function loadPostForEditing(filename, sha) {
     if ($('editLocationName')) $('editLocationName').value = existingLocation;
     $('editPostTitle').textContent = `Editing: ${title}`;
 
+    // Load lat/lng from Supabase and show mini map if location exists
+    if (existingLocation) {
+      const postUrl = 'posts/' + filename;
+      try {
+        const locRes = await fetch(
+          'https://azjwuraxixuioeddkicq.supabase.co/rest/v1/post_locations?post_url=eq.' + encodeURIComponent(postUrl) + '&limit=1',
+          { headers: {
+            'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+            'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44'
+          }}
+        );
+        if (locRes.ok) {
+          const locData = await locRes.json();
+          if (locData.length && locData[0].lat && locData[0].lng) {
+            const lat = parseFloat(locData[0].lat);
+            const lng = parseFloat(locData[0].lng);
+            if ($('editLat')) $('editLat').value = lat;
+            if ($('editLng')) $('editLng').value = lng;
+            if (typeof showEditMapPreview === 'function') showEditMapPreview(lat, lng, existingLocation);
+          }
+        }
+      } catch(e) { console.log('Could not load location from Supabase:', e.message); }
+    }
+
     // Render photo and video lists
     if (typeof renderEditPhotoList === 'function') renderEditPhotoList();
     if (typeof renderEditYtVideoList === 'function') renderEditYtVideoList();
