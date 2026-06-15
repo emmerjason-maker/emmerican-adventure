@@ -2291,6 +2291,7 @@ window.initAdminMapsReady = async function() {
   initAdvLocationSearch();
   initPostLocationSearch();
   initEditLocationSearch();
+  initPostLocMaps();
 }
 
 function initAdvLocationSearch() {
@@ -2849,41 +2850,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Called by Google Maps callback
 function initPostLocMaps() {
-  const input = document.getElementById('plPlaceSearch');
-  if (!input || plAutocomplete) return;
+  const inputEl = document.getElementById('plPlaceSearch');
+  if (!inputEl || plAutocomplete) return;
 
-  plAutocomplete = new google.maps.places.Autocomplete(input, {
-    fields: ['geometry', 'name', 'address_components'],
-  });
+  // Use new PlaceAutocompleteElement
+  const autoEl = new google.maps.places.PlaceAutocompleteElement();
+  autoEl.style.width = '100%';
+  autoEl.style.fontFamily = 'var(--font-mono)';
+  inputEl.replaceWith(autoEl);
+  plAutocomplete = autoEl;
 
-  plAutocomplete.addListener('place_changed', () => {
-    const place = plAutocomplete.getPlace();
-    if (!place.geometry?.location) return;
+  autoEl.addEventListener('gmp-placeselect', async ({ place }) => {
+    await place.fetchFields({
+      fields: ['displayName', 'location', 'addressComponents']
+    });
 
-    const lat  = place.geometry.location.lat();
-    const lng  = place.geometry.location.lng();
-    const name = place.name || '';
+    const lat  = place.location?.lat();
+    const lng  = place.location?.lng();
+    const name = place.displayName || '';
+
+    if (!lat || !lng) return;
 
     $('plLat').value = lat;
     $('plLng').value = lng;
 
     if ($('plPlaceName') && !$('plPlaceName').value) $('plPlaceName').value = name;
 
-    let city = '', country = '';
-    for (const c of (place.address_components || [])) {
-      if (c.types.includes('locality') || c.types.includes('postal_town')) city = c.long_name;
-      if (c.types.includes('administrative_area_level_1')) state = c.long_name;
-      if (c.types.includes('country')) country = c.long_name;
-    }
-
-    // For UK addresses, use the nation (Scotland/England/Wales/N.Ireland) as the country
+    // Parse address components
+    let city = '', state = '', country = '';
     const UK_NATIONS = ['Scotland', 'England', 'Wales', 'Northern Ireland'];
-    if (country === 'United Kingdom' && UK_NATIONS.includes(state)) {
-      country = state;
+    for (const c of (place.addressComponents || [])) {
+      const types = c.types || [];
+      if (types.includes('locality') || types.includes('postal_town')) city = c.longText;
+      if (types.includes('administrative_area_level_1')) state = c.longText;
+      if (types.includes('country')) country = c.longText;
     }
+    if (country === 'United Kingdom' && UK_NATIONS.includes(state)) country = state;
 
-    if ($('plCity') && !$('plCity').value)       $('plCity').value    = city;
-    if ($('plRegion') && !$('plRegion').value)   $('plRegion').value  = state;
+    if ($('plCity')    && !$('plCity').value)    $('plCity').value    = city;
+    if ($('plRegion')  && !$('plRegion').value)  $('plRegion').value  = state;
     if ($('plCountry') && !$('plCountry').value) $('plCountry').value = country;
 
     plShowMapPreview(lat, lng, name);
