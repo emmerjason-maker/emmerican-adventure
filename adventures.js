@@ -187,7 +187,11 @@ function renderGroup(group) {
 
 function renderCard(a) {
   const typeEmoji = { restaurant: '🍜', place: '📍', country: '🌏' }[a.type] || '';
-  const photos = a.photos || [];
+  // photos may come back as array or JSON string — parse safely
+  let photos = a.photos || [];
+  if (typeof photos === 'string') {
+    try { photos = JSON.parse(photos); } catch(e) { photos = []; }
+  }
   const coverPhoto = photos[0] || null;
 
   // Photo area
