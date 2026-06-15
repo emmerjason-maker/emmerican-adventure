@@ -194,7 +194,7 @@
 
       const caption = document.getElementById('postMapCaption');
       if (caption) {
-        const parts = [loc.place_name, loc.location_city, loc.location_country].filter(Boolean);
+        const parts = [loc.place_name, loc.location_city, loc.location_region, loc.location_country].filter(Boolean);
         caption.textContent = parts.join(' · ');
       }
 
