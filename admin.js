@@ -2968,8 +2968,11 @@ async function plSave() {
   const lng       = parseFloat($('plLng')?.value);
   const editId    = $('plEditId')?.value;
 
+  console.log('[plSave] post_url:', post_url, 'lat:', lat, 'lng:', lng, 'editId:', editId);
+  console.log('[plSave] plPostUrl element:', document.getElementById('plPostUrl')?.value);
+  console.log('[plSave] plLat element:', document.getElementById('plLat')?.value);
   if (!post_url) { showStatus('Please select a post.', true); return; }
-  if (!lat || !lng) { showStatus('Please search and select a location.', true); return; }
+  if (!lat || !lng) { showStatus('Please search and select a location — lat/lng must be filled.', true); return; }
 
   const payload = {
     post_url,
