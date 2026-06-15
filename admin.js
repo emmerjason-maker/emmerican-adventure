@@ -1250,8 +1250,8 @@ let editBodyHtml  = '';
 
 // ── Tab switching ─────────────────────────────────────────────
 function switchTab(tab) {
-  const panels = ['panelNew', 'panelEdit', 'panelAdventures', 'panelImages'];
-  const tabs   = ['tabNew', 'tabEdit', 'tabAdventures', 'tabImages'];
+  const panels = ['panelNew', 'panelEdit', 'panelAdventures', 'panelImages', 'panelPostLoc'];
+  const tabs   = ['tabNew', 'tabEdit', 'tabAdventures', 'tabImages', 'tabPostLoc'];
 
   panels.forEach(id => $(id)?.classList.add('hidden'));
   tabs.forEach(id   => $(id)?.classList.remove('active'));
@@ -1271,6 +1271,10 @@ function switchTab(tab) {
     $('panelImages')?.classList.remove('hidden');
     $('tabImages')?.classList.add('active');
     imgAdminLoad();
+  } else if (tab === 'postloc') {
+    $('panelPostLoc')?.classList.remove('hidden');
+    $('tabPostLoc')?.classList.add('active');
+    plAdminLoad();
   }
 }
 
@@ -2759,4 +2763,226 @@ function showEditMapPreview(lat, lng, label) {
   }
 
   if (coords) coords.textContent = `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════
+   Post Locations Admin — Supabase CRUD
+   ═══════════════════════════════════════════════════════════════ */
+
+const PL_URL   = 'https://azjwuraxixuioeddkicq.supabase.co';
+const PL_ANON  = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
+const PL_ADMIN = '3fd413d3-d92d-440f-b0ff-ca98b36cf251';
+
+let plAllEntries  = [];
+let plMapPreview  = null;
+let plMapMarker   = null;
+let plAutocomplete = null;
+
+// ── Init ──────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  $('plSaveBtn')?.addEventListener('click', plSave);
+  $('plCancelBtn')?.addEventListener('click', plReset);
+});
+
+// Called by Google Maps callback
+function initPostLocMaps() {
+  const input = document.getElementById('plPlaceSearch');
+  if (!input || plAutocomplete) return;
+
+  plAutocomplete = new google.maps.places.Autocomplete(input, {
+    fields: ['geometry', 'name', 'address_components'],
+  });
+
+  plAutocomplete.addListener('place_changed', () => {
+    const place = plAutocomplete.getPlace();
+    if (!place.geometry?.location) return;
+
+    const lat  = place.geometry.location.lat();
+    const lng  = place.geometry.location.lng();
+    const name = place.name || '';
+
+    $('plLat').value = lat;
+    $('plLng').value = lng;
+
+    if ($('plPlaceName') && !$('plPlaceName').value) $('plPlaceName').value = name;
+
+    let city = '', country = '';
+    for (const c of (place.address_components || [])) {
+      if (c.types.includes('locality') || c.types.includes('postal_town')) city = c.long_name;
+      if (c.types.includes('administrative_area_level_1') && !city) city = c.long_name;
+      if (c.types.includes('country')) country = c.long_name;
+    }
+    if ($('plCity') && !$('plCity').value)       $('plCity').value    = city;
+    if ($('plCountry') && !$('plCountry').value) $('plCountry').value = country;
+
+    plShowMapPreview(lat, lng, name);
+  });
+}
+
+function plShowMapPreview(lat, lng, label) {
+  const wrap  = $('plMapPreview');
+  const inner = $('plMapPreviewInner');
+  const coords = $('plMapCoords');
+  if (!wrap || !inner) return;
+
+  wrap.classList.remove('hidden');
+
+  if (!plMapPreview) {
+    plMapPreview = new google.maps.Map(inner, {
+      zoom: 13, center: { lat, lng },
+      mapTypeControl: false, streetViewControl: false, fullscreenControl: false,
+      styles: adminMapStyles(),
+    });
+    plMapMarker = new google.maps.Marker({ position: { lat, lng }, map: plMapPreview, title: label });
+  } else {
+    plMapPreview.setCenter({ lat, lng });
+    plMapMarker.setPosition({ lat, lng });
+    plMapMarker.setTitle(label);
+  }
+  if (coords) coords.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+}
+
+// ── Load ──────────────────────────────────────────────────────────
+async function plAdminLoad() {
+  const list = $('plAdminList');
+  if (!list) return;
+  list.innerHTML = '<p class="preview-empty">Loading…</p>';
+
+  // Init autocomplete if Maps loaded
+  if (window.google?.maps) initPostLocMaps();
+
+  try {
+    const res = await fetch(
+      PL_URL + '/rest/v1/post_locations?select=*&order=created_at.desc',
+      { headers: { 'apikey': PL_ANON, 'Authorization': 'Bearer ' + PL_ANON } }
+    );
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    plAllEntries = await res.json();
+    plRenderList();
+    $('plCount').textContent = plAllEntries.length + ' locations';
+  } catch(err) {
+    list.innerHTML = '<p class="preview-empty" style="color:var(--red)">Error: ' + err.message + '</p>';
+  }
+}
+
+function plRenderList() {
+  const list = $('plAdminList');
+  if (!list) return;
+  if (!plAllEntries.length) {
+    list.innerHTML = '<p class="preview-empty">No post locations yet.</p>';
+    return;
+  }
+  list.innerHTML = plAllEntries.map(p => {
+    const loc = [p.location_city, p.location_country].filter(Boolean).join(', ');
+    return '<div class="adv-admin-entry">' +
+      '<div class="adv-admin-entry-info">' +
+        '<span class="adv-admin-type">📌</span>' +
+        '<div>' +
+          '<strong>' + escHtmlAdmin(p.place_name || p.post_url) + '</strong>' +
+          '<span class="adv-admin-meta">' + escHtmlAdmin(loc) + ' · ' + escHtmlAdmin(p.post_url || '') + '</span>' +
+        '</div>' +
+      '</div>' +
+      '<div class="adv-admin-actions">' +
+        '<button class="btn-ghost btn-sm" onclick="plEdit('' + p.id + '')">Edit</button>' +
+        '<button class="btn-ghost btn-sm btn-danger" onclick="plDelete('' + p.id + '', '' + escHtmlAdmin(p.place_name || '') + '')">Delete</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+// ── Save ──────────────────────────────────────────────────────────
+async function plSave() {
+  const post_url  = $('plPostUrl')?.value;
+  const lat       = parseFloat($('plLat')?.value);
+  const lng       = parseFloat($('plLng')?.value);
+  const editId    = $('plEditId')?.value;
+
+  if (!post_url) { showStatus('Please select a post.', true); return; }
+  if (!lat || !lng) { showStatus('Please search and select a location.', true); return; }
+
+  const payload = {
+    post_url,
+    post_title: $('plPostUrl')?.options[$('plPostUrl')?.selectedIndex]?.text || null,
+    place_name:       $('plPlaceName')?.value.trim() || null,
+    lat, lng,
+    location_city:    $('plCity')?.value.trim()    || null,
+    location_country: $('plCountry')?.value.trim() || null,
+    visited_date:     $('plDate')?.value           || null,
+    created_by:       PL_ADMIN,
+  };
+
+  $('plSaveLabel').textContent = 'Saving…';
+  $('plSaveBtn').disabled = true;
+
+  try {
+    const isEdit = !!editId;
+    const res = await fetch(
+      PL_URL + '/rest/v1/post_locations' + (isEdit ? '?id=eq.' + editId : ''),
+      {
+        method: isEdit ? 'PATCH' : 'POST',
+        headers: {
+          'apikey': PL_ANON, 'Authorization': 'Bearer ' + PL_ANON,
+          'Content-Type': 'application/json', 'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify(payload),
+      }
+    );
+    if (!res.ok) { const e = await res.json().catch(() => ({})); throw new Error(e.message || 'HTTP ' + res.status); }
+    showStatus('✓ Post location ' + (isEdit ? 'updated' : 'saved') + '!', false);
+    plReset();
+    plAdminLoad();
+  } catch(err) {
+    showStatus('✗ Error: ' + err.message, true);
+  } finally {
+    $('plSaveLabel').textContent = 'Save Location →';
+    $('plSaveBtn').disabled = false;
+  }
+}
+
+// ── Edit ──────────────────────────────────────────────────────────
+function plEdit(id) {
+  const p = plAllEntries.find(e => e.id === id);
+  if (!p) return;
+  $('plEditId').value      = p.id;
+  $('plPostUrl').value     = p.post_url || '';
+  $('plPlaceName').value   = p.place_name || '';
+  $('plCity').value        = p.location_city || '';
+  $('plCountry').value     = p.location_country || '';
+  $('plDate').value        = p.visited_date || '';
+  $('plLat').value         = p.lat || '';
+  $('plLng').value         = p.lng || '';
+  $('plPlaceSearch').value = p.place_name || '';
+  $('plFormTitle').textContent  = 'Edit Location';
+  $('plSaveLabel').textContent  = 'Update Location →';
+  $('plCancelBtn').style.display = '';
+  if (p.lat && p.lng) plShowMapPreview(parseFloat(p.lat), parseFloat(p.lng), p.place_name || '');
+}
+
+// ── Delete ────────────────────────────────────────────────────────
+async function plDelete(id, name) {
+  if (!confirm('Delete location "' + name + '"?')) return;
+  const res = await fetch(PL_URL + '/rest/v1/post_locations?id=eq.' + id, {
+    method: 'DELETE',
+    headers: { 'apikey': PL_ANON, 'Authorization': 'Bearer ' + PL_ANON, 'Prefer': 'return=minimal' },
+  });
+  if (res.ok) { showStatus('✓ Deleted.', false); plAdminLoad(); }
+  else showStatus('✗ Delete failed.', true);
+}
+
+// ── Reset ─────────────────────────────────────────────────────────
+function plReset() {
+  $('plEditId').value       = '';
+  $('plPostUrl').value      = '';
+  $('plPlaceName').value    = '';
+  $('plCity').value         = '';
+  $('plCountry').value      = '';
+  $('plDate').value         = '';
+  $('plLat').value          = '';
+  $('plLng').value          = '';
+  $('plPlaceSearch').value  = '';
+  $('plFormTitle').textContent  = 'Add Post Location';
+  $('plSaveLabel').textContent  = 'Save Location →';
+  $('plCancelBtn').style.display = 'none';
+  $('plMapPreview')?.classList.add('hidden');
 }
