@@ -470,7 +470,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
 
   // Build prev post link if provided
   const prevPostHtml = (prevPostSlug && prevPostTitle)
-    ? '<a href="../posts/' + escHtml(prevPostSlug) + '.html" class="read-more small" style="margin-left:auto;">Next: ' + escHtml(prevPostTitle) + ' →</a>'
+    ? '<a href="../posts/' + escHtml(prevPostSlug) + '.html" class="read-more small">← Previous: ' + escHtml(prevPostTitle) + '</a>'
     : '';
 
   // Build location HTML — supports plain text, URL, or "Label | URL" format
@@ -741,6 +741,30 @@ async function handlePublish() {
 
     const postPageHtml = buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled, seoExcerpt, prevPostSlug, prevPostTitle });
     await uploadFile(`posts/${slug}.html`, btoa(unescape(encodeURIComponent(postPageHtml))));
+
+    // Patch the previous newest post to add a "Next →" link pointing to this new post
+    if (prevPostSlug && prevPostTitle) {
+      try {
+        const prevRes = await ghFetch(`contents/posts/${prevPostSlug}.html`);
+        if (prevRes.ok) {
+          const prevJson = await prevRes.json();
+          let prevHtml = decodeURIComponent(escape(atob(prevJson.content.replace(/\n/g, ''))));
+          const nextLink = `<a href="../posts/${slug}.html" class="read-more small" style="margin-left:auto;">Next: ${title} →</a>`;
+          // Replace existing next link if present, otherwise insert before </footer>
+          if (prevHtml.includes('style="margin-left:auto;">Next:')) {
+            prevHtml = prevHtml.replace(/<a href[^>]+style="margin-left:auto;">Next:[^<]+<\/a>/, nextLink);
+          } else {
+            prevHtml = prevHtml.replace('</footer>', nextLink + '\n      </footer>');
+          }
+          await ghFetch(`contents/posts/${prevPostSlug}.html`, 'PUT', {
+            message: `Add "Next" nav link to ${prevPostSlug}`,
+            content: btoa(unescape(encodeURIComponent(prevHtml))),
+            sha: prevJson.sha,
+            branch: CONFIG.branch,
+          });
+        }
+      } catch(e) { console.warn('Could not patch prev post nav:', e.message); }
+    }
 
     // 5. Build index card for blog.html
     const fmtDate = date ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) : '';
