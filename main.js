@@ -204,6 +204,10 @@ document.addEventListener('DOMContentLoaded', () => {
       searchInput.value = '';
     }
 
+    // X button inside the search bar
+    const searchClose = document.querySelector('.header-search-close');
+    if (searchClose) searchClose.addEventListener('click', closeSearch);
+
     searchInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         const q = searchInput.value.trim();
