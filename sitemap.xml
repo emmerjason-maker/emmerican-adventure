@@ -114,4 +114,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <url>
+    <loc>https://emmericanadventure.com/posts/hoops-and-highlights-a-week-at-the-nas-jax-youth-activities-center.html</loc>
+    <lastmod>2026-06-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
