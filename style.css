@@ -49,7 +49,7 @@ img { max-width: 100%; display: block; }
   isolation: isolate;
   width: 100%;
   box-sizing: border-box;
-  overflow: hidden;
+  max-width: 100vw;
 }
 
 .header-inner {
