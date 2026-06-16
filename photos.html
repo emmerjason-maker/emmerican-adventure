@@ -482,7 +482,7 @@
   async function loadPhotos() {
     try {
       const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/post_images?select=*&order=taken_date.desc,sort_order.asc`,
+        `${SUPABASE_URL}/rest/v1/post_images?select=*&order=created_at.desc,sort_order.asc`,
         { headers: {
             'apikey': SUPABASE_ANON,
             'Authorization': `Bearer ${SUPABASE_ANON}`,
@@ -494,13 +494,7 @@
       if (!res.ok) throw new Error(`Supabase error: ${res.status}`);
       const raw = await res.json();
 
-      // Deduplicate by URL
-      const seen = new Set();
-      allPhotos = raw.filter(p => {
-        if (seen.has(p.url)) return false;
-        seen.add(p.url);
-        return true;
-      });
+      allPhotos = raw;
     } catch (err) {
       $('photosLoading').innerHTML = '<p style="color:var(--red)">Failed to load photos. Please refresh.</p>';
       return;
