@@ -3,26 +3,51 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Videos — Emmerican Adventure</title>
+  <title>Photos — Emmerican Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="stylesheet" href="darkmode.css" />
+  <script src="darkmode.js"></script>
+  <meta name="description" content="All photos from the Emmerican Adventure — our journey from Jacksonville, FL to Yokosuka, Japan." />
+  <meta name="keywords" content="military family Japan photos, PCS move photos, Yokosuka Japan, Navy family move, Emmerican Adventure" />
+  <meta name="author" content="Emmerican Adventure" />
+  <meta name="robots" content="index, follow" />
+  <meta property="og:title" content="Photos — Emmerican Adventure" />
+  <meta property="og:description" content="Photos from our journey — packing up Jacksonville, FL and heading to Yokosuka, Japan." />
+  <meta property="og:image" content="https://emmericanadventure.com/images/og-image.jpg" />
+  <meta property="og:url" content="https://emmericanadventure.com/photos.html" />
+  <link rel="canonical" href="https://emmericanadventure.com/photos.html" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3956728145959428" crossorigin="anonymous"></script>
+
+    <title>Videos — Emmerican Adventure</title>
   <meta name="description" content="Videos from the Emmerican Adventure — our family's journey from Jacksonville, FL to Yokosuka, Japan." />
   <meta name="keywords" content="military family Japan videos, PCS move, Yokosuka Japan, Navy family, Emmerican Adventure" />
+  <meta name="author" content="Emmerican Adventure" />
+  <meta name="robots" content="index, follow" />
   <meta property="og:title" content="Videos — Emmerican Adventure" />
   <meta property="og:description" content="Videos from our family's PCS journey to Yokosuka, Japan." />
   <meta property="og:image" content="https://emmericanadventure.com/images/og-image.jpg" />
   <meta property="og:url" content="https://emmericanadventure.com/videos.html" />
   <link rel="canonical" href="https://emmericanadventure.com/videos.html" />
-  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
-  <link rel="stylesheet" href="../style.css" />
+
   <style>
     .videos-main {
       max-width: 1200px;
       margin: 0 auto;
-      padding: 3rem 1.5rem 5rem;
+      padding: 0 1.5rem 4rem;
+      position: relative;
+      z-index: 1;
     }
     .videos-hero {
-      margin-bottom: 3rem;
-      padding-bottom: 2rem;
+      padding: 3.5rem 0 2rem;
       border-bottom: 1px solid var(--paper-dark);
+      margin-bottom: 2.5rem;
     }
     .videos-hero-title {
       font-family: var(--font-display);
@@ -30,35 +55,41 @@
       font-weight: 700;
       color: var(--ink);
       margin: 0 0 0.5rem;
+      line-height: 1.1;
     }
     .videos-hero-desc {
       font-size: 1.05rem;
       color: var(--ink-faint);
       margin: 0 0 1rem;
+      max-width: 600px;
     }
     .videos-stat {
       font-family: var(--font-mono);
       font-size: 0.8rem;
       color: var(--ink-faint);
       letter-spacing: 0.05em;
+      text-transform: uppercase;
     }
     .videos-stat-num {
-      font-size: 1.4rem;
+      font-size: 1.6rem;
       font-weight: 700;
       color: var(--gold);
       margin-right: 0.3rem;
+      font-family: var(--font-display);
     }
     .videos-grid-page {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
       gap: 2rem;
-      margin-bottom: 2.5rem;
+      margin-bottom: 3rem;
     }
     .video-card {
       background: var(--paper);
       border: 1px solid var(--paper-dark);
       overflow: hidden;
+      transition: box-shadow 0.2s;
     }
+    .video-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
     .video-embed-wrap {
       position: relative;
       padding-bottom: 56.25%;
@@ -71,20 +102,19 @@
       top: 0; left: 0;
       width: 100%; height: 100%;
     }
-    .video-card-body {
-      padding: 1rem 1.25rem 1.25rem;
-    }
+    .video-card-body { padding: 1rem 1.25rem 1.25rem; }
     .video-date {
       font-family: var(--font-mono);
       font-size: 0.72rem;
       color: var(--ink-faint);
       letter-spacing: 0.05em;
+      text-transform: uppercase;
       display: block;
       margin-bottom: 0.4rem;
     }
     .video-card-title {
       font-family: var(--font-display);
-      font-size: 1.1rem;
+      font-size: 1.15rem;
       font-weight: 700;
       color: var(--ink);
       margin: 0 0 0.4rem;
@@ -94,42 +124,42 @@
       font-size: 0.88rem;
       color: var(--ink-faint);
       margin: 0;
-      line-height: 1.5;
+      line-height: 1.55;
     }
     .videos-yt-cta {
       text-align: center;
-      padding: 2rem 0 1rem;
+      padding: 2.5rem 0 1rem;
       border-top: 1px solid var(--paper-dark);
     }
     .videos-yt-cta p {
       font-family: var(--font-mono);
-      font-size: 0.8rem;
+      font-size: 0.78rem;
       color: var(--ink-faint);
-      letter-spacing: 0.05em;
+      letter-spacing: 0.1em;
       text-transform: uppercase;
       margin-bottom: 1rem;
     }
     .videos-yt-btn {
       display: inline-block;
-      padding: 0.7rem 2rem;
+      padding: 0.75rem 2.5rem;
       background: var(--red);
       color: #fff;
       font-family: var(--font-mono);
-      font-size: 0.8rem;
-      letter-spacing: 0.1em;
+      font-size: 0.78rem;
+      letter-spacing: 0.12em;
       text-transform: uppercase;
       text-decoration: none;
       transition: opacity 0.2s;
     }
-    .videos-yt-btn:hover { opacity: 0.85; }
-    @media (max-width: 600px) {
-      .videos-grid-page { grid-template-columns: 1fr; }
+    .videos-yt-btn:hover { opacity: 0.85; color: #fff; }
+    @media (max-width: 768px) {
+      .videos-grid-page { grid-template-columns: 1fr; gap: 1.5rem; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ── Search overlay ── -->
+  <!-- ── Search overlay (outside header so it doesn't affect header height) ── -->
   <div class="header-search-bar" id="headerSearchBar" role="search">
     <input type="search" class="header-search-input" id="headerSearchInput"
       placeholder="Search posts, places, adventures…"
@@ -152,7 +182,7 @@
         <a href="blog.html" class="nav-link">Journal</a>
         <a href="adventures.html" class="nav-link">Adventures</a>
         <a href="map.html" class="nav-link">Map</a>
-        <a href="#videos" class="nav-link">Videos</a>
+        <a href="videos.html" class="nav-link active">Videos</a>
         <a href="photos.html" class="nav-link">Photos</a>
         <a href="about.html" class="nav-link">About</a>
       </nav>
@@ -167,14 +197,13 @@
       <h1 class="videos-hero-title">Videos</h1>
       <p class="videos-hero-desc">Every video from our journey — family adventures, PCS prep, and life headed to Yokosuka.</p>
       <div class="videos-stat">
-        <span class="videos-stat-num" id="videoCount">6</span>
+        <span class="videos-stat-num" id="videoCount">—</span>
         videos and counting
       </div>
     </div>
 
     <div class="videos-grid-page" id="videoGrid">
       <!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->
-        <!-- ====== VIDEO CARD ====== -->
         <div class="video-card">
           <div class="video-embed-wrap">
             <iframe src="https://www.youtube.com/embed/ZUi7RagB5p8?rel=0&modestbranding=1"
@@ -259,6 +288,7 @@
           </div>
         </div>
     </div>
+    </div>
 
     <div class="videos-yt-cta">
       <p>More videos on our YouTube channel</p>
@@ -287,9 +317,8 @@
     </div>
   </footer>
 
-  <script src="../main.js"></script>
+  <script src="main.js"></script>
   <script>
-    // Update video count
     document.getElementById('videoCount').textContent =
       document.querySelectorAll('#videoGrid .video-card').length;
   </script>
