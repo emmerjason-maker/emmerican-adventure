@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Videos — Emmerican Adventure</title>
+  <meta name="description" content="Videos from the Emmerican Adventure — our family's journey from Jacksonville, FL to Yokosuka, Japan." />
+  <meta name="keywords" content="military family Japan videos, PCS move, Yokosuka Japan, Navy family, Emmerican Adventure" />
+  <meta property="og:title" content="Videos — Emmerican Adventure" />
+  <meta property="og:description" content="Videos from our family's PCS journey to Yokosuka, Japan." />
+  <meta property="og:image" content="https://emmericanadventure.com/images/og-image.jpg" />
+  <meta property="og:url" content="https://emmericanadventure.com/videos.html" />
+  <link rel="canonical" href="https://emmericanadventure.com/videos.html" />
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+  <link rel="stylesheet" href="../style.css" />
+  <style>
+    .videos-main {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 5rem;
+    }
+    .videos-hero {
+      margin-bottom: 3rem;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--paper-dark);
+    }
+    .videos-hero-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4rem);
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 0.5rem;
+    }
+    .videos-hero-desc {
+      font-size: 1.05rem;
+      color: var(--ink-faint);
+      margin: 0 0 1rem;
+    }
+    .videos-stat {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.05em;
+    }
+    .videos-stat-num {
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--gold);
+      margin-right: 0.3rem;
+    }
+    .videos-grid-page {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+      gap: 2rem;
+      margin-bottom: 2.5rem;
+    }
+    .video-card {
+      background: var(--paper);
+      border: 1px solid var(--paper-dark);
+      overflow: hidden;
+    }
+    .video-embed-wrap {
+      position: relative;
+      padding-bottom: 56.25%;
+      height: 0;
+      overflow: hidden;
+      background: #000;
+    }
+    .video-embed-wrap iframe {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+    }
+    .video-card-body {
+      padding: 1rem 1.25rem 1.25rem;
+    }
+    .video-date {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.05em;
+      display: block;
+      margin-bottom: 0.4rem;
+    }
+    .video-card-title {
+      font-family: var(--font-display);
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--ink);
+      margin: 0 0 0.4rem;
+      line-height: 1.3;
+    }
+    .video-card-desc {
+      font-size: 0.88rem;
+      color: var(--ink-faint);
+      margin: 0;
+      line-height: 1.5;
+    }
+    .videos-yt-cta {
+      text-align: center;
+      padding: 2rem 0 1rem;
+      border-top: 1px solid var(--paper-dark);
+    }
+    .videos-yt-cta p {
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .videos-yt-btn {
+      display: inline-block;
+      padding: 0.7rem 2rem;
+      background: var(--red);
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: opacity 0.2s;
+    }
+    .videos-yt-btn:hover { opacity: 0.85; }
+    @media (max-width: 600px) {
+      .videos-grid-page { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ── Search overlay ── -->
+  <div class="header-search-bar" id="headerSearchBar" role="search">
+    <input type="search" class="header-search-input" id="headerSearchInput"
+      placeholder="Search posts, places, adventures…"
+      aria-label="Search site" />
+    <span class="header-search-hint">Press Enter to search</span>
+    <button class="header-search-close" id="headerSearchClose" aria-label="Close search">✕</button>
+  </div>
+
+  <header class="site-header">
+    <div class="header-inner">
+      <div class="logo">
+        <span class="logo-kanji">日本</span>
+        <div class="logo-text">
+          <span class="logo-title">Emmerican Adventure</span>
+          <span class="logo-sub">Chapter 1: We're Moving</span>
+        </div>
+      </div>
+            <nav class="nav">
+        <a href="index.html" class="nav-link">Home</a>
+        <a href="blog.html" class="nav-link">Journal</a>
+        <a href="adventures.html" class="nav-link">Adventures</a>
+        <a href="map.html" class="nav-link">Map</a>
+        <a href="#videos" class="nav-link">Videos</a>
+        <a href="photos.html" class="nav-link">Photos</a>
+        <a href="about.html" class="nav-link">About</a>
+      </nav>
+      <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode">🌙</button>
+      <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+    </div>
+  </header>
+
+  <main class="videos-main">
+
+    <div class="videos-hero">
+      <h1 class="videos-hero-title">Videos</h1>
+      <p class="videos-hero-desc">Every video from our journey — family adventures, PCS prep, and life headed to Yokosuka.</p>
+      <div class="videos-stat">
+        <span class="videos-stat-num" id="videoCount">6</span>
+        videos and counting
+      </div>
+    </div>
+
+    <div class="videos-grid-page" id="videoGrid">
+      <!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->
+        <!-- ====== VIDEO CARD ====== -->
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube.com/embed/ZUi7RagB5p8?rel=0&modestbranding=1"
+              title="NAS Jax Pool - Tarzan Swing!" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-card-body">
+            <time class="video-date">2026-06-13</time>
+            <h2 class="video-card-title">NAS Jax Pool - Tarzan Swing!</h2>
+            <p class="video-card-desc">Summer fun at the NAS Jacksonville MWR pool</p>
+          </div>
+        </div>
+        <!-- ====== VIDEO CARD ====== -->
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube.com/embed/-uPFxPPPbp0?rel=0&modestbranding=1"
+              title="NAS Jax Pool - Swim Test" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-card-body">
+            <time class="video-date">2026-06-13</time>
+            <h2 class="video-card-title">NAS Jax Pool - Swim Test</h2>
+            <p class="video-card-desc">Kids completing their annual swim test</p>
+          </div>
+        </div>
+        <!-- ====== VIDEO CARD ====== -->
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube.com/embed/v1O6qTFjloE?rel=0&modestbranding=1"
+              title="Decluttering for Japan PCS" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-card-body">
+            <time class="video-date">2026-06-06</time>
+            <h2 class="video-card-title">Decluttering for Japan PCS</h2>
+            <p class="video-card-desc">Diamond dirt and decluttering before the big move</p>
+          </div>
+        </div>
+        <!-- ====== VIDEO CARD ====== -->
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube.com/embed/UhkL8phjjkI?rel=0&modestbranding=1"
+              title="John's Baseball Game" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-card-body">
+            <time class="video-date">2026-06-06</time>
+            <h2 class="video-card-title">John's Baseball Game</h2>
+            <p class="video-card-desc">One last baseball game before the PCS move</p>
+          </div>
+        </div>
+        <!-- ====== VIDEO CARD ====== -->
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube.com/embed/Xq_Ri-3r1DY?rel=0&modestbranding=1"
+              title="Discover Hilton Head Island" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-card-body">
+            <time class="video-date">2026-05-31</time>
+            <h2 class="video-card-title">Discover Hilton Head Island</h2>
+            <p class="video-card-desc">The Ultimate Coastal Getaway — exploring one of America's favorite beach destinations before the big move.</p>
+          </div>
+        </div>
+        <!-- ====== VIDEO CARD ====== -->
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube.com/embed/1EBzkS3G-Jk?rel=0&modestbranding=1"
+              title="First Trip on Florida's High Speed Train" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-card-body">
+            <time class="video-date">2026-05-31</time>
+            <h2 class="video-card-title">First Trip on Florida's High Speed Train</h2>
+            <p class="video-card-desc">Riding Brightline — Florida's high speed rail — before we trade American trains for Japan's legendary Shinkansen.</p>
+          </div>
+        </div>
+    </div>
+
+    <div class="videos-yt-cta">
+      <p>More videos on our YouTube channel</p>
+      <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank" rel="noopener" class="videos-yt-btn">
+        Watch on YouTube →
+      </a>
+    </div>
+
+  </main>
+
+  <footer class="site-footer" id="about">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span class="footer-kanji">旅</span>
+        <span class="footer-name">Emmerican Adventure</span>
+      </div>
+      <div class="footer-copy">© 2026 Emmerican Adventure — Made with 愛 in Jacksonville, FL | As an Amazon Associate I earn from qualifying purchases.</div>
+      <div class="footer-links">
+        <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube</a>
+        <a href="https://www.instagram.com/emmericanadventure/" target="_blank">Instagram</a>
+        <a href="https://x.com/emmericanadvent" target="_blank">X / Twitter</a>
+        <a href="https://www.threads.com/@emmericanadventure" target="_blank">Threads</a>
+        <a href="https://www.facebook.com/emmericanadventure" target="_blank">Facebook</a>
+        <a href="https://www.youtube.com/@hashtagemmer" target="_blank">@hashtagemmer</a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="../main.js"></script>
+  <script>
+    // Update video count
+    document.getElementById('videoCount').textContent =
+      document.querySelectorAll('#videoGrid .video-card').length;
+  </script>
+
+</body>
+</html>
