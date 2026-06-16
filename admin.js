@@ -1210,11 +1210,20 @@ async function updateRssFeed({ title, slug, fmtDate, excerpt, imgSrc }) {
 
 // ── GitHub helpers ────────────────────────────────────────────────
 async function uploadFile(path, base64Content) {
-  const res = await ghFetch(`contents/${path}`, 'PUT', {
+  // Check if file already exists so we can supply its SHA (required for updates)
+  let existingSha = null;
+  const checkRes = await ghFetch(`contents/${path}`);
+  if (checkRes.ok) {
+    const checkJson = await checkRes.json();
+    existingSha = checkJson.sha;
+  }
+  const body = {
     message: `Upload: ${path}`,
     content: base64Content,
     branch: CONFIG.branch,
-  });
+  };
+  if (existingSha) body.sha = existingSha;
+  const res = await ghFetch(`contents/${path}`, 'PUT', body);
   if (!res.ok) {
     const err = await res.json();
     throw new Error(`Upload failed for ${path}: ${err.message || res.status}`);
