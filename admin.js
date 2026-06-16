@@ -851,6 +851,9 @@ async function handlePublish() {
 
     // 11. Update RSS feed
     showStatus('Updating RSS feed…', false, true);
+    const imgSrc = uploadedImages && uploadedImages.length > 0
+      ? `https://emmericanadventure.com/${uploadedImages[0].path}`
+      : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
     await updateRssFeed({ title, slug, fmtDate, excerpt, imgSrc });
 
     // 11. Update Search Index
