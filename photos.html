@@ -165,6 +165,25 @@
 
     .photo-item:hover img { transform: scale(1.05); }
 
+    .load-more-btn {
+      display: block;
+      margin: 2rem auto 1rem;
+      padding: 0.75rem 2.5rem;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--ink);
+      background: transparent;
+      border: 1px solid var(--ink);
+      cursor: pointer;
+      transition: background 0.2s, color 0.2s;
+    }
+    .load-more-btn:hover {
+      background: var(--ink);
+      color: var(--paper);
+    }
+
     .photo-item-overlay {
       position: absolute;
       bottom: 0;
@@ -454,6 +473,8 @@
   let activeTag      = 'all';
   let lbIndex        = 0;
   let searchDebounce;
+  let visibleCount   = 24;
+  const PAGE_SIZE    = 24;
 
   const $ = id => document.getElementById(id);
 
@@ -509,7 +530,7 @@
   // Tag pill filtering removed — use search box instead
 
   // ── Render ───────────────────────────────────────────────────
-  function renderPhotos() {
+  function renderPhotos(resetCount = true) {
     if (!allPhotos.length) return;
 
     const query = ($('photoSearch')?.value || '').toLowerCase().trim();
@@ -520,18 +541,24 @@
       return hay.includes(query);
     });
 
+    if (resetCount) visibleCount = PAGE_SIZE;
+
     $('photoCount').textContent = filteredPhotos.length;
 
     const emptyEl = $('photosEmpty');
     if (filteredPhotos.length === 0) {
       if (emptyEl) { emptyEl.style.display = ''; emptyEl.classList.remove('hidden'); }
       $('photoGrid').innerHTML = '';
+      const lb = $('loadMoreBtn');
+      if (lb) lb.style.display = 'none';
       return;
     }
 
     if (emptyEl) { emptyEl.style.display = 'none'; emptyEl.classList.add('hidden'); }
 
-    $('photoGrid').innerHTML = filteredPhotos.map((p, i) => {
+    const visible = filteredPhotos.slice(0, visibleCount);
+
+    $('photoGrid').innerHTML = visible.map((p, i) => {
       const tags = (p.tags || []).map(t => `<span class="photo-item-tag">${esc(t)}</span>`).join('');
       const featured = p.featured ? '<div class="photo-featured-dot" title="Cover photo"></div>' : '';
       return `
@@ -544,6 +571,25 @@
           </div>
         </div>`;
     }).join('');
+
+    // Load More button
+    let lb = $('loadMoreBtn');
+    if (!lb) {
+      lb = document.createElement('button');
+      lb.id = 'loadMoreBtn';
+      lb.className = 'load-more-btn';
+      $('photoGrid').insertAdjacentElement('afterend', lb);
+    }
+    if (visibleCount >= filteredPhotos.length) {
+      lb.style.display = 'none';
+    } else {
+      lb.style.display = '';
+      lb.textContent = `Load More (${filteredPhotos.length - visibleCount} remaining)`;
+      lb.onclick = () => {
+        visibleCount += PAGE_SIZE;
+        renderPhotos(false);
+      };
+    }
 
     // Bind clicks
     document.querySelectorAll('.photo-item').forEach(el => {
