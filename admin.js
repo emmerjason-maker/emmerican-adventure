@@ -837,6 +837,36 @@ async function handlePublish() {
     if (uploadedImages && uploadedImages.length > 0) {
       showStatus('Updating photo gallery…', false, true);
       await updatePhotoGrids({ title, uploadedImages });
+
+      // 9a. Insert into Supabase post_images so photos.html (Supabase-driven) shows them
+      try {
+        const photoRows = uploadedImages.map((img, i) => ({
+          url: '/' + img.path,
+          alt_text: title,
+          tags: [],
+          location_city: location?.city || null,
+          location_country: location?.country || null,
+          taken_date: date || new Date().toISOString().split('T')[0],
+          featured: false,
+          post_url: 'posts/' + slug + '.html',
+          sort_order: i,
+          created_by: '3fd413d3-d92d-440f-b0ff-ca98b36cf251',
+        }));
+        const sbRes = await fetch(
+          'https://azjwuraxixuioeddkicq.supabase.co/rest/v1/post_images',
+          {
+            method: 'POST',
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+            body: JSON.stringify(photoRows),
+          }
+        );
+        if (!sbRes.ok) console.warn('Supabase photo insert failed:', await sbRes.text());
+      } catch (e) { console.warn('Supabase photo insert error:', e.message); }
     }
 
     // 9b. Update homepage video grid if post has YouTube
