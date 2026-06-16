@@ -1150,7 +1150,8 @@ async function updatePhotoGrids({ title, uploadedImages }) {
     }
 
   } catch (err) {
-    console.warn('Could not update photo grids:', err.message);
+    console.error('Could not update photo grids:', err.message);
+    showStatus(`Warning: photos page not updated — ${err.message}`, true);
   }
 }
 
