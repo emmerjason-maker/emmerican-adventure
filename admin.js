@@ -869,10 +869,11 @@ async function handlePublish() {
       } catch (e) { console.warn('Supabase photo insert error:', e.message); }
     }
 
-    // 9b. Update homepage video grid if post has YouTube
+    // 9b. Update homepage + videos page if post has YouTube
     if (ytVideos && ytVideos.length > 0) {
       showStatus('Updating video gallery…', false, true);
       await updateVideoGrid({ title, slug, ytVideos });
+      await updateVideosPage({ title, slug, date, ytVideos });
     }
 
     // 10. Update sitemap
@@ -1112,6 +1113,48 @@ async function updateVideoGrid({ title, slug, ytVideos }) {
   } catch (err) {
     console.warn('Could not update video grid:', err.message);
   }
+}
+
+// ── Update videos.html page ──────────────────────────────────────
+async function updateVideosPage({ title, slug, date, ytVideos }) {
+  try {
+    const res = await ghFetch('contents/videos.html');
+    if (!res.ok) return;
+    const json = await res.json();
+    const html = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
+    const sha  = json.sha;
+
+    const fmtDate = date
+      ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
+      : new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+
+    const marker = '<!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->';
+    if (!html.includes(marker)) return;
+
+    const newCards = ytVideos.map(v => `
+        <!-- ====== VIDEO CARD ====== -->
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube.com/embed/${v.id}?rel=0&modestbranding=1"
+              title="${escHtml(v.title || title)}" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-card-body">
+            <time class="video-date">${fmtDate}</time>
+            <h2 class="video-card-title">${escHtml(v.title || title)}</h2>
+            <p class="video-card-desc">${escHtml(v.desc || '')}</p>
+          </div>
+        </div>`).join('\n');
+
+    const updated = html.replace(marker, marker + newCards);
+
+    await ghFetch('contents/videos.html', 'PUT', {
+      message: `Add video to videos page: ${title}`,
+      content: btoa(unescape(encodeURIComponent(updated))),
+      sha, branch: CONFIG.branch,
+    });
+  } catch (e) { console.warn('Could not update videos.html:', e.message); }
 }
 
 // ── Update photo grids on index.html and photos.html ─────────────
