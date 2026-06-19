@@ -634,7 +634,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
         <span class="footer-kanji">日本へ</span>
         <span class="footer-name">Emmerican Adventure</span>
       </div>
-      <div class="footer-copy">© 2026 Emmerican Adventure — Made with 愛 in Jacksonville, FL | As an Amazon Associate I earn from qualifying purchases.</div>
+      <div class="footer-copy">© 2026 Emmerican Adventure — Made with 愛 in Jacksonville, FL.</div>
       <div class="footer-links">
         <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube</a>
       </div>
