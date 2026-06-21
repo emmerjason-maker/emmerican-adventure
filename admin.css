@@ -138,6 +138,13 @@ body {
   border-bottom: 1px solid transparent;
   transition: border-color 0.2s;
 }
+
+.adv-placeid-status {
+  font-size: 0.72rem;
+  color: rgba(253,250,245,0.45);
+}
+.adv-placeid-status.success { color: #6fcf97; }
+.adv-placeid-status.error   { color: #eb5757; }
 .field-hint a:hover, .help-link:hover { border-color: var(--gold); }
 
 .field-hint-inline {

@@ -2106,6 +2106,10 @@ function advEdit(id) {
   if ($('advCity'))      $('advCity').value             = a.location_city || '';
   if ($('advCountry'))   $('advCountry').value          = a.location_country || '';
   if ($('advPlaceId'))   $('advPlaceId').value          = a.place_id || '';
+  if ($('advPlaceIdStatus')) {
+    $('advPlaceIdStatus').textContent = a.place_id ? '' : '⚠ Place ID missing — use Look up Place ID below.';
+    $('advPlaceIdStatus').className = a.place_id ? 'adv-placeid-status' : 'adv-placeid-status error';
+  }
   if ($('advDate'))      $('advDate').value             = a.visited_date || '';
   if ($('advCuisine'))   $('advCuisine').value          = a.cuisine || '';
   if ($('advPrice'))     $('advPrice').value            = a.price_range || '';
@@ -2245,6 +2249,7 @@ function advResetForm() {
   else if ($('advPlaceSearch')) $('advPlaceSearch').value = '';
   document.getElementById('advMapPreview')?.classList.add('hidden');
   if ($('advPlaceId')) $('advPlaceId').value = '';
+  if ($('advPlaceIdStatus')) { $('advPlaceIdStatus').textContent = ''; $('advPlaceIdStatus').className = 'adv-placeid-status'; }
   $('advPostUrl').value          = '';
   ['jason','megan','john','kate'].forEach(n => {
     const cap = n.charAt(0).toUpperCase() + n.slice(1);
@@ -2469,6 +2474,8 @@ function imgCancelEdit() {
 let adminAutocomplete = null;
 let adminMapPreview   = null;
 let adminMapMarker    = null;
+let advPlacesService    = null;
+let advPlacesServiceDiv = null;
 
 window.initAdminMapsReady = async function() {
   initAdvLocationSearch();
@@ -2527,6 +2534,71 @@ function initAdvLocationSearch() {
     // Always show mini map preview
     showAdminMapPreview(lat, lng, name);
   });}
+
+// ── Look up Place ID for entries missing one (e.g. older saves) ───
+// Uses Places "Find Place from Query" so an admin can backfill place_id
+// without redoing the full location search + dropdown selection.
+function advLookupPlaceId() {
+  const statusEl = document.getElementById('advPlaceIdStatus');
+  const name = document.getElementById('advName')?.value.trim()
+    || document.getElementById('advPlaceSearch')?.value.trim()
+    || '';
+
+  if (!name) {
+    if (statusEl) { statusEl.textContent = 'Enter a name first.'; statusEl.className = 'adv-placeid-status error'; }
+    return;
+  }
+
+  if (!window.google || !google.maps || !google.maps.places) {
+    if (statusEl) { statusEl.textContent = 'Google Maps not loaded yet — try again in a moment.'; statusEl.className = 'adv-placeid-status error'; }
+    return;
+  }
+
+  if (statusEl) { statusEl.textContent = 'Looking up…'; statusEl.className = 'adv-placeid-status'; }
+
+  if (!advPlacesServiceDiv) {
+    advPlacesServiceDiv = document.createElement('div');
+    advPlacesServiceDiv.style.display = 'none';
+    document.body.appendChild(advPlacesServiceDiv);
+  }
+  if (!advPlacesService) {
+    advPlacesService = new google.maps.places.PlacesService(advPlacesServiceDiv);
+  }
+
+  const lat = parseFloat(document.getElementById('advLat')?.value);
+  const lng = parseFloat(document.getElementById('advLng')?.value);
+
+  const request = {
+    query: name,
+    fields: ['place_id', 'name', 'geometry'],
+  };
+  if (!isNaN(lat) && !isNaN(lng)) {
+    request.locationBias = new google.maps.Circle({
+      center: { lat, lng },
+      radius: 500,
+    });
+  }
+
+  advPlacesService.findPlaceFromQuery(request, (results, status) => {
+    if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length) {
+      const best = results[0];
+      if (best.place_id) {
+        if (document.getElementById('advPlaceId')) document.getElementById('advPlaceId').value = best.place_id;
+        if (statusEl) {
+          statusEl.textContent = `✓ Found: ${best.name || name}`;
+          statusEl.className = 'adv-placeid-status success';
+        }
+      } else {
+        if (statusEl) { statusEl.textContent = '✗ Match found but no Place ID returned.'; statusEl.className = 'adv-placeid-status error'; }
+      }
+    } else {
+      if (statusEl) {
+        statusEl.textContent = '✗ No match found — try adjusting the name, or use "Search Location" above instead.';
+        statusEl.className = 'adv-placeid-status error';
+      }
+    }
+  });
+}
 
 function showAdminMapPreview(lat, lng, label) {
   const wrap = document.getElementById('advMapPreview');

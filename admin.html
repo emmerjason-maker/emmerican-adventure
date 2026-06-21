@@ -355,6 +355,11 @@
             <div class="field-group">
               <label class="field-label">Name <span class="optional">auto-filled from search, or type manually</span></label>
               <input type="text" class="field-input" id="advName" placeholder="e.g. Mos Burger Yokosuka" />
+              <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.5rem;">
+                <button type="button" class="btn-ghost btn-sm" id="advLookupPlaceIdBtn" onclick="advLookupPlaceId()">🔍 Look up Place ID</button>
+                <span id="advPlaceIdStatus" class="adv-placeid-status"></span>
+              </div>
+              <p class="field-hint">Use this if Place ID is missing (e.g. on an older entry) — looks it up from the name/coordinates without redoing the full location search.</p>
             </div>
 
             <details class="adv-location-override">
