@@ -1522,6 +1522,12 @@ async function loadPostForEditing(filename, sha) {
     // ── Populate edit form ──────────────────────────────────────
     $('editTitle').value = title;
     setTimeout(() => { $('editBody').innerHTML = bodyHtml; }, 50);
+    // Clear stale location data from any previously edited post —
+    // these only get re-filled below if this post actually has one
+    if ($('editLat')) $('editLat').value = '';
+    if ($('editLng')) $('editLng').value = '';
+    if ($('editPlaceId')) $('editPlaceId').value = '';
+    document.getElementById('editMapPreview')?.classList.add('hidden');
     // Pre-fill edit location — target PlaceAutocompleteElement if it replaced the input
     const editAutoEl = document.getElementById('editPlaceAutocomplete');
     if (editAutoEl) editAutoEl.value = existingLocation;
