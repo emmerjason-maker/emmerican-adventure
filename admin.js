@@ -476,11 +476,14 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
   // Build location HTML — supports plain text, URL, or "Label | URL" format
   const postLat = $('postLat')?.value || '';
   const postLng = $('postLng')?.value || '';
+  const postPlaceId = $('postPlaceId')?.value || '';
   let locationHtml = '';
   if (location) {
-    const mapsUrl = (postLat && postLng)
-      ? `https://www.google.com/maps?q=${postLat},${postLng}`
-      : `https://www.google.com/maps/search/${encodeURIComponent(location)}`;
+    const mapsUrl = postPlaceId
+      ? `https://www.google.com/maps/place/?q=place_id:${postPlaceId}`
+      : (postLat && postLng)
+        ? `https://www.google.com/maps?q=${postLat},${postLng}`
+        : `https://www.google.com/maps/search/${encodeURIComponent(location)}`;
     locationHtml = `<div class="post-location"><a href="${escHtml(mapsUrl)}" target="_blank" rel="noopener">📍 ${escHtml(location)}</a></div>`;
   }
 
@@ -1544,6 +1547,7 @@ async function loadPostForEditing(filename, sha) {
             const lng = parseFloat(locData[0].lng);
             if ($('editLat')) $('editLat').value = lat;
             if ($('editLng')) $('editLng').value = lng;
+            if ($('editPlaceId')) $('editPlaceId').value = locData[0].place_id || '';
             if (typeof showEditMapPreview === 'function') showEditMapPreview(lat, lng, existingLocation);
           }
         }
@@ -1703,10 +1707,13 @@ async function savePostEdit(filename) {
     if (newLocation) {
       const editLat = $('editLat')?.value || '';
       const editLng = $('editLng')?.value || '';
+      const editPlaceIdForLink = $('editPlaceId')?.value || '';
       let locHtml = '';
-      const editMapsUrl = (editLat && editLng)
-        ? `https://www.google.com/maps?q=${editLat},${editLng}`
-        : `https://www.google.com/maps/search/${encodeURIComponent(newLocation)}`;
+      const editMapsUrl = editPlaceIdForLink
+        ? `https://www.google.com/maps/place/?q=place_id:${editPlaceIdForLink}`
+        : (editLat && editLng)
+          ? `https://www.google.com/maps?q=${editLat},${editLng}`
+          : `https://www.google.com/maps/search/${encodeURIComponent(newLocation)}`;
       locHtml = `<div class="post-location"><a href="${escHtml(editMapsUrl)}" target="_blank" rel="noopener">📍 ${escHtml(newLocation)}</a></div>`;
       const locNode = parser.parseFromString(locHtml, 'text/html').body.firstChild;
       if (existingLoc) existingLoc.replaceWith(locNode);
@@ -3286,6 +3293,93 @@ function plShowMapPreview(lat, lng, label) {
     plMapMarker.setTitle(label);
   }
   if (coords) coords.textContent = lat.toFixed(6) + ', ' + lng.toFixed(6);
+}
+
+// ── Bulk backfill Place IDs for post_locations missing one ────────
+// Same approach as the Adventures bulk tool: looks each entry up via
+// Google Places (biased to its saved lat/lng), then PATCHes the
+// place_id straight to Supabase by post_url.
+async function plBulkBackfillPlaceIds() {
+  const btn = document.getElementById('plBulkBackfillBtn');
+  const log = document.getElementById('plBulkBackfillLog');
+  if (!log) return;
+  log.classList.remove('hidden');
+  log.innerHTML = 'Fetching post locations missing a Place ID…';
+  if (btn) { btn.disabled = true; btn.textContent = 'Running…'; }
+
+  if (!window.google || !google.maps || !google.maps.places) {
+    log.innerHTML = '<span class="fail">✗ Google Maps not loaded yet — try again in a moment.</span>';
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+    return;
+  }
+
+  let rows;
+  try {
+    const res = await fetch(
+      PL_URL + '/rest/v1/post_locations?place_id=is.null&select=post_url,place_name,lat,lng',
+      { headers: { 'apikey': PL_ANON, 'Authorization': 'Bearer ' + PL_ANON } }
+    );
+    rows = await res.json();
+  } catch (err) {
+    log.innerHTML = `<span class="fail">✗ Could not fetch entries: ${err.message}</span>`;
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+    return;
+  }
+
+  if (!rows.length) {
+    log.innerHTML = '<span class="ok">✓ Nothing to do — every post location already has a Place ID.</span>';
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+    return;
+  }
+
+  log.innerHTML = `Found ${rows.length} post locations missing a Place ID. Looking each one up…<br>`;
+  let okCount = 0, failCount = 0;
+
+  for (const row of rows) {
+    const lat = parseFloat(row.lat);
+    const lng = parseFloat(row.lng);
+    const query = row.place_name || '';
+
+    const match = await advBulkFindPlace(query, lat, lng);
+
+    if (match && match.place_id) {
+      try {
+        const patchRes = await fetch(
+          PL_URL + '/rest/v1/post_locations?post_url=eq.' + encodeURIComponent(row.post_url),
+          {
+            method: 'PATCH',
+            headers: {
+              'apikey': PL_ANON,
+              'Authorization': 'Bearer ' + PL_ANON,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+            body: JSON.stringify({ place_id: match.place_id }),
+          }
+        );
+        if (patchRes.ok) {
+          okCount++;
+          log.innerHTML += `<span class="ok">✓ ${escHtmlAdmin(row.place_name || row.post_url)} → matched "${escHtmlAdmin(match.name || '')}"</span><br>`;
+        } else {
+          failCount++;
+          log.innerHTML += `<span class="fail">✗ ${escHtmlAdmin(row.place_name || row.post_url)} — found a match but save failed (HTTP ${patchRes.status})</span><br>`;
+        }
+      } catch (err) {
+        failCount++;
+        log.innerHTML += `<span class="fail">✗ ${escHtmlAdmin(row.place_name || row.post_url)} — save error: ${escHtmlAdmin(err.message)}</span><br>`;
+      }
+    } else {
+      failCount++;
+      log.innerHTML += `<span class="skip">— ${escHtmlAdmin(row.place_name || row.post_url)} — no confident match, skipped (fix manually)</span><br>`;
+    }
+
+    log.scrollTop = log.scrollHeight;
+    await new Promise(r => setTimeout(r, 350));
+  }
+
+  log.innerHTML += `<br><strong>Done — ${okCount} updated, ${failCount} need a manual look.</strong>`;
+  if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+  plAdminLoad();
 }
 
 // ── Load ──────────────────────────────────────────────────────────

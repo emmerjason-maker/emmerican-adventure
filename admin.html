@@ -737,6 +737,10 @@
           <!-- Right: list -->
           <div class="editor-panel" style="min-width:0;">
             <h2 class="panel-title">Post Locations <span id="plCount" style="font-family:var(--font-mono);font-size:0.7rem;color:rgba(255,255,255,0.3);font-weight:400;"></span></h2>
+            <div style="margin-bottom:0.75rem;">
+              <button type="button" class="btn-ghost btn-sm" id="plBulkBackfillBtn" onclick="plBulkBackfillPlaceIds()">🔍 Bulk Backfill Missing Place IDs</button>
+              <div id="plBulkBackfillLog" class="adv-bulk-log hidden"></div>
+            </div>
             <div id="plAdminList" class="adv-admin-list">
               <p class="preview-empty">Loading…</p>
             </div>
