@@ -126,6 +126,8 @@
 .post-photo img {
   width: 100%;
   height: auto;
+  max-height: 600px;
+  object-fit: cover;
   display: block;
   border: 1px solid var(--paper-dark);
   transition: opacity 0.2s;
@@ -245,6 +247,8 @@
 .post-photo img {
   width: 100%;
   height: auto;
+  max-height: 600px;
+  object-fit: cover;
   display: block;
   border-radius: 2px;
 }
