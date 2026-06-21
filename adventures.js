@@ -35,7 +35,7 @@ async function loadAdventures() {
       'Authorization': `Bearer ${SUPABASE_ANON}`,
     };
     const [advRes, postRes] = await Promise.all([
-      fetch(`${SUPABASE_URL}/rest/v1/adventures?select=*&status=eq.visited&order=visited_date.desc`, { headers }),
+      fetch(`${SUPABASE_URL}/rest/v1/adventures?select=*&status=in.(visited,wishlist)&order=visited_date.desc`, { headers }),
       fetch(`${SUPABASE_URL}/rest/v1/post_locations?select=*&order=created_at.desc`, { headers }),
     ]);
 
@@ -110,8 +110,13 @@ function renderAll() {
 
   // Filter
   let filtered = allAdventures.filter(a => {
-    if (activeType !== 'all' && activeType !== 'country' && a.type !== activeType) return false;
-    if (activeType === 'country') return false; // countries are derived, not a type
+    if (activeType === 'wishlist') {
+      if (a.status !== 'wishlist') return false;
+    } else {
+      // Outside the dedicated Wishlist tab, only show actual visits
+      if (a.status === 'wishlist') return false;
+      if (activeType !== 'all' && a.type !== activeType) return false;
+    }
     if (activeCountry && displayCountryFor(a) !== activeCountry) return false;
     if (query) {
       const haystack = [a.name, a.location_city, a.location_region, a.location_country, a.cuisine, a.notes, ...(a.tags || [])]
@@ -174,8 +179,11 @@ function updateStats(data) {
   const elP = document.getElementById('statPlaces');
   const elC = document.getElementById('statCountries');
 
-  if (elR) elR.textContent = data.filter(a => a.type === 'restaurant').length;
-  if (elP) elP.textContent = data.filter(a => a.type === 'place').length;
+  // Stats reflect actual visits only — wishlist entries haven't happened yet
+  const visited = data.filter(a => a.status !== 'wishlist');
+
+  if (elR) elR.textContent = visited.filter(a => a.type === 'restaurant').length;
+  if (elP) elP.textContent = visited.filter(a => a.type === 'place').length;
 
   // Derive countries — UK nations (Scotland/England/Wales/N.Ireland) each count separately
   const countrySet = new Set();
@@ -185,7 +193,7 @@ function updateStats(data) {
     countrySet.add(displayCountryFor({ location_country: country.trim(), location_region: region ? region.trim() : '' }));
   }
 
-  data.forEach(a => addCountry(a.location_region, a.location_country));
+  visited.forEach(a => addCountry(a.location_region, a.location_country));
   (allPostLocations || []).forEach(p => addCountry(p.location_region, p.location_country));
 
   if (elC) elC.textContent = countrySet.size;
@@ -243,6 +251,8 @@ function renderCard(a) {
   const coverPhoto = photos[0] || null;
 
   // Photo area
+  const wishlistBadge = a.status === 'wishlist'
+    ? `<span class="adv-wishlist-badge">📌 Want to Visit</span>` : '';
   let photoHtml;
   if (coverPhoto) {
     const photoData = JSON.stringify(photos).replace(/"/g, '&quot;');
@@ -250,6 +260,7 @@ function renderCard(a) {
       <div class="adv-card-photo" data-photos="${photoData}" data-index="0">
         <img src="${escHtml(coverPhoto)}" alt="${escHtml(a.name)}" loading="lazy" />
         <span class="adv-type-badge ${a.type}">${escHtml(a.type)}</span>
+        ${wishlistBadge}
         ${photos.length > 1 ? `<span class="adv-photo-count">+${photos.length - 1} photos</span>` : ''}
       </div>`;
   } else {
@@ -257,6 +268,7 @@ function renderCard(a) {
       <div class="adv-card-no-photo">
         ${typeEmoji}
         <span class="adv-type-badge ${a.type}">${escHtml(a.type)}</span>
+        ${wishlistBadge}
       </div>`;
   }
 

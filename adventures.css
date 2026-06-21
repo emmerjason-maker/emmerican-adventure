@@ -317,6 +317,20 @@
 .adv-type-badge.place      { background: var(--gold); color: var(--ink); }
 .adv-type-badge.country    { background: var(--ink); color: var(--paper); }
 
+.adv-wishlist-badge {
+  position: absolute;
+  top: 0.6rem;
+  right: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.2rem 0.5rem;
+  background: var(--paper);
+  color: var(--ink);
+  border: 1px solid var(--gold);
+}
+
 /* Card body */
 .adv-card-body {
   padding: 1rem 1.1rem 1.25rem;

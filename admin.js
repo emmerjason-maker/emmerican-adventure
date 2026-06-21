@@ -2141,6 +2141,12 @@ document.addEventListener('DOMContentLoaded', () => {
   // Type toggle — show/hide restaurant-only fields
   $('advType')?.addEventListener('change', toggleAdvFields);
 
+  // Status toggle — Date Visited doesn't apply to wishlist entries yet
+  $('advStatus')?.addEventListener('change', () => {
+    const group = $('advDateGroup');
+    if (group) group.style.display = $('advStatus').value === 'wishlist' ? 'none' : '';
+  });
+
   // Reactions checkboxes toggle their selects
   ['Jason','Megan','John','Kate'].forEach(name => {
     $(`reaction${name}On`)?.addEventListener('change', e => {
@@ -2282,6 +2288,7 @@ async function advSave() {
   const payload = {
     type,
     name,
+    status:           $('advStatus')?.value || 'visited',
     location_city:    ($('advCity')?.value.trim()    || null),
     location_region:  ($('advRegion')?.value.trim()  || null),
     location_state:   ($('advState')?.value.trim() || $('advState')?.dataset?.original || null),
@@ -2366,6 +2373,8 @@ function advEdit(id) {
   if ($('advEditId'))    $('advEditId').value          = a.id;
   if ($('advFormTitle')) $('advFormTitle').textContent  = 'Edit Adventure';
   if ($('advType'))      $('advType').value             = a.type;
+  if ($('advStatus'))    $('advStatus').value            = a.status || 'visited';
+  if ($('advDateGroup')) $('advDateGroup').style.display = (a.status === 'wishlist') ? 'none' : '';
   if ($('advName'))      $('advName').value             = a.name || '';
   if ($('advCity'))      $('advCity').value             = a.location_city || '';
   if ($('advCountry'))   $('advCountry').value          = a.location_country || '';
@@ -2486,6 +2495,8 @@ function advResetForm() {
   $('advSaveLabel').textContent  = 'Save Adventure →';
   $('advCancelBtn').style.display = 'none';
   $('advName').value             = '';
+  if ($('advStatus')) $('advStatus').value = 'visited';
+  if ($('advDateGroup')) $('advDateGroup').style.display = '';
   $('advCity').value             = '';
   $('advCountry').value          = '';
   $('advDate').value             = localTodayStr();
