@@ -865,12 +865,16 @@ async function handlePublish() {
       throw new Error(err.message || 'GitHub push failed');
     }
 
-    // 8. Update homepage featured post
-    showStatus('Updating homepage…', false, true);
-    await updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId, slug });
+    // 8. Update homepage featured post — skip if scheduled for the future,
+    // otherwise the homepage exposes/links the post early even though
+    // blog.html correctly shows it as "Coming Soon"
+    if (!isScheduled) {
+      showStatus('Updating homepage…', false, true);
+      await updateHomepageFeatured({ title, date, postNumber, uploadedImages, ytId, slug });
+    }
 
     // 9. Update photo grids (index.html + photos.html)
-    if (uploadedImages && uploadedImages.length > 0) {
+    if (!isScheduled && uploadedImages && uploadedImages.length > 0) {
       showStatus('Updating photo gallery…', false, true);
       await updatePhotoGrids({ title, uploadedImages });
 
@@ -906,27 +910,34 @@ async function handlePublish() {
     }
 
     // 9b. Update homepage + videos page if post has YouTube
-    if (ytVideos && ytVideos.length > 0) {
+    if (!isScheduled && ytVideos && ytVideos.length > 0) {
       showStatus('Updating video gallery…', false, true);
       await updateVideoGrid({ title, slug, ytVideos });
       await updateVideosPage({ title, slug, date, ytVideos });
     }
 
-    // 10. Update sitemap
-    showStatus('Updating sitemap…', false, true);
-    await updateSitemap({ slug, date });
+    // 10. Update sitemap — skip while scheduled so search engines don't
+    // discover/index the URL before it's meant to be live
+    if (!isScheduled) {
+      showStatus('Updating sitemap…', false, true);
+      await updateSitemap({ slug, date });
+    }
 
-    // 11. Update RSS feed
-    showStatus('Updating RSS feed…', false, true);
-    const imgSrc = uploadedImages && uploadedImages.length > 0
-      ? `https://emmericanadventure.com/${uploadedImages[0].path}`
-      : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
-    await updateRssFeed({ title, slug, fmtDate, excerpt, imgSrc });
+    // 11. Update RSS feed — skip while scheduled
+    if (!isScheduled) {
+      showStatus('Updating RSS feed…', false, true);
+      const imgSrc = uploadedImages && uploadedImages.length > 0
+        ? `https://emmericanadventure.com/${uploadedImages[0].path}`
+        : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
+      await updateRssFeed({ title, slug, fmtDate, excerpt, imgSrc });
+    }
 
-    // 11. Update Search Index
-    showStatus('Updating search index…', false, true);
-    const thumbPath = uploadedImages.length > 0 ? uploadedImages[0].path : (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '');
-    await updateSearchIndex({ slug, title, date: fmtDate, excerpt, tag: 'Journal', img: thumbPath, keywords: title });
+    // 11b. Update Search Index — skip while scheduled
+    if (!isScheduled) {
+      showStatus('Updating search index…', false, true);
+      const thumbPath = uploadedImages.length > 0 ? uploadedImages[0].path : (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '');
+      await updateSearchIndex({ slug, title, date: fmtDate, excerpt, tag: 'Journal', img: thumbPath, keywords: title });
+    }
 
     showStatus(isScheduled ? `✓ Scheduled! Post will go live on ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}` : '✓ Published! Your post will be live in ~60 seconds.', false);
     resetForm();
