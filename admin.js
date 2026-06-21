@@ -2782,8 +2782,8 @@ function initAdvLocationSearch() {
     }
 
     // For UK addresses, use the nation (Scotland/England/Wales/N.Ireland) as the country
-    const UK_NATIONS = ['Scotland', 'England', 'Wales', 'Northern Ireland'];
-    if (country === 'United Kingdom' && UK_NATIONS.includes(state)) {
+    // (UK_NATIONS comes from js/geo-helpers.js)
+    if (country === 'United Kingdom' && UK_NATIONS.has(state)) {
       country = state;
     }
 
@@ -3568,16 +3568,15 @@ function initPostLocMaps() {
 
     if ($('plPlaceName') && !$('plPlaceName').value) $('plPlaceName').value = name;
 
-    // Parse address components
+    // Parse address components (UK_NATIONS comes from js/geo-helpers.js)
     let city = '', state = '', country = '';
-    const UK_NATIONS = ['Scotland', 'England', 'Wales', 'Northern Ireland'];
     for (const c of (place.addressComponents || [])) {
       const types = c.types || [];
       if (types.includes('locality') || types.includes('postal_town')) city = c.longText;
       if (types.includes('administrative_area_level_1')) state = c.longText;
       if (types.includes('country')) country = c.longText;
     }
-    if (country === 'United Kingdom' && UK_NATIONS.includes(state)) country = state;
+    if (country === 'United Kingdom' && UK_NATIONS.has(state)) country = state;
 
     if ($('plCity')    && !$('plCity').value)    $('plCity').value    = city;
     if ($('plRegion')  && !$('plRegion').value)  $('plRegion').value  = state;

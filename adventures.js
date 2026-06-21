@@ -75,12 +75,7 @@ function bindSearch() {
   });
 }
 
-const UK_NATIONS = new Set(['Scotland', 'England', 'Wales', 'Northern Ireland']);
-function displayCountryFor(a) {
-  const country = a.location_country || '';
-  const region  = a.location_region  || '';
-  return (country === 'United Kingdom' && UK_NATIONS.has(region)) ? region : country;
-}
+// UK_NATIONS and displayCountryFor() now come from js/geo-helpers.js
 
 function bindCountryAndSort() {
   const countrySel = $('advCountrySelect');
@@ -183,17 +178,11 @@ function updateStats(data) {
   if (elP) elP.textContent = data.filter(a => a.type === 'place').length;
 
   // Derive countries — UK nations (Scotland/England/Wales/N.Ireland) each count separately
-  const UK_NATIONS = new Set(['Scotland', 'England', 'Wales', 'Northern Ireland']);
   const countrySet = new Set();
 
   function addCountry(region, country) {
     if (!country) return;
-    // If region is a UK nation, count it as the country
-    if (country.trim() === 'United Kingdom' && region && UK_NATIONS.has(region.trim())) {
-      countrySet.add(region.trim());
-    } else {
-      countrySet.add(country.trim());
-    }
+    countrySet.add(displayCountryFor({ location_country: country.trim(), location_region: region ? region.trim() : '' }));
   }
 
   data.forEach(a => addCountry(a.location_region, a.location_country));
@@ -203,15 +192,12 @@ function updateStats(data) {
 }
 
 function groupAdventures(data) {
-  const UK_NATIONS = new Set(['Scotland', 'England', 'Wales', 'Northern Ireland']);
   const map = new Map();
 
   data.forEach(a => {
     const country = a.location_country || 'Unknown';
-    const region  = a.location_region  || '';
     const city    = a.location_city    || '';
-    const displayCountry = (country === 'United Kingdom' && UK_NATIONS.has(region))
-      ? region : country;
+    const displayCountry = displayCountryFor(a) || country;
     const key = city ? `${displayCountry}||${city}` : displayCountry;
     if (!map.has(key)) {
       map.set(key, { country: displayCountry, city, items: [] });

@@ -184,6 +184,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="js/geo-helpers.js"></script>
 <script>
 const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
@@ -285,16 +286,11 @@ function updateCounts() {
   document.getElementById('countPlace').textContent      = counts.place;
   document.getElementById('countPost').textContent       = counts.post;
 
-  // Derive countries — UK nations count separately
-  const UK_NATIONS = new Set(['Scotland', 'England', 'Wales', 'Northern Ireland']);
+  // Derive countries — UK nations count separately (shared helper from js/geo-helpers.js)
   const countrySet = new Set();
   allAdventures.forEach(a => {
     if (!a.location_country) return;
-    if (a.location_country === 'United Kingdom' && a.location_region && UK_NATIONS.has(a.location_region)) {
-      countrySet.add(a.location_region);
-    } else {
-      countrySet.add(a.location_country);
-    }
+    countrySet.add(displayCountryFor(a));
   });
   document.getElementById('countCountry').textContent = countrySet.size;
 
