@@ -704,14 +704,29 @@ async function handlePublish() {
   try {
     const slug = slugify(title);
 
-    // 1. Upload all images to GitHub
+    // 1. Upload all images to GitHub — compressed to match Edit Post
+    // and Adventures uploads (this path was missing compression entirely,
+    // uploading full-resolution originals straight from the camera)
     const uploadedImages = [];
     for (let i = 0; i < images.length; i++) {
       const img = images[i];
       showStatus(`Uploading photo ${i + 1} of ${images.length}…`, false, true);
       const safeName = img.name.replace(/\s+/g, '-').toLowerCase();
       const path = `images/${Date.now()}-${safeName}`;
-      await uploadFile(path, img.dataUrl.split(',')[1]);
+      const compressed = await new Promise(resolve => {
+        const image = new Image();
+        image.onload = () => {
+          const maxW = 1600;
+          let w = image.width, h = image.height;
+          if (w > maxW) { h = Math.round(h * maxW / w); w = maxW; }
+          const canvas = document.createElement('canvas');
+          canvas.width = w; canvas.height = h;
+          canvas.getContext('2d').drawImage(image, 0, 0, w, h);
+          resolve(canvas.toDataURL('image/jpeg', 0.78).split(',')[1]);
+        };
+        image.src = img.dataUrl;
+      });
+      await uploadFile(path, compressed);
       uploadedImages.push({ path, caption: img.caption });
     }
 
