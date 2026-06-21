@@ -2483,7 +2483,7 @@ function initAdvLocationSearch() {
 
   // Classic Autocomplete — reliable, works with all key restrictions
   const autocomplete = new google.maps.places.Autocomplete(input, {
-    fields: ['name', 'geometry', 'address_components'],
+    fields: ['name', 'geometry', 'address_components', 'place_id'],
   });
 
   autocomplete.addListener('place_changed', () => {
@@ -2897,7 +2897,7 @@ function initPostLocationSearch() {
   if (!input) return;
 
   const autocomplete = new google.maps.places.Autocomplete(input, {
-    fields: ['name', 'geometry', 'address_components'],
+    fields: ['name', 'geometry', 'address_components', 'place_id'],
   });
 
   autocomplete.addListener('place_changed', () => {
@@ -2960,7 +2960,7 @@ function initEditLocationSearch() {
 
   // Use classic Autocomplete — same as Adventures, proven to work
   const autocomplete = new google.maps.places.Autocomplete(input, {
-    fields: ['name', 'geometry', 'address_components'],
+    fields: ['name', 'geometry', 'address_components', 'place_id'],
   });
 
   autocomplete.addListener('place_changed', () => {
