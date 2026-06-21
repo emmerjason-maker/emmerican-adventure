@@ -745,6 +745,39 @@ async function handlePublish() {
     const postPageHtml = buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled, seoExcerpt, prevPostSlug, prevPostTitle });
     await uploadFile(`posts/${slug}.html`, btoa(unescape(encodeURIComponent(postPageHtml))));
 
+    // 4b. Save location to Supabase post_locations — new posts never got
+    // written here before, only edits did, which meant new posts had no
+    // DB record and could never be backfilled or fixed later.
+    if (location) {
+      const newPostLat = parseFloat($('postLat')?.value) || null;
+      const newPostLng = parseFloat($('postLng')?.value) || null;
+      if (newPostLat && newPostLng) {
+        try {
+          await fetch(
+            'https://azjwuraxixuioeddkicq.supabase.co/rest/v1/post_locations',
+            {
+              method: 'POST',
+              headers: {
+                'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+                'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+                'Content-Type': 'application/json',
+                'Prefer': 'return=minimal',
+              },
+              body: JSON.stringify({
+                post_url: 'posts/' + slug + '.html',
+                post_title: title,
+                place_name: location,
+                place_id: $('postPlaceId')?.value || null,
+                lat: newPostLat,
+                lng: newPostLng,
+                created_by: '3fd413d3-d92d-440f-b0ff-ca98b36cf251',
+              }),
+            }
+          );
+        } catch (e) { console.warn('Supabase post_locations insert error:', e.message); }
+      }
+    }
+
     // Patch the previous newest post to add a "Next →" link pointing to this new post
     if (prevPostSlug && prevPostTitle) {
       try {
@@ -1340,6 +1373,12 @@ function resetForm() {
   if (typeof ytVideos !== 'undefined') { ytVideos = []; if ($('ytVideoList')) $('ytVideoList').innerHTML = ''; }
   $('postLink').value     = '';
   if ($('postLocationSearch')) $('postLocationSearch').value = '';
+  if ($('postLocationName')) $('postLocationName').value = '';
+  if ($('postLat')) $('postLat').value = '';
+  if ($('postLng')) $('postLng').value = '';
+  if ($('postPlaceId')) $('postPlaceId').value = '';
+  if ($('postPlaceIdStatus')) { $('postPlaceIdStatus').textContent = ''; $('postPlaceIdStatus').className = 'adv-placeid-status'; }
+  document.getElementById('postMapPreview')?.classList.add('hidden');
   $('postLinkText').value = '';
   $('postDate').value     = new Date().toISOString().split('T')[0];
   images = [];
@@ -1527,6 +1566,7 @@ async function loadPostForEditing(filename, sha) {
     if ($('editLat')) $('editLat').value = '';
     if ($('editLng')) $('editLng').value = '';
     if ($('editPlaceId')) $('editPlaceId').value = '';
+    if ($('editPlaceIdStatus')) { $('editPlaceIdStatus').textContent = ''; $('editPlaceIdStatus').className = 'adv-placeid-status'; }
     document.getElementById('editMapPreview')?.classList.add('hidden');
     // Pre-fill edit location — target PlaceAutocompleteElement if it replaced the input
     const editAutoEl = document.getElementById('editPlaceAutocomplete');
@@ -2611,6 +2651,64 @@ function advLookupPlaceId() {
       }
     }
   });
+}
+
+// ── Look up Place ID for new post location field ──────────────────
+async function postLookupPlaceId() {
+  const statusEl = document.getElementById('postPlaceIdStatus');
+  const name = document.getElementById('postLocationName')?.value
+    || document.getElementById('postLocationSearch')?.value.trim()
+    || '';
+
+  if (!name) {
+    if (statusEl) { statusEl.textContent = 'Search for a location first.'; statusEl.className = 'adv-placeid-status error'; }
+    return;
+  }
+  if (!window.google || !google.maps || !google.maps.places) {
+    if (statusEl) { statusEl.textContent = 'Google Maps not loaded yet — try again in a moment.'; statusEl.className = 'adv-placeid-status error'; }
+    return;
+  }
+  if (statusEl) { statusEl.textContent = 'Looking up…'; statusEl.className = 'adv-placeid-status'; }
+
+  const lat = parseFloat(document.getElementById('postLat')?.value);
+  const lng = parseFloat(document.getElementById('postLng')?.value);
+  const match = await advBulkFindPlace(name, lat, lng);
+
+  if (match && match.place_id) {
+    if (document.getElementById('postPlaceId')) document.getElementById('postPlaceId').value = match.place_id;
+    if (statusEl) { statusEl.textContent = `✓ Found: ${match.name || name}`; statusEl.className = 'adv-placeid-status success'; }
+  } else {
+    if (statusEl) { statusEl.textContent = '✗ No match found — try adjusting the search text.'; statusEl.className = 'adv-placeid-status error'; }
+  }
+}
+
+// ── Look up Place ID for edit post location field ─────────────────
+async function editLookupPlaceId() {
+  const statusEl = document.getElementById('editPlaceIdStatus');
+  const name = document.getElementById('editLocationName')?.value
+    || document.getElementById('editLocationSearch')?.value.trim()
+    || '';
+
+  if (!name) {
+    if (statusEl) { statusEl.textContent = 'Search for a location first.'; statusEl.className = 'adv-placeid-status error'; }
+    return;
+  }
+  if (!window.google || !google.maps || !google.maps.places) {
+    if (statusEl) { statusEl.textContent = 'Google Maps not loaded yet — try again in a moment.'; statusEl.className = 'adv-placeid-status error'; }
+    return;
+  }
+  if (statusEl) { statusEl.textContent = 'Looking up…'; statusEl.className = 'adv-placeid-status'; }
+
+  const lat = parseFloat(document.getElementById('editLat')?.value);
+  const lng = parseFloat(document.getElementById('editLng')?.value);
+  const match = await advBulkFindPlace(name, lat, lng);
+
+  if (match && match.place_id) {
+    if (document.getElementById('editPlaceId')) document.getElementById('editPlaceId').value = match.place_id;
+    if (statusEl) { statusEl.textContent = `✓ Found: ${match.name || name}`; statusEl.className = 'adv-placeid-status success'; }
+  } else {
+    if (statusEl) { statusEl.textContent = '✗ No match found — try adjusting the search text.'; statusEl.className = 'adv-placeid-status error'; }
+  }
 }
 
 // ── Bulk backfill Place IDs for every adventure missing one ───────

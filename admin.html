@@ -112,6 +112,11 @@
             <input type="text" class="field-input" id="postLocationSearch"
               placeholder="Search for a place, city, or address…" autocomplete="off" />
             <p class="field-hint">Start typing to search Google Maps. Coordinates saved automatically.</p>
+            <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.5rem;">
+              <button type="button" class="btn-ghost btn-sm" id="postLookupPlaceIdBtn" onclick="postLookupPlaceId()">🔍 Look up Place ID</button>
+              <span id="postPlaceIdStatus" class="adv-placeid-status"></span>
+            </div>
+            <p class="field-hint">Use this if the dropdown suggestion wasn't clicked — backfills the Place ID so the location link goes to the actual map listing.</p>
             <!-- Hidden fields filled by place search -->
             <input type="hidden" id="postLocationName" />
             <input type="hidden" id="postLat" />
@@ -252,6 +257,10 @@
                 <input type="text" class="field-input" id="editLocationSearch"
                   placeholder="Search for a place, city, or address…" autocomplete="off" />
                 <p class="field-hint">Start typing to search Google Maps. Coordinates saved automatically.</p>
+                <div style="display:flex;align-items:center;gap:0.6rem;margin-top:0.5rem;">
+                  <button type="button" class="btn-ghost btn-sm" id="editLookupPlaceIdBtn" onclick="editLookupPlaceId()">🔍 Look up Place ID</button>
+                  <span id="editPlaceIdStatus" class="adv-placeid-status"></span>
+                </div>
                 <input type="hidden" id="editLocationName" />
                 <input type="hidden" id="editLat" />
                 <input type="hidden" id="editLng" />
