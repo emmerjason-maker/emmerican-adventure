@@ -471,6 +471,18 @@
 
 .adv-card-blog-link:hover { opacity: 0.7; }
 
+.adv-card-maps-link {
+  font-family: var(--font-mono);
+  font-size: 0.62rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--gold);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.adv-card-maps-link:hover { opacity: 0.7; }
+
 /* ── Dark mode ──────────────────────────────────────────────────── */
 [data-theme="dark"] .adv-card {
   background: var(--paper-warm);
