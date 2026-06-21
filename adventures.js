@@ -206,9 +206,15 @@ function groupAdventures(data) {
     const country = a.location_country || 'Unknown';
     const city    = a.location_city    || '';
     const displayCountry = displayCountryFor(a) || country;
-    const key = city ? `${displayCountry}||${city}` : displayCountry;
+    // Region (state/province) is only shown separately when it's NOT
+    // already folded into displayCountry (i.e. not a UK nation) — drop
+    // it for UK entries since "England, United Kingdom" would be
+    // redundant once England itself is the displayed "country".
+    const isUkNation = displayCountry !== country;
+    const region = (!isUkNation && a.location_region) ? a.location_region : '';
+    const key = [displayCountry, region, city].filter(Boolean).join('||') || displayCountry;
     if (!map.has(key)) {
-      map.set(key, { country: displayCountry, city, items: [] });
+      map.set(key, { country: displayCountry, region, city, items: [] });
     }
     map.get(key).items.push(a);
   });
@@ -222,7 +228,7 @@ function groupAdventures(data) {
 }
 
 function renderGroup(group) {
-  const parts = [group.city, group.country].filter(Boolean);
+  const parts = [group.city, group.region, group.country].filter(Boolean);
   const label = parts.filter((v, i, a) => a.indexOf(v) === i).join(', ') || group.country;
   const count = group.items.length;
   return `
