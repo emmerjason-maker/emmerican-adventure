@@ -264,11 +264,16 @@ function renderCard(a) {
     ? `<a href="${escHtml(a.post_url)}" class="adv-card-blog-link">Read post →</a>`
     : '';
 
-  const hasFooter = badges.length || priceHtml || blogLinkHtml;
+  const mapsLinkHtml = a.place_id
+    ? `<a href="https://www.google.com/maps/place/?q=place_id:${escHtml(a.place_id)}" target="_blank" rel="noopener" class="adv-card-maps-link">View on Maps ↗</a>`
+    : '';
+
+  const hasFooter = badges.length || priceHtml || blogLinkHtml || mapsLinkHtml;
   const footerHtml = hasFooter ? `
     <div class="adv-card-footer">
       <div class="adv-badges">${badges.join('')}</div>
       ${priceHtml}
+      ${mapsLinkHtml}
       ${blogLinkHtml}
     </div>` : '';
 
