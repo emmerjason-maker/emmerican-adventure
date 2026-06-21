@@ -162,18 +162,18 @@ function addFiles(fileList) {
   const remaining = CONFIG.maxImages - images.length;
 
   if (remaining <= 0) {
-    alert(`Maximum ${CONFIG.maxImages} images per post.`);
+    showStatus(`Maximum ${CONFIG.maxImages} images per post.`, true);
     return;
   }
 
   const toAdd = files.slice(0, remaining);
   if (files.length > remaining) {
-    alert(`Only ${remaining} more image(s) can be added (max ${CONFIG.maxImages}). Adding first ${remaining}.`);
+    showStatus(`Only ${remaining} more image(s) can be added (max ${CONFIG.maxImages}). Adding first ${remaining}.`, true);
   }
 
   toAdd.forEach(file => {
     if (file.size > CONFIG.maxSizeMB * 1024 * 1024) {
-      alert(`"${file.name}" is over ${CONFIG.maxSizeMB}MB (original size) and was skipped.`);
+      showStatus(`"${file.name}" is over ${CONFIG.maxSizeMB}MB (original size) and was skipped.`, true);
       return;
     }
     const id = `img_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
@@ -282,8 +282,8 @@ function addYtVideo() {
   const input = $('ytVideoInput') ? $('ytVideoInput').value.trim() : '';
   const label = $('ytVideoLabel') ? $('ytVideoLabel').value.trim() : '';
   const id = extractYouTubeId(input);
-  if (!id) { alert('Could not find a valid YouTube video ID in that URL.'); return; }
-  if (ytVideos.find(v => v.id === id)) { alert('That video is already added.'); return; }
+  if (!id) { showStatus('Could not find a valid YouTube video ID in that URL.', true); return; }
+  if (ytVideos.find(v => v.id === id)) { showStatus('That video is already added.', true); return; }
   ytVideos.push({ id, label });
   if ($('ytVideoInput')) $('ytVideoInput').value = '';
   if ($('ytVideoLabel')) $('ytVideoLabel').value = '';
@@ -690,9 +690,9 @@ async function handlePublish() {
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim();
 
-  if (!title) { alert('Please add a post title.'); return; }
+  if (!title) { showStatus('Please add a post title.', true); return; }
   if (!body && (!ytVideos || ytVideos.length === 0) && images.length === 0) {
-    alert('Please add some content — body text, a video, or at least one photo.'); return;
+    showStatus('Please add some content — body text, a video, or at least one photo.', true); return;
   }
 
   // Check if post is scheduled (future date)
@@ -1906,8 +1906,8 @@ function addEditYtVideo() {
   const input = $('editYtVideoInput') ? $('editYtVideoInput').value.trim() : '';
   const label = $('editYtVideoLabel') ? $('editYtVideoLabel').value.trim() : '';
   const id = extractYouTubeId(input);
-  if (!id) { alert('Could not find a valid YouTube video ID.'); return; }
-  if (editYtVideos.find(v => v.id === id)) { alert('That video is already added.'); return; }
+  if (!id) { showStatus('Could not find a valid YouTube video ID.', true); return; }
+  if (editYtVideos.find(v => v.id === id)) { showStatus('That video is already added.', true); return; }
   editYtVideos.push({ id, label });
   if ($('editYtVideoInput')) $('editYtVideoInput').value = '';
   if ($('editYtVideoLabel')) $('editYtVideoLabel').value = '';
@@ -1927,12 +1927,12 @@ async function savePostEdit(filename) {
     || $('editPlaceAutocomplete')?.value?.trim()
     || $('editLocationSearch')?.value?.trim() || '';
 
-  if (!newTitle) { alert('Title cannot be empty'); return; }
+  if (!newTitle) { showStatus('Title cannot be empty', true); return; }
 
   // Use stored body if editor is empty
   const bodyToSave = (newBody && newBody.trim() && newBody.trim() !== '<br>') ? newBody : editBodyHtml;
   if (!bodyToSave || !bodyToSave.trim()) {
-    alert('Body is empty — not saving to protect content.'); return;
+    showStatus('Body is empty — not saving to protect content.', true); return;
   }
 
   $('saveEditLabel').textContent = 'Saving…';
@@ -3263,8 +3263,8 @@ function advAddYt() {
   const urlVal  = document.getElementById('advYtUrl')?.value.trim() || '';
   const label   = document.getElementById('advYtLabel')?.value.trim() || '';
   const id      = extractYouTubeId(urlVal) || urlVal;
-  if (!id) { alert('Enter a valid YouTube URL or video ID.'); return; }
-  if (advYtVideos.find(v => v.id === id)) { alert('Already added.'); return; }
+  if (!id) { showStatus('Enter a valid YouTube URL or video ID.', true); return; }
+  if (advYtVideos.find(v => v.id === id)) { showStatus('Already added.', true); return; }
   advYtVideos.push({ id, label });
   document.getElementById('advYtUrl').value   = '';
   document.getElementById('advYtLabel').value = '';
