@@ -905,6 +905,7 @@ async function handlePublish() {
     if (!isScheduled && uploadedImages && uploadedImages.length > 0) {
       showStatus('Updating photo gallery…', false, true);
       await updatePhotoGrids({ title, uploadedImages });
+      touchSitemapLastmod('photos.html');
 
       // 9a. Insert into Supabase post_images so photos.html (Supabase-driven) shows them
       try {
@@ -981,6 +982,34 @@ async function handlePublish() {
 
 
 // ── Update sitemap.xml ───────────────────────────────────────────
+// Bumps <lastmod> for an existing top-level page entry in sitemap.xml
+// (used for pages like adventures.html/photos.html whose content is
+// managed via Supabase, not a new page upload — updateSitemap() above
+// only handles adding brand-new blog post URLs).
+async function touchSitemapLastmod(pageUrl) {
+  try {
+    const today = localTodayStr();
+    const fullUrl = `https://emmericanadventure.com/${pageUrl}`;
+    const fileRes = await ghFetch('contents/sitemap.xml');
+    if (!fileRes.ok) return;
+    const fileJson = await fileRes.json();
+    let xml = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+    const sha = fileJson.sha;
+    if (!xml.includes(fullUrl)) return; // page isn't in the sitemap at all — nothing to bump
+    const regex = new RegExp(`(<loc>${fullUrl.replace(/\//g, '\\/')}</loc>\\s*<lastmod>).*?(</lastmod>)`, 's');
+    const updated = xml.replace(regex, `$1${today}$2`);
+    if (updated === xml) return; // no change — avoid an empty commit
+    await ghFetch('contents/sitemap.xml', 'PUT', {
+      message: `Touch sitemap lastmod: ${pageUrl}`,
+      content: btoa(unescape(encodeURIComponent(updated))),
+      sha,
+      branch: CONFIG.branch,
+    });
+  } catch (err) {
+    console.warn('Could not touch sitemap lastmod:', err.message);
+  }
+}
+
 async function updateSitemap({ slug, date }) {
   try {
     const today = date || localTodayStr();
@@ -1645,6 +1674,7 @@ async function publishScheduledPostNow(filename) {
     if (uploadedImages.length > 0) {
       showStatus('Updating photo gallery…', false, true);
       await updatePhotoGrids({ title, uploadedImages });
+      touchSitemapLastmod('photos.html');
 
       try {
         const photoRows = uploadedImages.map((img, i) => ({
@@ -2356,6 +2386,8 @@ async function advSave() {
     showStatus(`✓ Adventure ${isEdit ? 'updated' : 'saved'}!`, false);
     advResetForm();
     advAdminLoad();
+    touchSitemapLastmod('adventures.html');
+    touchSitemapLastmod('map.html');
 
   } catch (err) {
     showStatus('✗ Error: ' + err.message, true);
@@ -2716,6 +2748,7 @@ async function imgSave() {
     showStatus('✓ Image updated!', false);
     imgCancelEdit();
     imgAdminLoad();
+    touchSitemapLastmod('photos.html');
 
   } catch (err) {
     showStatus('✗ Error: ' + err.message, true);
