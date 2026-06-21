@@ -145,6 +145,21 @@ body {
 }
 .adv-placeid-status.success { color: #6fcf97; }
 .adv-placeid-status.error   { color: #eb5757; }
+
+.adv-bulk-log {
+  margin-top: 0.6rem;
+  max-height: 220px;
+  overflow-y: auto;
+  font-size: 0.72rem;
+  line-height: 1.6;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(253,250,245,0.08);
+  border-radius: 4px;
+  padding: 0.6rem 0.75rem;
+}
+.adv-bulk-log .ok   { color: #6fcf97; }
+.adv-bulk-log .skip { color: rgba(253,250,245,0.4); }
+.adv-bulk-log .fail { color: #eb5757; }
 .field-hint a:hover, .help-link:hover { border-color: var(--gold); }
 
 .field-hint-inline {

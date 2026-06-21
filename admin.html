@@ -552,6 +552,10 @@
               <button class="adv-pill" data-atype="place" onclick="filterAdvAdmin(this, 'place')">Places</button>
               <button class="adv-pill" data-atype="country" onclick="filterAdvAdmin(this, 'country')">Countries</button>
             </div>
+            <div style="margin-bottom:0.75rem;">
+              <button type="button" class="btn-ghost btn-sm" id="advBulkBackfillBtn" onclick="advBulkBackfillPlaceIds()">🔍 Bulk Backfill Missing Place IDs</button>
+              <div id="advBulkBackfillLog" class="adv-bulk-log hidden"></div>
+            </div>
             <div id="advAdminList" class="adv-admin-list">
               <p class="preview-empty">No adventures yet.</p>
             </div>

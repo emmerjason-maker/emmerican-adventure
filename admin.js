@@ -2600,6 +2600,118 @@ function advLookupPlaceId() {
   });
 }
 
+// ── Bulk backfill Place IDs for every adventure missing one ───────
+// Looks up each entry one at a time (with a short delay to stay
+// well under Places API rate limits) and PATCHes the result straight
+// to Supabase. Logs every outcome so mismatches can be spot-checked.
+function advBulkFindPlace(query, lat, lng) {
+  return new Promise((resolve) => {
+    if (!advPlacesServiceDiv) {
+      advPlacesServiceDiv = document.createElement('div');
+      advPlacesServiceDiv.style.display = 'none';
+      document.body.appendChild(advPlacesServiceDiv);
+    }
+    if (!advPlacesService) {
+      advPlacesService = new google.maps.places.PlacesService(advPlacesServiceDiv);
+    }
+    const request = { query, fields: ['place_id', 'name', 'geometry'] };
+    if (!isNaN(lat) && !isNaN(lng)) {
+      request.locationBias = new google.maps.Circle({ center: { lat, lng }, radius: 500 });
+    }
+    advPlacesService.findPlaceFromQuery(request, (results, status) => {
+      if (status === google.maps.places.PlacesServiceStatus.OK && results && results.length) {
+        resolve(results[0]);
+      } else {
+        resolve(null);
+      }
+    });
+  });
+}
+
+async function advBulkBackfillPlaceIds() {
+  const btn = document.getElementById('advBulkBackfillBtn');
+  const log = document.getElementById('advBulkBackfillLog');
+  if (!log) return;
+  log.classList.remove('hidden');
+  log.innerHTML = 'Fetching entries missing a Place ID…';
+  if (btn) { btn.disabled = true; btn.textContent = 'Running…'; }
+
+  if (!window.google || !google.maps || !google.maps.places) {
+    log.innerHTML = '<span class="fail">✗ Google Maps not loaded yet — try again in a moment.</span>';
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+    return;
+  }
+
+  let rows;
+  try {
+    const res = await fetch(
+      `${ADV_SUPABASE_URL}/rest/v1/adventures?place_id=is.null&select=id,name,location_city,location_country,lat,lng`,
+      { headers: { 'apikey': ADV_SUPABASE_ANON, 'Authorization': `Bearer ${ADV_SUPABASE_ANON}` } }
+    );
+    rows = await res.json();
+  } catch (err) {
+    log.innerHTML = `<span class="fail">✗ Could not fetch entries: ${err.message}</span>`;
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+    return;
+  }
+
+  if (!rows.length) {
+    log.innerHTML = '<span class="ok">✓ Nothing to do — every entry already has a Place ID.</span>';
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+    return;
+  }
+
+  log.innerHTML = `Found ${rows.length} entries missing a Place ID. Looking each one up…<br>`;
+  let okCount = 0, failCount = 0;
+
+  for (const row of rows) {
+    const lat = parseFloat(row.lat);
+    const lng = parseFloat(row.lng);
+    const query = [row.name, row.location_city, row.location_country].filter(Boolean).join(', ');
+
+    const match = await advBulkFindPlace(query, lat, lng);
+
+    if (match && match.place_id) {
+      try {
+        const patchRes = await fetch(
+          `${ADV_SUPABASE_URL}/rest/v1/adventures?id=eq.${row.id}`,
+          {
+            method: 'PATCH',
+            headers: {
+              'apikey': ADV_SUPABASE_ANON,
+              'Authorization': `Bearer ${ADV_SUPABASE_ANON}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+            body: JSON.stringify({ place_id: match.place_id }),
+          }
+        );
+        if (patchRes.ok) {
+          okCount++;
+          log.innerHTML += `<span class="ok">✓ ${escHtmlAdmin(row.name)} → matched "${escHtmlAdmin(match.name || '')}"</span><br>`;
+        } else {
+          failCount++;
+          log.innerHTML += `<span class="fail">✗ ${escHtmlAdmin(row.name)} — found a match but save failed (HTTP ${patchRes.status})</span><br>`;
+        }
+      } catch (err) {
+        failCount++;
+        log.innerHTML += `<span class="fail">✗ ${escHtmlAdmin(row.name)} — save error: ${escHtmlAdmin(err.message)}</span><br>`;
+      }
+    } else {
+      failCount++;
+      log.innerHTML += `<span class="skip">— ${escHtmlAdmin(row.name)} — no confident match, skipped (fix manually)</span><br>`;
+    }
+
+    log.scrollTop = log.scrollHeight;
+    // Small delay between lookups to stay well under Places API rate limits
+    await new Promise(r => setTimeout(r, 350));
+  }
+
+  log.innerHTML += `<br><strong>Done — ${okCount} updated, ${failCount} need a manual look.</strong>`;
+  if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+  advAdminLoad();
+}
+
 function showAdminMapPreview(lat, lng, label) {
   const wrap = document.getElementById('advMapPreview');
   const inner = document.getElementById('advMapPreviewInner');
