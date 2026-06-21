@@ -1729,10 +1729,12 @@ async function savePostEdit(filename) {
               'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44' } }
           );
           const existing = checkRes.ok ? await checkRes.json() : [];
+          const editPlaceId2 = document.getElementById('editPlaceId')?.value || null;
           const locPayload = {
             post_url: postUrl,
             post_title: newTitle,
             place_name: newLocation,
+            place_id: editPlaceId2,
             lat: editLat2,
             lng: editLng2,
             created_by: '3fd413d3-d92d-440f-b0ff-ca98b36cf251',
@@ -2031,6 +2033,7 @@ async function advSave() {
     photos:           allAdvPhotos(uploadedPhotoUrls).length ? allAdvPhotos(uploadedPhotoUrls) : null,
     youtube_videos:   advYtVideos.length ? advYtVideos : null,
     place_name:       $('advName')?.value.trim()        || null,
+    place_id:         $('advPlaceId')?.value.trim()      || null,
     lat:              parseFloat($('advLat')?.value || $('advLat')?.dataset?.original) || null,
     lng:              parseFloat($('advLng')?.value || $('advLng')?.dataset?.original) || null,
     post_url:         $('advPostUrl')?.value.trim()   || null,
@@ -2102,6 +2105,7 @@ function advEdit(id) {
   if ($('advName'))      $('advName').value             = a.name || '';
   if ($('advCity'))      $('advCity').value             = a.location_city || '';
   if ($('advCountry'))   $('advCountry').value          = a.location_country || '';
+  if ($('advPlaceId'))   $('advPlaceId').value          = a.place_id || '';
   if ($('advDate'))      $('advDate').value             = a.visited_date || '';
   if ($('advCuisine'))   $('advCuisine').value          = a.cuisine || '';
   if ($('advPrice'))     $('advPrice').value            = a.price_range || '';
@@ -2240,6 +2244,7 @@ function advResetForm() {
   if (_autoEl) _autoEl.value = '';
   else if ($('advPlaceSearch')) $('advPlaceSearch').value = '';
   document.getElementById('advMapPreview')?.classList.add('hidden');
+  if ($('advPlaceId')) $('advPlaceId').value = '';
   $('advPostUrl').value          = '';
   ['jason','megan','john','kate'].forEach(n => {
     const cap = n.charAt(0).toUpperCase() + n.slice(1);
@@ -2488,9 +2493,11 @@ function initAdvLocationSearch() {
     const lat  = place.geometry.location.lat();
     const lng  = place.geometry.location.lng();
     const name = place.name || '';
+    const placeId = place.place_id || '';
 
     document.getElementById('advLat').value = lat;
     document.getElementById('advLng').value = lng;
+    if (document.getElementById('advPlaceId')) document.getElementById('advPlaceId').value = placeId;
 
     const nameField = document.getElementById('advName');
     if (nameField) nameField.value = name;
@@ -2900,9 +2907,11 @@ function initPostLocationSearch() {
     const lat  = place.geometry.location.lat();
     const lng  = place.geometry.location.lng();
     const name = place.name || '';
+    const placeId = place.place_id || '';
 
     document.getElementById('postLocationName').value = name;
     document.getElementById('postLat').value = lat;
+    if (document.getElementById('postPlaceId')) document.getElementById('postPlaceId').value = placeId;
     document.getElementById('postLng').value = lng;
 
     showPostMapPreview(lat, lng, name);
@@ -2961,9 +2970,11 @@ function initEditLocationSearch() {
     const lat  = place.geometry.location.lat();
     const lng  = place.geometry.location.lng();
     const name = place.name || '';
+    const placeId = place.place_id || '';
 
     document.getElementById('editLocationName').value = name;
     document.getElementById('editLat').value = lat;
+    if (document.getElementById('editPlaceId')) document.getElementById('editPlaceId').value = placeId;
     document.getElementById('editLng').value = lng;
 
     showEditMapPreview(lat, lng, name);
@@ -3035,17 +3046,19 @@ function initPostLocMaps() {
 
   autoEl.addEventListener('gmp-placeselect', async ({ place }) => {
     await place.fetchFields({
-      fields: ['displayName', 'location', 'addressComponents']
+      fields: ['displayName', 'location', 'addressComponents', 'id']
     });
 
     const lat  = place.location?.lat();
     const lng  = place.location?.lng();
     const name = place.displayName || '';
+    const placeId = place.id || '';
 
     if (!lat || !lng) return;
 
     $('plLat').value = lat;
     $('plLng').value = lng;
+    if ($('plPlaceId')) $('plPlaceId').value = placeId;
 
     if ($('plPlaceName') && !$('plPlaceName').value) $('plPlaceName').value = name;
 
@@ -3156,6 +3169,7 @@ async function plSave() {
     post_url,
     post_title: $('plPostUrl')?.options[$('plPostUrl')?.selectedIndex]?.text || null,
     place_name:       $('plPlaceName')?.value.trim() || null,
+    place_id:         $('plPlaceId')?.value.trim()    || null,
     lat, lng,
     location_city:    $('plCity')?.value.trim()    || null,
     location_region:  $('plRegion')?.value.trim()  || null,
