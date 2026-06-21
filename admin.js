@@ -2638,30 +2638,30 @@ async function advBulkBackfillPlaceIds() {
 
   if (!window.google || !google.maps || !google.maps.places) {
     log.innerHTML = '<span class="fail">✗ Google Maps not loaded yet — try again in a moment.</span>';
-    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs (Restaurants)'; }
     return;
   }
 
   let rows;
   try {
     const res = await fetch(
-      `${ADV_SUPABASE_URL}/rest/v1/adventures?place_id=is.null&select=id,name,location_city,location_country,lat,lng`,
+      `${ADV_SUPABASE_URL}/rest/v1/adventures?place_id=is.null&type=eq.restaurant&select=id,name,location_city,location_country,lat,lng`,
       { headers: { 'apikey': ADV_SUPABASE_ANON, 'Authorization': `Bearer ${ADV_SUPABASE_ANON}` } }
     );
     rows = await res.json();
   } catch (err) {
     log.innerHTML = `<span class="fail">✗ Could not fetch entries: ${err.message}</span>`;
-    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs (Restaurants)'; }
     return;
   }
 
   if (!rows.length) {
-    log.innerHTML = '<span class="ok">✓ Nothing to do — every entry already has a Place ID.</span>';
-    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+    log.innerHTML = '<span class="ok">✓ Nothing to do — every restaurant already has a Place ID.</span>';
+    if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs (Restaurants)'; }
     return;
   }
 
-  log.innerHTML = `Found ${rows.length} entries missing a Place ID. Looking each one up…<br>`;
+  log.innerHTML = `Found ${rows.length} restaurants missing a Place ID. Looking each one up…<br>`;
   let okCount = 0, failCount = 0;
 
   for (const row of rows) {
@@ -2708,7 +2708,7 @@ async function advBulkBackfillPlaceIds() {
   }
 
   log.innerHTML += `<br><strong>Done — ${okCount} updated, ${failCount} need a manual look.</strong>`;
-  if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs'; }
+  if (btn) { btn.disabled = false; btn.textContent = '🔍 Bulk Backfill Missing Place IDs (Restaurants)'; }
   advAdminLoad();
 }
 
