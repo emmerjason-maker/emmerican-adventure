@@ -23,12 +23,25 @@ let githubToken = null;
 
 const $ = id => document.getElementById(id);
 
+// Returns today's date as YYYY-MM-DD using LOCAL time, not UTC.
+// new Date().toISOString() converts to UTC, which silently rolls over
+// to the next calendar day once it's evening in any timezone west of
+// UTC (e.g. ~8pm in Jacksonville) — that was defaulting new posts to
+// "tomorrow" depending on what time of day you opened the admin panel.
+function localTodayStr() {
+  const d = new Date();
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
 // ── Startup ───────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   bindEvents();
 
   if ($('postDate')) {
-    $('postDate').value = new Date().toISOString().split('T')[0];
+    $('postDate').value = localTodayStr();
   }
 
   const saved = localStorage.getItem('jm_gh_token');
@@ -886,7 +899,7 @@ async function handlePublish() {
           tags: [],
           location_city: location?.city || null,
           location_country: location?.country || null,
-          taken_date: date || new Date().toISOString().split('T')[0],
+          taken_date: date || localTodayStr(),
           featured: false,
           post_url: 'posts/' + slug + '.html',
           sort_order: i,
@@ -955,7 +968,7 @@ async function handlePublish() {
 // ── Update sitemap.xml ───────────────────────────────────────────
 async function updateSitemap({ slug, date }) {
   try {
-    const today = date || new Date().toISOString().split('T')[0];
+    const today = date || localTodayStr();
     const postUrl = `https://emmericanadventure.com/posts/${slug}.html`;
 
     // Fetch current sitemap
@@ -1391,7 +1404,7 @@ function resetForm() {
   if ($('postPlaceIdStatus')) { $('postPlaceIdStatus').textContent = ''; $('postPlaceIdStatus').className = 'adv-placeid-status'; }
   document.getElementById('postMapPreview')?.classList.add('hidden');
   $('postLinkText').value = '';
-  $('postDate').value     = new Date().toISOString().split('T')[0];
+  $('postDate').value     = localTodayStr();
   images = [];
   renderImageList();
   $('previewBox').innerHTML = '<p class="preview-empty">Fill in the form and click Preview to see your post.</p>';
@@ -1462,12 +1475,13 @@ async function loadPostsList() {
       return;
     }
 
-    // Fetch each post to read real title, post#, date
+    // Fetch each post to read real title, post#, date, and whether
+    // it's still marked as scheduled (data-scheduled="true")
     list.innerHTML = '<p class="preview-empty">Loading post details…</p>';
     const details = await Promise.all(htmlFiles.map(async file => {
       try {
         const r = await ghFetch(`contents/posts/${file.name}`);
-        if (!r.ok) return { file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '' };
+        if (!r.ok) return { file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '', isScheduled: false };
         const j = await r.json();
         const html = decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))));
         const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -1475,9 +1489,10 @@ async function loadPostsList() {
           || file.name.replace('.html','').replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
         const postNum = doc.querySelector('.post-tag')?.textContent?.trim() || '';
         const date = doc.querySelector('.post-date')?.textContent?.trim() || '';
-        return { file, title, postNum, date };
+        const isScheduled = doc.querySelector('.post-entry[data-scheduled="true"]') !== null;
+        return { file, title, postNum, date, isScheduled };
       } catch(e) {
-        return { file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '' };
+        return { file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '', isScheduled: false };
       }
     }));
 
@@ -1488,18 +1503,188 @@ async function loadPostsList() {
       return nb - na;
     });
 
-    list.innerHTML = details.map(({ file, title, postNum, date }) => `
+    list.innerHTML = details.map(({ file, title, postNum, date, isScheduled }) => `
         <div class="post-list-item" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
           <div class="post-list-meta">
             ${postNum ? `<span class="post-list-num">${postNum}</span>` : ''}
             ${date ? `<span class="post-list-date">${date}</span>` : ''}
+            ${isScheduled ? `<span class="post-list-num" style="color:#eb5757;border-color:#eb5757;">⏱ Scheduled</span>` : ''}
           </div>
           <div class="post-list-title">${title}</div>
+          ${isScheduled ? `<button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation(); publishScheduledPostNow('${file.name}')">🚀 Publish Now</button>` : ''}
           <span class="post-list-arrow">Edit →</span>
         </div>`).join('');
 
   } catch (err) {
     list.innerHTML = `<p class="preview-empty" style="color:var(--red)">Error: ${err.message}</p>`;
+  }
+}
+
+// ── Publish a scheduled post immediately ──────────────────────────
+// Scheduled posts already have their page uploaded and their blog.html
+// card showing "Coming Soon" — but the homepage, photo/video grids,
+// sitemap, RSS feed, and search index never get updated until the
+// scheduled date naturally arrives (and even then, nothing currently
+// re-runs those steps automatically). This lets an admin force all of
+// that to happen right now, today, regardless of the post's stored date.
+async function publishScheduledPostNow(filename) {
+  if (!confirm('Publish this scheduled post now, with today\'s date? This updates the homepage, photo/video grids, sitemap, RSS feed, and search index.')) return;
+
+  showStatus('Publishing scheduled post…', false, true);
+  try {
+    const slug = filename.replace('.html', '');
+
+    // 1. Fetch the post page itself
+    const postRes = await ghFetch(`contents/posts/${filename}`);
+    if (!postRes.ok) throw new Error('Could not fetch post file');
+    const postJson = await postRes.json();
+    let postHtml = decodeURIComponent(escape(atob(postJson.content.replace(/\n/g, ''))));
+    const postSha = postJson.sha;
+
+    const doc = new DOMParser().parseFromString(postHtml, 'text/html');
+    const title = doc.querySelector('.post-entry-title')?.textContent?.trim() || slug;
+    const postNum = doc.querySelector('.post-tag')?.textContent?.trim() || '';
+
+    // Today's date, local time
+    const today = localTodayStr();
+    const fmtDate = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+
+    // 2. Update the post page itself — remove scheduled flag, fix date
+    postHtml = postHtml.replace(' data-scheduled="true"', '');
+    postHtml = postHtml.replace(
+      /<time class="post-date">[^<]*<\/time>/,
+      `<time class="post-date">${escHtml(fmtDate)}</time>`
+    );
+    await ghFetch(`contents/posts/${filename}`, 'PUT', {
+      message: `Publish scheduled post now: ${title}`,
+      content: btoa(unescape(encodeURIComponent(postHtml))),
+      sha: postSha,
+      branch: CONFIG.branch,
+    });
+
+    // 3. Gather images and excerpt from the post body for the other updates
+    const galleryImgs = Array.from(doc.querySelectorAll('.post-gallery img, .post-photo img'))
+      .map(img => (img.getAttribute('src') || '').replace(/^\.\.\//, ''))
+      .filter(Boolean);
+    const uploadedImages = galleryImgs.map(path => ({ path, caption: '' }));
+
+    const ytIframe = doc.querySelector('.post-video iframe, .post-videos-grid iframe');
+    const ytMatch = ytIframe ? (ytIframe.getAttribute('src') || '').match(/embed\/([a-zA-Z0-9_-]{11})/) : null;
+    const ytId = ytMatch ? ytMatch[1] : null;
+    const ytVideos = ytId ? [{ id: ytId, label: '' }] : [];
+
+    const bodyText = doc.querySelector('.post-body')?.textContent.trim() || '';
+    const plainText = bodyText.replace(/\s+/g, ' ').trim();
+    const excerpt = plainText.length > 140 ? plainText.substring(0, 140).replace(/\s+\S*$/, '') + '…' : plainText;
+
+    // 4. Convert the blog.html "Coming Soon" card into a normal live card
+    const blogRes = await ghFetch(`contents/${CONFIG.blogFile}`);
+    if (!blogRes.ok) throw new Error('Could not fetch blog.html');
+    const blogJson = await blogRes.json();
+    let blogHtml = decodeURIComponent(escape(atob(blogJson.content.replace(/\n/g, ''))));
+    const blogSha = blogJson.sha;
+
+    const blogDoc = new DOMParser().parseFromString(blogHtml, 'text/html');
+    const scheduledCards = Array.from(blogDoc.querySelectorAll('.post-index-card.post-scheduled'));
+    const matchingCard = scheduledCards.find(card =>
+      card.querySelector('.post-index-title')?.textContent?.trim() === title
+    );
+
+    if (matchingCard) {
+      const thumbSrc = uploadedImages.length > 0 ? uploadedImages[0].path
+        : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
+      const newCardHtml = `<article class="post-index-card">
+      <a href="posts/${slug}.html" class="post-index-link">
+        <div class="post-index-img">
+          ${thumbSrc ? `<img src="${escHtml(thumbSrc)}" alt="${escHtml(title)}" />` : '<div class="img-placeholder"><span class="placeholder-kanji">記</span></div>'}
+        </div>
+        <div class="post-index-body">
+          <div class="post-meta">
+            <span class="post-tag">${escHtml(postNum)}</span>
+            <time class="post-date">${escHtml(fmtDate)}</time>
+          </div>
+          <h2 class="post-index-title">${escHtml(title)}</h2>
+          <p class="post-index-excerpt">${escHtml(excerpt)}</p>
+          <span class="read-more small">Read Post <span>→</span></span>
+        </div>
+      </a>
+    </article>`;
+      // Replace in the raw HTML string by matching the same outerHTML block
+      const oldOuter = matchingCard.outerHTML;
+      if (blogHtml.includes(oldOuter)) {
+        blogHtml = blogHtml.replace(oldOuter, newCardHtml);
+      }
+    }
+
+    await ghFetch(`contents/${CONFIG.blogFile}`, 'PUT', {
+      message: `Publish scheduled post now: ${title}`,
+      content: btoa(unescape(encodeURIComponent(blogHtml))),
+      sha: blogSha,
+      branch: CONFIG.branch,
+    });
+
+    // 5. Run all the deferred updates that publish normally would have done
+    showStatus('Updating homepage…', false, true);
+    await updateHomepageFeatured({ title, date: today, postNumber: postNum.replace('Post #','') || '', uploadedImages, ytId, slug });
+
+    if (uploadedImages.length > 0) {
+      showStatus('Updating photo gallery…', false, true);
+      await updatePhotoGrids({ title, uploadedImages });
+
+      try {
+        const photoRows = uploadedImages.map((img, i) => ({
+          url: '/' + img.path,
+          alt_text: title,
+          tags: [],
+          location_city: null,
+          location_country: null,
+          taken_date: today,
+          featured: false,
+          post_url: 'posts/' + slug + '.html',
+          sort_order: i,
+          created_by: '3fd413d3-d92d-440f-b0ff-ca98b36cf251',
+        }));
+        await fetch(
+          'https://azjwuraxixuioeddkicq.supabase.co/rest/v1/post_images',
+          {
+            method: 'POST',
+            headers: {
+              'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+              'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+              'Content-Type': 'application/json',
+              'Prefer': 'return=minimal',
+            },
+            body: JSON.stringify(photoRows),
+          }
+        );
+      } catch (e) { console.warn('Supabase photo insert error:', e.message); }
+    }
+
+    if (ytVideos.length > 0) {
+      showStatus('Updating video gallery…', false, true);
+      await updateVideoGrid({ title, slug, ytVideos });
+      await updateVideosPage({ title, slug, date: today, ytVideos });
+    }
+
+    showStatus('Updating sitemap…', false, true);
+    await updateSitemap({ slug, date: today });
+
+    showStatus('Updating RSS feed…', false, true);
+    const imgSrc = uploadedImages.length > 0
+      ? `https://emmericanadventure.com/${uploadedImages[0].path}`
+      : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
+    await updateRssFeed({ title, slug, fmtDate, excerpt, imgSrc });
+
+    showStatus('Updating search index…', false, true);
+    const thumbPath = uploadedImages.length > 0 ? uploadedImages[0].path : (ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '');
+    await updateSearchIndex({ slug, title, date: fmtDate, excerpt, tag: 'Journal', img: thumbPath, keywords: title });
+
+    showStatus(`✓ Published! "${title}" is now fully live with today's date.`, false);
+    loadPostsList();
+
+  } catch (err) {
+    console.error(err);
+    showStatus('✗ Error publishing now: ' + err.message, true);
   }
 }
 
@@ -1956,7 +2141,7 @@ document.addEventListener('DOMContentLoaded', () => {
   $('advCancelBtn')?.addEventListener('click', advCancelEdit);
 
   // Set default date to today
-  if ($('advDate')) $('advDate').value = new Date().toISOString().split('T')[0];
+  if ($('advDate')) $('advDate').value = localTodayStr();
 });
 
 function toggleAdvFields() {
@@ -2288,7 +2473,7 @@ function advResetForm() {
   $('advName').value             = '';
   $('advCity').value             = '';
   $('advCountry').value          = '';
-  $('advDate').value             = new Date().toISOString().split('T')[0];
+  $('advDate').value             = localTodayStr();
   $('advCuisine').value          = '';
   $('advPrice').value            = '';
   $('advRating').value           = '';
