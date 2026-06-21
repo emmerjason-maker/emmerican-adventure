@@ -11,6 +11,8 @@ const $ = id => document.getElementById(id);
 let allAdventures = [];
 let adventuresLoaded = false;
 let activeType    = 'all';
+let activeCountry = '';
+let activeSort    = 'newest';
 let lightboxPhotos = [];
 let lightboxIndex  = 0;
 
@@ -18,6 +20,7 @@ let lightboxIndex  = 0;
 document.addEventListener('DOMContentLoaded', async () => {
   bindFilters();
   bindSearch();
+  bindCountryAndSort();
   bindLightbox();
   await loadAdventures();
 });
@@ -42,6 +45,7 @@ async function loadAdventures() {
     const loadEl = $('advLoading');
     if (loadEl) { loadEl.style.display = 'none'; loadEl.classList.add('hidden'); }
     adventuresLoaded = true;
+    populateCountrySelect();
     renderAll();
   } catch (err) {
     console.error('Failed to load adventures:', err);
@@ -71,6 +75,40 @@ function bindSearch() {
   });
 }
 
+const UK_NATIONS = new Set(['Scotland', 'England', 'Wales', 'Northern Ireland']);
+function displayCountryFor(a) {
+  const country = a.location_country || '';
+  const region  = a.location_region  || '';
+  return (country === 'United Kingdom' && UK_NATIONS.has(region)) ? region : country;
+}
+
+function bindCountryAndSort() {
+  const countrySel = $('advCountrySelect');
+  if (countrySel) {
+    countrySel.addEventListener('change', () => {
+      activeCountry = countrySel.value;
+      renderAll();
+    });
+  }
+  const sortSel = $('advSortSelect');
+  if (sortSel) {
+    sortSel.addEventListener('change', () => {
+      activeSort = sortSel.value;
+      renderAll();
+    });
+  }
+}
+
+function populateCountrySelect() {
+  const sel = $('advCountrySelect');
+  if (!sel) return;
+  const countries = Array.from(new Set(allAdventures.map(displayCountryFor).filter(Boolean))).sort();
+  const current = sel.value;
+  sel.innerHTML = '<option value="">🌏 All Countries</option>' +
+    countries.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+  sel.value = countries.includes(current) ? current : '';
+}
+
 // ── Render ────────────────────────────────────────────────────────
 function renderAll() {
   const query = ($('advSearch')?.value || '').toLowerCase().trim();
@@ -79,6 +117,7 @@ function renderAll() {
   let filtered = allAdventures.filter(a => {
     if (activeType !== 'all' && activeType !== 'country' && a.type !== activeType) return false;
     if (activeType === 'country') return false; // countries are derived, not a type
+    if (activeCountry && displayCountryFor(a) !== activeCountry) return false;
     if (query) {
       const haystack = [a.name, a.location_city, a.location_region, a.location_country, a.cuisine, a.notes, ...(a.tags || [])]
         .filter(Boolean).join(' ').toLowerCase();
@@ -102,9 +141,34 @@ function renderAll() {
 
   if (emptyEl) { emptyEl.style.display = 'none'; emptyEl.classList.add('hidden'); }
 
-  // Group by country → city
-  const groups = groupAdventures(filtered);
-  $('advGrid').innerHTML = groups.map(renderGroup).join('');
+  if (activeSort === 'newest') {
+    // Group by country → city, newest group first (original browsing experience)
+    const groups = groupAdventures(filtered);
+    $('advGrid').innerHTML = groups.map(renderGroup).join('');
+  } else {
+    // Flat, sorted list — grouping by location doesn't make sense
+    // once you're sorting by rating or name across all locations
+    const sorted = [...filtered].sort((a, b) => {
+      if (activeSort === 'rating') {
+        return (parseFloat(b.rating) || 0) - (parseFloat(a.rating) || 0);
+      }
+      if (activeSort === 'az') {
+        return (a.name || '').localeCompare(b.name || '');
+      }
+      return 0;
+    });
+    const label = activeSort === 'rating' ? 'Highest Rated' : 'A–Z';
+    $('advGrid').innerHTML = `
+      <div class="adv-group">
+        <div class="adv-group-header">
+          <h2 class="adv-group-label">${label}</h2>
+          <span class="adv-group-count">${sorted.length} entr${sorted.length === 1 ? 'y' : 'ies'}</span>
+        </div>
+        <div class="adv-cards">
+          ${sorted.map(renderCard).join('')}
+        </div>
+      </div>`;
+  }
 
   // Bind photo clicks after render
   bindPhotoClicks();

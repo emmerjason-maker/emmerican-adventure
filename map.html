@@ -45,6 +45,30 @@
       padding: 0.35rem 0.5rem;
     }
 
+    .countries-list-panel {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      margin-top: 0.4rem;
+      background: var(--paper);
+      border: 1px solid var(--paper-dark);
+      border-radius: 4px;
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      padding: 0.6rem 0.8rem;
+      min-width: 200px;
+      max-height: 280px;
+      overflow-y: auto;
+      z-index: 50;
+      text-transform: none;
+      letter-spacing: normal;
+      font-size: 0.72rem;
+      line-height: 1.7;
+      color: var(--ink);
+    }
+    .countries-list-panel.hidden { display: none; }
+    .countries-list-panel ul { list-style: none; margin: 0; padding: 0; columns: 2; column-gap: 1rem; }
+    .countries-list-panel li { white-space: nowrap; }
+
     .map-toggle {
       font-family: var(--font-mono);
       font-size: 0.65rem;
@@ -134,7 +158,10 @@
   </header>
 
   <div class="map-toggles-bar">
-    <div class="map-countries-count">🌏 <span id="countCountry">0</span> countries</div>
+    <div class="map-countries-count" id="countriesCountBtn" style="cursor:pointer;position:relative;" onclick="toggleCountriesList()">
+      🌏 <span id="countCountry">0</span> countries <span style="font-size:0.7em;opacity:0.6;">▾</span>
+      <div id="countriesListPanel" class="countries-list-panel hidden"></div>
+    </div>
     <button class="map-toggle active-restaurant" data-type="restaurant" onclick="toggleType(this, 'restaurant')">
       🍜 Restaurants <span class="map-count" id="countRestaurant">0</span>
     </button>
@@ -270,7 +297,27 @@ function updateCounts() {
     }
   });
   document.getElementById('countCountry').textContent = countrySet.size;
+
+  // Build the expandable list of country names
+  window.__visitedCountries = Array.from(countrySet).sort();
+  const panel = document.getElementById('countriesListPanel');
+  if (panel) {
+    panel.innerHTML = window.__visitedCountries.length
+      ? '<ul>' + window.__visitedCountries.map(c => `<li>🏳️ ${esc(c)}</li>`).join('') + '</ul>'
+      : '<p style="opacity:0.6;">No countries yet</p>';
+  }
 }
+
+function toggleCountriesList() {
+  const panel = document.getElementById('countriesListPanel');
+  if (panel) panel.classList.toggle('hidden');
+}
+
+document.addEventListener('click', e => {
+  const btn = document.getElementById('countriesCountBtn');
+  const panel = document.getElementById('countriesListPanel');
+  if (btn && panel && !btn.contains(e.target)) panel.classList.add('hidden');
+});
 
 function buildPopup(a) {
   const typeLabel = { restaurant: '🍜 Restaurant', place: '📍 Place', country: '🌏 Country', post: '📝 Blog Post' }[a.type] || a.type;

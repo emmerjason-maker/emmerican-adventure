@@ -145,6 +145,26 @@
   color: var(--ink-faint);
 }
 
+.adv-country-select,
+.adv-sort-select {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.45rem 0.8rem;
+  background: var(--paper-warm);
+  border: 1px solid var(--paper-dark);
+  color: var(--ink);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.adv-country-select:focus,
+.adv-sort-select:focus {
+  border-color: var(--gold);
+}
+
 /* ── Loading / Empty ────────────────────────────────────────────── */
 .adv-loading {
   text-align: center;
@@ -504,6 +524,12 @@
 }
 
 [data-theme="dark"] .adv-search {
+  background: var(--paper-warm);
+  border-color: var(--paper-dark);
+}
+
+[data-theme="dark"] .adv-country-select,
+[data-theme="dark"] .adv-sort-select {
   background: var(--paper-warm);
   border-color: var(--paper-dark);
 }
