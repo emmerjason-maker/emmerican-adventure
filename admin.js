@@ -274,6 +274,13 @@ function extractYouTubeId(input) {
   return match ? match[1] : null;
 }
 
+// YouTube Shorts are vertical (~9:16) — the standard 16:9 embed container
+// squeezes them into a small, pillarboxed video. Detected from the raw
+// URL at add-time since there's no way to tell from the video ID alone.
+function isYouTubeShorts(input) {
+  return !!(input && /youtube\.com\/shorts\//.test(input));
+}
+
 
 // ── New post YouTube management ───────────────────────────────
 function addYtVideo() {
@@ -282,7 +289,7 @@ function addYtVideo() {
   const id = extractYouTubeId(input);
   if (!id) { showStatus('Could not find a valid YouTube video ID in that URL.', true); return; }
   if (ytVideos.find(v => v.id === id)) { showStatus('That video is already added.', true); return; }
-  ytVideos.push({ id, label });
+  ytVideos.push({ id, label, isShorts: isYouTubeShorts(input) });
   if ($('ytVideoInput')) $('ytVideoInput').value = '';
   if ($('ytVideoLabel')) $('ytVideoLabel').value = '';
   renderYtVideoList();
@@ -474,7 +481,7 @@ ${videoBlock}${galleryBlock}
 
 
 // ── Build individual post page HTML ──────────────────────────────
-function buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled, seoExcerpt, prevPostSlug, prevPostTitle }) {
+function buildPostPage({ title, slug, date, postNumber, location, body, ytId, ytIsShorts, uploadedImages, linkUrl, linkText, isScheduled, seoExcerpt, prevPostSlug, prevPostTitle }) {
   const fmtDate = date
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
     : '';
@@ -519,7 +526,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
   }
   if (ytId) {
     mediaHtml += `
-      <div class="post-video">
+      <div class="${ytIsShorts ? 'post-video shorts' : 'post-video'}">
         <div class="video-embed-wrap">
           <iframe src="https://www.youtube.com/embed/${ytId}" title="${escHtml(title)}"
             frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -685,6 +692,7 @@ async function handlePublish() {
   const location = $('postLocationName')?.value.trim() || $('postLocationSearch')?.value.trim() || '';
   const body     = $('postBody').innerHTML.trim();
   const ytId     = (typeof ytVideos !== 'undefined' && ytVideos.length > 0) ? ytVideos[0].id : null;
+  const ytIsShorts = (typeof ytVideos !== 'undefined' && ytVideos.length > 0) ? !!ytVideos[0].isShorts : false;
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim();
 
@@ -768,7 +776,7 @@ async function handlePublish() {
       prevPostTitle = prevMatch[2].trim();
     }
 
-    const postPageHtml = buildPostPage({ title, slug, date, postNumber, location, body, ytId, uploadedImages, linkUrl, linkText, isScheduled, seoExcerpt, prevPostSlug, prevPostTitle });
+    const postPageHtml = buildPostPage({ title, slug, date, postNumber, location, body, ytId, ytIsShorts, uploadedImages, linkUrl, linkText, isScheduled, seoExcerpt, prevPostSlug, prevPostTitle });
     await uploadFile(`posts/${slug}.html`, btoa(unescape(encodeURIComponent(postPageHtml))));
 
     // 4b. Save location to Supabase post_locations — new posts never got
@@ -1181,7 +1189,7 @@ async function updateVideoGrid({ title, slug, ytVideos }) {
     // Build video cards for each YouTube video
     const newCards = ytVideos.map(v => `
         <div class="video-card">
-          <div class="video-embed-wrap">
+          <div class="video-embed-wrap${v.isShorts ? ' shorts' : ''}">
             <iframe
               src="https://www.youtube.com/embed/${v.id}"
               title="${escHtml(v.label || title)}"
@@ -1236,7 +1244,7 @@ async function updateVideosPage({ title, slug, date, ytVideos }) {
     const newCards = ytVideos.map(v => `
         <!-- ====== VIDEO CARD ====== -->
         <div class="video-card">
-          <div class="video-embed-wrap">
+          <div class="video-embed-wrap${v.isShorts ? ' shorts' : ''}">
             <iframe src="https://www.youtube.com/embed/${v.id}?rel=0&modestbranding=1"
               title="${escHtml(v.title || title)}" frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -1791,7 +1799,8 @@ async function loadPostForEditing(filename, sha) {
         const vidId = idMatch[1];
         const caption = iframe.closest('.post-video')?.querySelector('.video-caption')?.textContent?.trim() || '';
         const label = (caption === 'Watch on YouTube →' || caption.includes('YouTube')) ? '' : caption;
-        editYtVideos.push({ id: vidId, label });
+        const isShorts = iframe.closest('.post-video')?.classList.contains('shorts') || false;
+        editYtVideos.push({ id: vidId, label, isShorts });
       }
     });
 
@@ -1948,7 +1957,7 @@ function addEditYtVideo() {
   const id = extractYouTubeId(input);
   if (!id) { showStatus('Could not find a valid YouTube video ID.', true); return; }
   if (editYtVideos.find(v => v.id === id)) { showStatus('That video is already added.', true); return; }
-  editYtVideos.push({ id, label });
+  editYtVideos.push({ id, label, isShorts: isYouTubeShorts(input) });
   if ($('editYtVideoInput')) $('editYtVideoInput').value = '';
   if ($('editYtVideoLabel')) $('editYtVideoLabel').value = '';
   renderEditYtVideoList();
@@ -2189,7 +2198,8 @@ async function savePostEdit(filename) {
         const cap = v.label
           ? `<p class="video-caption">${escHtml(v.label)}</p>`
           : `<p class="video-caption">Watch on <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube →</a></p>`;
-        return `<div class="post-video"><div class="video-embed-wrap"><iframe src="https://www.youtube.com/embed/${v.id}" title="${escHtml(v.label || newTitle)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>${cap}</div>`;
+        const vidClass = v.isShorts ? 'post-video shorts' : 'post-video';
+        return `<div class="${vidClass}"><div class="video-embed-wrap"><iframe src="https://www.youtube.com/embed/${v.id}" title="${escHtml(v.label || newTitle)}" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe></div>${cap}</div>`;
       };
       const vidHtml = editYtVideos.length > 1
         ? `<div class="post-videos-grid">${editYtVideos.map(makeVid).join('')}</div>`
@@ -3388,7 +3398,7 @@ function advAddYt() {
   const id      = extractYouTubeId(urlVal) || urlVal;
   if (!id) { showStatus('Enter a valid YouTube URL or video ID.', true); return; }
   if (advYtVideos.find(v => v.id === id)) { showStatus('Already added.', true); return; }
-  advYtVideos.push({ id, label });
+  advYtVideos.push({ id, label, isShorts: isYouTubeShorts(urlVal) });
   document.getElementById('advYtUrl').value   = '';
   document.getElementById('advYtLabel').value = '';
   renderAdvYtList();
