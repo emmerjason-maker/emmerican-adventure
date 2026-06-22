@@ -1760,11 +1760,12 @@ async function loadPostForEditing(filename, sha) {
     if (locationEl) {
       const link = locationEl.querySelector('a');
       if (link) {
-        const label = link.textContent.replace('📍 ', '').trim();
-        const href = link.getAttribute('href') || '';
-        existingLocation = href && href !== '#' && label !== 'View on Maps'
-          ? `${label} | ${href}`
-          : href || label;
+        // Just the visible label — place_id/lat/lng for the actual map
+        // link are tracked separately via editPlaceId/editLat/editLng,
+        // so there's no need to round-trip the href through this field.
+        // (Previously this glued the href onto the label as "Label | URL",
+        // which then got saved back out as literal visible text.)
+        existingLocation = link.textContent.replace('📍 ', '').trim();
       } else {
         existingLocation = locationEl.textContent.replace('📍 ', '').trim();
       }
@@ -2112,6 +2113,20 @@ async function savePostEdit(filename) {
       }
       const photoNode = parser.parseFromString(photoHtml, 'text/html').body.firstChild;
       bodyEl.parentNode.insertBefore(photoNode, bodyEl);
+    }
+
+    // ── og:image — was never updated on edit, so reordering or
+    // swapping the key photo never propagated to social previews.
+    // Falls back to the first video's thumbnail if there are no photos.
+    const ogImageTag = doc.querySelector('meta[property="og:image"]');
+    if (ogImageTag) {
+      let newOgImage = '';
+      if (editPhotos.length > 0) {
+        newOgImage = `https://emmericanadventure.com/${editPhotos[0].src}`;
+      } else if (editYtVideos && editYtVideos.length > 0) {
+        newOgImage = `https://img.youtube.com/vi/${editYtVideos[0].id}/maxresdefault.jpg`;
+      }
+      if (newOgImage) ogImageTag.setAttribute('content', newOgImage);
     }
 
     // ── Rebuild YouTube videos in DOM ────────────────────────────
