@@ -97,8 +97,6 @@ function bindEvents() {
   if ($('ytAddBtn')) $('ytAddBtn').addEventListener('click', addYtVideo);
   if ($('editYtAddBtn')) $('editYtAddBtn').addEventListener('click', addEditYtVideo);
   if ($('editPhotoInput')) $('editPhotoInput').addEventListener('change', handleEditPhotoAdd);
-  if ($('editYtAddBtn')) $('editYtAddBtn').addEventListener('click', addEditYtVideo);
-  if ($('editPhotoInput')) $('editPhotoInput').addEventListener('change', handleEditPhotoAdd);
 }
 
 // ── Login ─────────────────────────────────────────────────────────
@@ -1954,6 +1952,7 @@ function addEditYtVideo() {
   if ($('editYtVideoInput')) $('editYtVideoInput').value = '';
   if ($('editYtVideoLabel')) $('editYtVideoLabel').value = '';
   renderEditYtVideoList();
+  showStatus(`✓ Video added (${editYtVideos.length} total) — remember to click Save.`, false);
 }
 
 function removeEditYtVideo(id) {
@@ -3393,6 +3392,7 @@ function advAddYt() {
   document.getElementById('advYtUrl').value   = '';
   document.getElementById('advYtLabel').value = '';
   renderAdvYtList();
+  showStatus(`✓ Video added (${advYtVideos.length} total) — remember to click Save Adventure.`, false);
 }
 
 function advRemoveYt(id) {
