@@ -1894,8 +1894,19 @@ function renderEditPhotoList() {
           value="${escHtml(p.caption || '')}"
           onchange="editPhotos[${i}].caption = this.value" />
       </div>
+      <div style="display:flex;flex-direction:column;gap:2px;">
+        <button type="button" class="img-btn" onclick="moveEditPhoto(${i}, -1)" title="Move up" ${i === 0 ? 'disabled style="opacity:0.3;cursor:default;"' : ''}>↑</button>
+        <button type="button" class="img-btn" onclick="moveEditPhoto(${i}, 1)" title="Move down" ${i === editPhotos.length - 1 ? 'disabled style="opacity:0.3;cursor:default;"' : ''}>↓</button>
+      </div>
       <button type="button" class="img-btn remove" onclick="removeEditPhoto(${i})" title="Remove">✕</button>
     </div>`).join('');
+}
+
+function moveEditPhoto(idx, dir) {
+  const newIdx = idx + dir;
+  if (newIdx < 0 || newIdx >= editPhotos.length) return;
+  [editPhotos[idx], editPhotos[newIdx]] = [editPhotos[newIdx], editPhotos[idx]];
+  renderEditPhotoList();
 }
 
 function removeEditPhoto(idx) {
