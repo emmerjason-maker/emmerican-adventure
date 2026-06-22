@@ -101,15 +101,6 @@
   border: 0;
 }
 
-/* YouTube Shorts are vertical (~9:16) — the default 16:9 container above
-   squeezes them into a small pillarboxed video. Use a portrait container
-   instead, capped to a sensible width so it doesn't dominate the page. */
-.post-video.shorts .video-embed-wrap {
-  padding-bottom: 177.78%; /* 16/9 inverted */
-  max-width: 380px;
-  margin: 0 auto;
-}
-
 .video-caption {
   font-family: var(--font-mono);
   font-size: 0.72rem;
