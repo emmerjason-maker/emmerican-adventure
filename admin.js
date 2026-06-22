@@ -2129,6 +2129,60 @@ async function savePostEdit(filename) {
       if (newOgImage) ogImageTag.setAttribute('content', newOgImage);
     }
 
+    // ── Sync Supabase post_images so photos.html reflects this edit ──
+    // savePostEdit never touched post_images before — new photos added
+    // via Edit Post never showed up on photos.html, and reordering
+    // existing photos never updated their sort_order. Simplest robust
+    // fix: wipe this post's rows and re-insert from editPhotos, which
+    // is already the final, correctly-ordered source of truth.
+    try {
+      const postUrl = `posts/${filename}`;
+      const pgHeaders = {
+        'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+        'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+        'Content-Type': 'application/json',
+      };
+
+      // Capture an existing taken_date for this post (if any rows already
+      // exist) so re-syncing doesn't lose its place in the date-sorted grid
+      let takenDate = localTodayStr();
+      const existingRes = await fetch(
+        `https://azjwuraxixuioeddkicq.supabase.co/rest/v1/post_images?post_url=eq.${encodeURIComponent(postUrl)}&select=taken_date&limit=1`,
+        { headers: pgHeaders }
+      );
+      if (existingRes.ok) {
+        const existingRows = await existingRes.json();
+        if (existingRows.length && existingRows[0].taken_date) takenDate = existingRows[0].taken_date;
+      }
+
+      // Wipe old rows for this post, then re-insert in the final order
+      await fetch(
+        `https://azjwuraxixuioeddkicq.supabase.co/rest/v1/post_images?post_url=eq.${encodeURIComponent(postUrl)}`,
+        { method: 'DELETE', headers: { ...pgHeaders, 'Prefer': 'return=minimal' } }
+      );
+
+      if (editPhotos.length > 0) {
+        const photoRows = editPhotos.map((p, i) => ({
+          url: '/' + p.src,
+          alt_text: p.caption || newTitle,
+          tags: [],
+          location_city: null,
+          location_country: null,
+          taken_date: takenDate,
+          featured: false,
+          post_url: postUrl,
+          sort_order: i,
+          created_by: '3fd413d3-d92d-440f-b0ff-ca98b36cf251',
+        }));
+        await fetch(
+          'https://azjwuraxixuioeddkicq.supabase.co/rest/v1/post_images',
+          { method: 'POST', headers: { ...pgHeaders, 'Prefer': 'return=minimal' }, body: JSON.stringify(photoRows) }
+        );
+      }
+    } catch (syncErr) {
+      console.warn('post_images sync error:', syncErr.message);
+    }
+
     // ── Rebuild YouTube videos in DOM ────────────────────────────
     doc.querySelectorAll('.post-video, .post-videos-grid').forEach(el => el.remove());
     if (editYtVideos && editYtVideos.length > 0) {
