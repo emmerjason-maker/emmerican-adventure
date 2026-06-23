@@ -2183,6 +2183,24 @@ async function savePostEdit(filename) {
       console.warn('post_images sync error:', syncErr.message);
     }
 
+    // ── Sync homepage video grid + videos.html ────────────────────
+    // savePostEdit never called these before — only new-post publishing
+    // did, so videos added/changed via Edit Post never showed up on the
+    // homepage's video section or the dedicated Videos page.
+    if (editYtVideos && editYtVideos.length > 0) {
+      try {
+        const existingDateText = doc.querySelector('.post-date')?.textContent?.trim() || '';
+        const postDateIso = existingDateText
+          ? new Date(existingDateText + ' 12:00:00').toISOString().split('T')[0]
+          : localTodayStr();
+        const slug = filename.replace('.html', '');
+        await updateVideoGrid({ title: newTitle, slug, ytVideos: editYtVideos });
+        await updateVideosPage({ title: newTitle, slug, date: postDateIso, ytVideos: editYtVideos });
+      } catch (vidGridErr) {
+        console.warn('Video grid sync error:', vidGridErr.message);
+      }
+    }
+
     // ── Rebuild YouTube videos in DOM ────────────────────────────
     doc.querySelectorAll('.post-video, .post-videos-grid').forEach(el => el.remove());
     if (editYtVideos && editYtVideos.length > 0) {
