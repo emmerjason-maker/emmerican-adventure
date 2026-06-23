@@ -1180,6 +1180,10 @@ async function updateVideoGrid({ title, slug, ytVideos }) {
     if (!html.includes(marker)) return;
 
     // Build video cards for each YouTube video
+    // (uses video-title/video-desc + a post-tag label — the classes the
+    // homepage's CSS actually styles; video-card-title/-desc had no
+    // matching CSS rule at all, so past auto-inserted cards rendered
+    // completely unstyled)
     const newCards = ytVideos.map(v => `
         <div class="video-card">
           <div class="video-embed-wrap">
@@ -1192,8 +1196,9 @@ async function updateVideoGrid({ title, slug, ytVideos }) {
             </iframe>
           </div>
           <div class="video-card-body">
-            <h3 class="video-card-title">${escHtml(v.label || title)}</h3>
-            <p class="video-card-desc">${escHtml(title)}</p>
+            <span class="post-tag">Vlog</span>
+            <h3 class="video-title">${escHtml(v.label || title)}</h3>
+            <p class="video-desc">${escHtml(title)}</p>
           </div>
         </div>`).join('\n');
 
