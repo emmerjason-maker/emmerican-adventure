@@ -82,8 +82,8 @@
 
 /* ─── Embedded Video ────────────────────────────────────────────── */
 .post-video {
-  margin: 2rem 0;
-  max-width: 640px;
+  margin: 2rem auto;
+  max-width: 580px;
 }
 
 .post-video .video-embed-wrap {
@@ -203,11 +203,11 @@
   margin: 0;
 }
 
-/* Single video — capped width so it doesn't span the full post content
-   width (was previously full-bleed, which looked oversized) */
+/* Single video — capped + centered, matching the per-card width used
+   when multiple videos sit side-by-side in .post-videos-grid */
 .post-video {
-  margin: 2rem 0;
-  max-width: 640px;
+  margin: 2rem auto;
+  max-width: 580px;
 }
 
 /* ─── Comments Section ──────────────────────────────────────────── */
