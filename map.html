@@ -108,15 +108,19 @@
     .map-loading-kanji { font-family: var(--font-body); font-size: 3rem; color: var(--paper-dark); }
 
     /* Popup */
+    /* Map popup text colors are hardcoded, not theme-variable based —
+       Google's InfoWindow always renders on a white background regardless
+       of site dark/light mode, so using var(--ink) etc made text nearly
+       invisible in dark mode (near-white text on a white popup). */
     .map-popup { padding: 1rem 1.1rem 0.85rem; min-width: 200px; max-width: 260px; }
-    .map-popup-type { font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--ink-faint); margin-bottom: 0.3rem; }
-    .map-popup-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 400; color: var(--ink); line-height: 1.2; margin-bottom: 0.25rem; }
-    .map-popup-loc { font-family: var(--font-mono); font-size: 0.62rem; color: var(--ink-faint); margin-bottom: 0.5rem; }
+    .map-popup-type { font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em; color: #6b6258; margin-bottom: 0.3rem; }
+    .map-popup-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 400; color: #1a1714; line-height: 1.2; margin-bottom: 0.25rem; }
+    .map-popup-loc { font-family: var(--font-mono); font-size: 0.62rem; color: #6b6258; margin-bottom: 0.5rem; }
     .map-popup-stars { display: flex; gap: 2px; margin-bottom: 0.4rem; align-items: center; }
-    .map-popup-star { color: var(--gold); font-size: 0.8rem; }
-    .map-popup-star.empty { color: var(--paper-dark); }
-    .map-popup-notes { font-size: 0.78rem; color: var(--ink-faint); line-height: 1.5; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
-    .map-popup-link { font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--red); text-decoration: none; }
+    .map-popup-star { color: #b8922a; font-size: 0.8rem; }
+    .map-popup-star.empty { color: #d8cfc2; }
+    .map-popup-notes { font-size: 0.78rem; color: #6b6258; line-height: 1.5; margin-bottom: 0.5rem; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+    .map-popup-link { font-family: var(--font-mono); font-size: 0.62rem; text-transform: uppercase; letter-spacing: 0.1em; color: #c0392b; text-decoration: none; }
 
     @media (max-width: 640px) {
       .map-toggles-bar { padding: 0.4rem 1rem; }
