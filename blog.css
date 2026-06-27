@@ -83,6 +83,7 @@
 /* ─── Embedded Video ────────────────────────────────────────────── */
 .post-video {
   margin: 2rem 0;
+  max-width: 640px;
 }
 
 .post-video .video-embed-wrap {
@@ -202,9 +203,11 @@
   margin: 0;
 }
 
-/* Single video - full width */
+/* Single video — capped width so it doesn't span the full post content
+   width (was previously full-bleed, which looked oversized) */
 .post-video {
   margin: 2rem 0;
+  max-width: 640px;
 }
 
 /* ─── Comments Section ──────────────────────────────────────────── */
