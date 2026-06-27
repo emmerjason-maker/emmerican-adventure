@@ -1170,21 +1170,22 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
 // ── Update homepage video grid ────────────────────────────────
 async function updateVideoGrid({ title, slug, ytVideos }) {
   try {
-    const fileRes = await ghFetch('contents/index.html');
-    if (!fileRes.ok) return;
-    const fileJson = await fileRes.json();
-    let html = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
-    const sha = fileJson.sha;
+    await withGhRetry('Homepage video grid', async () => {
+      const fileRes = await ghFetch('contents/index.html');
+      if (!fileRes.ok) throw new Error(`Could not fetch index.html (HTTP ${fileRes.status})`);
+      const fileJson = await fileRes.json();
+      let html = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+      const sha = fileJson.sha;
 
-    const marker = '<!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->';
-    if (!html.includes(marker)) return;
+      const marker = '<!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->';
+      if (!html.includes(marker)) throw new Error('Marker not found in index.html');
 
-    // Build video cards for each YouTube video
-    // (uses video-title/video-desc + a post-tag label — the classes the
-    // homepage's CSS actually styles; video-card-title/-desc had no
-    // matching CSS rule at all, so past auto-inserted cards rendered
-    // completely unstyled)
-    const newCards = ytVideos.map(v => `
+      // Build video cards for each YouTube video
+      // (uses video-title/video-desc + a post-tag label — the classes the
+      // homepage's CSS actually styles; video-card-title/-desc had no
+      // matching CSS rule at all, so past auto-inserted cards rendered
+      // completely unstyled)
+      const newCards = ytVideos.map(v => `
         <div class="video-card">
           <div class="video-embed-wrap">
             <iframe
@@ -1202,44 +1203,51 @@ async function updateVideoGrid({ title, slug, ytVideos }) {
           </div>
         </div>`).join('\n');
 
-    // Insert before marker
-    let updated = html.replace(marker, newCards + '\n        ' + marker);
+      // Insert before marker
+      let updated = html.replace(marker, newCards + '\n        ' + marker);
 
-    // Trim to 6 most recent video cards
-    const parts = updated.split('<div class="video-card">');
-    if (parts.length - 1 > 6) {
-      updated = parts.slice(0, 7).join('<div class="video-card">') +
-                updated.substring(updated.lastIndexOf(parts[7] || ''));
-    }
+      // Trim to 6 most recent video cards
+      const parts = updated.split('<div class="video-card">');
+      if (parts.length - 1 > 6) {
+        updated = parts.slice(0, 7).join('<div class="video-card">') +
+                  updated.substring(updated.lastIndexOf(parts[7] || ''));
+      }
 
-    await ghFetch('contents/index.html', 'PUT', {
-      message: `Update homepage videos: ${title}`,
-      content: btoa(unescape(encodeURIComponent(updated))),
-      sha,
-      branch: CONFIG.branch,
+      const putRes = await ghFetch('contents/index.html', 'PUT', {
+        message: `Update homepage videos: ${title}`,
+        content: btoa(unescape(encodeURIComponent(updated))),
+        sha,
+        branch: CONFIG.branch,
+      });
+      if (!putRes.ok) {
+        const err = await putRes.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${putRes.status}`);
+      }
     });
   } catch (err) {
-    console.warn('Could not update video grid:', err.message);
+    console.error('Homepage video grid update failed:', err.message);
+    showStatus(`⚠ Post saved, but the homepage video grid wasn't updated — ${err.message}. You may need to add it manually.`, true, true);
   }
 }
 
 // ── Update videos.html page ──────────────────────────────────────
 async function updateVideosPage({ title, slug, date, ytVideos }) {
   try {
-    const res = await ghFetch('contents/videos.html');
-    if (!res.ok) return;
-    const json = await res.json();
-    const html = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
-    const sha  = json.sha;
+    await withGhRetry('Videos page', async () => {
+      const res = await ghFetch('contents/videos.html');
+      if (!res.ok) throw new Error(`Could not fetch videos.html (HTTP ${res.status})`);
+      const json = await res.json();
+      const html = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
+      const sha  = json.sha;
 
-    const fmtDate = date
-      ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
-      : new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+      const fmtDate = date
+        ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
+        : new Date().toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
 
-    const marker = '<!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->';
-    if (!html.includes(marker)) return;
+      const marker = '<!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->';
+      if (!html.includes(marker)) throw new Error('Marker not found in videos.html');
 
-    const newCards = ytVideos.map(v => `
+      const newCards = ytVideos.map(v => `
         <!-- ====== VIDEO CARD ====== -->
         <div class="video-card">
           <div class="video-embed-wrap">
@@ -1255,84 +1263,126 @@ async function updateVideosPage({ title, slug, date, ytVideos }) {
           </div>
         </div>`).join('\n');
 
-    const updated = html.replace(marker, marker + newCards);
+      const updated = html.replace(marker, marker + newCards);
 
-    await ghFetch('contents/videos.html', 'PUT', {
-      message: `Add video to videos page: ${title}`,
-      content: btoa(unescape(encodeURIComponent(updated))),
-      sha, branch: CONFIG.branch,
+      const putRes = await ghFetch('contents/videos.html', 'PUT', {
+        message: `Add video to videos page: ${title}`,
+        content: btoa(unescape(encodeURIComponent(updated))),
+        sha, branch: CONFIG.branch,
+      });
+      if (!putRes.ok) {
+        const err = await putRes.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${putRes.status}`);
+      }
     });
-  } catch (e) { console.warn('Could not update videos.html:', e.message); }
+  } catch (err) {
+    console.error('Videos page update failed:', err.message);
+    showStatus(`⚠ Post saved, but videos.html wasn't updated — ${err.message}. You may need to add it manually.`, true, true);
+  }
 }
 
 // ── Update photo grids on index.html and photos.html ─────────────
-async function updatePhotoGrids({ title, uploadedImages }) {
-  try {
-    if (!uploadedImages || uploadedImages.length === 0) return;
+// Retries a fetch-modify-write cycle against a GitHub file a few times.
+// Covers transient failures (rate limits, network blips) AND SHA
+// conflicts (since each retry re-fetches the file fresh, getting a
+// current SHA) — a blind retry of the same PUT would just fail again
+// on a conflict, but re-running the whole cycle resolves it.
+async function withGhRetry(label, fn, attempts = 3) {
+  let lastErr;
+  for (let i = 0; i < attempts; i++) {
+    try {
+      return await fn();
+    } catch (err) {
+      lastErr = err;
+      console.warn(`${label} failed (attempt ${i + 1}/${attempts}): ${err.message}`);
+      if (i < attempts - 1) await new Promise(r => setTimeout(r, 600 * (i + 1)));
+    }
+  }
+  throw new Error(`${label}: ${lastErr.message} (after ${attempts} attempts)`);
+}
 
-    const newItems = uploadedImages.map(img => `
+async function updatePhotoGrids({ title, uploadedImages }) {
+  if (!uploadedImages || uploadedImages.length === 0) return;
+  const failures = [];
+
+  const newItems = uploadedImages.map(img => `
         <div class="photo-item" data-caption="${escHtml(title)}">
           <img src="${escHtml(img.path)}" alt="${escHtml(title)}" />
         </div>`).join('\n');
 
-    const marker = '        <!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
+  const indexMarker = '        <!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
+  const trimMarker  = '<!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
 
-    // ── Update index.html (keep 6 most recent) ────────────────────
-    const indexRes = await ghFetch('contents/index.html');
-    if (!indexRes.ok) throw new Error('Could not fetch index.html');
-    const indexJson = await indexRes.json();
-    const indexHtml = decodeURIComponent(escape(atob(indexJson.content.replace(/\n/g, ''))));
-    const indexSha = indexJson.sha;
+  // ── Update index.html (keep 6 most recent) ────────────────────
+  try {
+    await withGhRetry('Homepage photo grid', async () => {
+      const indexRes = await ghFetch('contents/index.html');
+      if (!indexRes.ok) throw new Error(`Could not fetch index.html (HTTP ${indexRes.status})`);
+      const indexJson = await indexRes.json();
+      const indexHtml = decodeURIComponent(escape(atob(indexJson.content.replace(/\n/g, ''))));
+      const indexSha = indexJson.sha;
 
-    if (indexHtml.includes(marker)) {
-      let updated = indexHtml.replace(marker, newItems + '\n' + marker);
+      if (!indexHtml.includes(indexMarker)) throw new Error('Marker not found in index.html');
+      let updated = indexHtml.replace(indexMarker, newItems + '\n' + indexMarker);
 
       // Trim to exactly 6 most recent photo-items
-      // Split on the photo-item divs, keep first 6, discard the rest
-      const marker = '<!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
-      const markerIdx = updated.indexOf(marker);
+      const markerIdx = updated.indexOf(trimMarker);
       if (markerIdx !== -1) {
         const beforeMarker = updated.substring(0, markerIdx);
         const afterMarker = updated.substring(markerIdx);
-        // Find all photo-item blocks by splitting on the opening tag
         const parts = beforeMarker.split('<div class="photo-item"');
-        // parts[0] is everything before the first photo-item
-        // parts[1..n] are each photo-item (without the opening tag)
         if (parts.length - 1 > 6) {
-          // Keep only the first 6 photo-items (newest, since we insert at top)
-          const kept = parts.slice(0, 7); // index 0 = prefix, 1-6 = 6 items
+          const kept = parts.slice(0, 7);
           updated = kept.join('<div class="photo-item"') + afterMarker;
         }
       }
 
-      await ghFetch('contents/index.html', 'PUT', {
+      const putRes = await ghFetch('contents/index.html', 'PUT', {
         message: `Add photo to homepage grid: ${title}`,
         content: btoa(unescape(encodeURIComponent(updated))),
         sha: indexSha,
         branch: CONFIG.branch,
       });
-    }
+      if (!putRes.ok) {
+        const err = await putRes.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${putRes.status}`);
+      }
+    });
+  } catch (err) {
+    console.error('Homepage photo grid update failed:', err.message);
+    failures.push('Homepage photo grid');
+  }
 
-    // ── Update photos.html (keep all) ────────────────────────────
-    const photosRes = await ghFetch('contents/photos.html');
-    if (!photosRes.ok) throw new Error('Could not fetch photos.html');
-    const photosJson = await photosRes.json();
-    const photosHtml = decodeURIComponent(escape(atob(photosJson.content.replace(/\n/g, ''))));
-    const photosSha = photosJson.sha;
+  // ── Update photos.html (keep all) ────────────────────────────
+  try {
+    await withGhRetry('Photos page', async () => {
+      const photosRes = await ghFetch('contents/photos.html');
+      if (!photosRes.ok) throw new Error(`Could not fetch photos.html (HTTP ${photosRes.status})`);
+      const photosJson = await photosRes.json();
+      const photosHtml = decodeURIComponent(escape(atob(photosJson.content.replace(/\n/g, ''))));
+      const photosSha = photosJson.sha;
 
-    if (photosHtml.includes(marker)) {
-      const updatedPhotos = photosHtml.replace(marker, newItems + '\n' + marker);
-      await ghFetch('contents/photos.html', 'PUT', {
+      if (!photosHtml.includes(indexMarker)) throw new Error('Marker not found in photos.html');
+      const updatedPhotos = photosHtml.replace(indexMarker, newItems + '\n' + indexMarker);
+
+      const putRes = await ghFetch('contents/photos.html', 'PUT', {
         message: `Add photo to gallery: ${title}`,
         content: btoa(unescape(encodeURIComponent(updatedPhotos))),
         sha: photosSha,
         branch: CONFIG.branch,
       });
-    }
-
+      if (!putRes.ok) {
+        const err = await putRes.json().catch(() => ({}));
+        throw new Error(err.message || `HTTP ${putRes.status}`);
+      }
+    });
   } catch (err) {
-    console.error('Could not update photo grids:', err.message);
-    showStatus(`Warning: photos page not updated — ${err.message}`, true);
+    console.error('Photos page update failed:', err.message);
+    failures.push('Photos page');
+  }
+
+  if (failures.length > 0) {
+    showStatus(`⚠ Post saved, but failed to update: ${failures.join(', ')}. Check console for details — you may need to re-save or add these photos manually.`, true, true);
   }
 }
 
