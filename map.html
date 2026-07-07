@@ -107,11 +107,9 @@
 
     .map-loading-kanji { font-family: var(--font-body); font-size: 3rem; color: var(--paper-dark); }
 
-    /* Popup */
-    /* Map popup text colors are hardcoded, not theme-variable based —
-       Google's InfoWindow always renders on a white background regardless
-       of site dark/light mode, so using var(--ink) etc made text nearly
-       invisible in dark mode (near-white text on a white popup). */
+    /* Popup — all colors hardcoded because Google's InfoWindow always has a
+       white background regardless of site theme. Using CSS vars here caused
+       near-white text on white popup in dark mode. */
     .map-popup { padding: 1rem 1.1rem 0.85rem; min-width: 200px; max-width: 260px; }
     .map-popup-type { font-family: var(--font-mono); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.12em; color: #6b6258; margin-bottom: 0.3rem; }
     .map-popup-name { font-family: var(--font-display); font-size: 1.1rem; font-weight: 400; color: #1a1714; line-height: 1.2; margin-bottom: 0.25rem; }
@@ -187,21 +185,19 @@
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script>
-const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
-const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
-
-// Inlined from js/geo-helpers.js — keeping this inline avoids a race
-// condition where the separate script file might not finish loading before
-// Google Maps fires initMap() and calls displayCountryFor(), which was
-// causing the entire map to fail silently with no pins showing.
+// Geography helpers — inlined to guarantee availability before
+// Google Maps fires initMap() via its async callback mechanism.
+// (A separate <script src> for these was not guaranteed to load first.)
 const UK_NATIONS = new Set(['Scotland', 'England', 'Wales', 'Northern Ireland']);
 function displayCountryFor(entry) {
   const country = entry.location_country || entry.country || '';
   const region  = entry.location_region  || entry.region  || '';
   return (country === 'United Kingdom' && UK_NATIONS.has(region)) ? region : country;
 }
+
+const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
+const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
 
 let map, infoWindow;
 let allMarkers    = [];
@@ -221,29 +217,45 @@ async function initMap() {
   });
   infoWindow = new google.maps.InfoWindow({ maxWidth: 280 });
   await loadAdventures();
-  document.getElementById('mapLoading').style.display = 'none';
+  const loadEl = document.getElementById('mapLoading');
+  if (loadEl) loadEl.style.display = 'none';
   initMapSearch();
 }
 
 async function loadAdventures() {
+  const loadEl = document.getElementById('mapLoading');
   try {
+    const headers = { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON };
+
     const [advRes, postRes] = await Promise.all([
-      fetch(SUPABASE_URL + '/rest/v1/adventures?select=*&status=eq.visited&order=visited_date.desc',
-        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }),
-      fetch(SUPABASE_URL + '/rest/v1/post_locations?select=*&order=created_at.desc',
-        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }),
+      fetch(SUPABASE_URL + '/rest/v1/adventures?select=*&status=eq.visited&order=visited_date.desc', { headers }),
+      fetch(SUPABASE_URL + '/rest/v1/post_locations?select=*&order=created_at.desc', { headers }),
     ]);
-    if (!advRes.ok) throw new Error('adventures: ' + advRes.status);
-    const adventures = (await advRes.json()).filter(a => a.lat && a.lng);
-    const postLocs   = postRes.ok ? (await postRes.json()) : [];
-    // Tag post locations with type='post' for unified handling
-    const posts = postLocs.map(p => ({ ...p, type: 'post', name: p.place_name || p.post_title || 'Blog Post' }));
+
+    if (!advRes.ok) throw new Error('adventures fetch failed: HTTP ' + advRes.status);
+
+    const advJson  = await advRes.json();
+    const postJson = postRes.ok ? await postRes.json() : [];
+
+    // Guard against non-array responses (e.g. 403 error objects, RLS issues)
+    const adventures = Array.isArray(advJson)
+      ? advJson.filter(a => a.lat && a.lng)
+      : (() => { throw new Error('adventures returned non-array: ' + JSON.stringify(advJson).substring(0, 100)); })();
+
+    const postLocs = Array.isArray(postJson) ? postJson : [];
+
+    const posts = postLocs
+      .filter(p => p.lat && p.lng)
+      .map(p => ({ ...p, type: 'post', name: p.place_name || p.post_title || 'Blog Post' }));
+
     allAdventures = [...adventures, ...posts];
     placeMarkers();
     updateCounts();
+
   } catch(err) {
-    document.getElementById('mapLoading').innerHTML =
-      '<span style="color:#c0392b">Failed to load: ' + err.message + '</span>';
+    console.error('[map] loadAdventures error:', err);
+    if (loadEl) loadEl.innerHTML =
+      '<span style="color:#c0392b;font-size:0.75rem;padding:1rem;text-align:center;">Failed to load map data:<br>' + esc(err.message) + '<br><br><a href="javascript:location.reload()" style="color:#c0392b;">Tap to retry</a></span>';
   }
 }
 
@@ -300,7 +312,6 @@ function updateCounts() {
   document.getElementById('countPlace').textContent      = counts.place;
   document.getElementById('countPost').textContent       = counts.post;
 
-  // Derive countries — UK nations count separately (shared helper from js/geo-helpers.js)
   const countrySet = new Set();
   allAdventures.forEach(a => {
     if (!a.location_country) return;
@@ -308,12 +319,11 @@ function updateCounts() {
   });
   document.getElementById('countCountry').textContent = countrySet.size;
 
-  // Build the expandable list of country names
   window.__visitedCountries = Array.from(countrySet).sort();
   const panel = document.getElementById('countriesListPanel');
   if (panel) {
     panel.innerHTML = window.__visitedCountries.length
-      ? '<ul>' + window.__visitedCountries.map(c => `<li>🏳️ ${esc(c)}</li>`).join('') + '</ul>'
+      ? '<ul>' + window.__visitedCountries.map(c => '<li>🏳️ ' + esc(c) + '</li>').join('') + '</ul>'
       : '<p style="opacity:0.6;">No countries yet</p>';
   }
 }
@@ -340,15 +350,13 @@ function buildPopup(a) {
         const fill = Math.min(1, Math.max(0, r - (i - 1)));
         return '<span class="map-popup-star' + (fill < 0.25 ? ' empty' : '') + '">★</span>';
       }).join('') +
-      '<span style="font-family:var(--font-mono);font-size:0.6rem;color:var(--ink-faint);margin-left:4px;">' + r + '</span>' +
+      '<span style="font-family:var(--font-mono);font-size:0.6rem;color:#6b6258;margin-left:4px;">' + r + '</span>' +
     '</div>';
   }
   const notes = a.notes ? '<p class="map-popup-notes">' + esc(a.notes) + '</p>' : '';
-  const link  = a.type === 'post' && a.post_url
-    ? '<a href="' + esc(a.post_url) + '" class="map-popup-link">Read the post →</a>'
-    : a.post_url
-      ? '<a href="' + esc(a.post_url) + '" class="map-popup-link">Read the post →</a>'
-      : '<a href="adventures.html" class="map-popup-link">See all adventures →</a>';
+  const link  = (a.type === 'post' || a.post_url)
+    ? '<a href="' + esc(a.post_url || 'adventures.html') + '" class="map-popup-link">' + (a.post_url ? 'Read the post →' : 'See all adventures →') + '</a>'
+    : '<a href="adventures.html" class="map-popup-link">See all adventures →</a>';
 
   const mapsLink = a.place_id
     ? '<br><a href="https://www.google.com/maps/place/?q=place_id:' + esc(a.place_id) + '" target="_blank" rel="noopener" class="map-popup-link" style="color:#2980b9;">View on Google Maps ↗</a>'
@@ -385,25 +393,18 @@ function initMapSearch() {
     debounce = setTimeout(() => {
       const q = input.value.toLowerCase().trim();
       if (!q) {
-        // Show all active types
-        allMarkers.forEach(m => {
-          m.marker.setMap(activeTypes[m.type] ? map : null);
-        });
+        allMarkers.forEach(m => { m.marker.setMap(activeTypes[m.type] ? map : null); });
         fitMapBounds();
         return;
       }
-      // Show only markers whose adventure name matches
-      let matched = 0;
-      allMarkers.forEach((m, i) => {
+      allMarkers.forEach(m => {
         const a = allAdventures.find(adv => {
           const lat = parseFloat(adv.lat), lng = parseFloat(adv.lng);
           const pos = m.marker.getPosition();
           return Math.abs(lat - pos.lat()) < 0.0001 && Math.abs(lng - pos.lng()) < 0.0001;
         });
         const name = a ? (a.name + ' ' + (a.location_city || '') + ' ' + (a.location_country || '')).toLowerCase() : '';
-        const show = name.includes(q) && activeTypes[m.type];
-        m.marker.setMap(show ? map : null);
-        if (show) matched++;
+        m.marker.setMap(name.includes(q) && activeTypes[m.type] ? map : null);
       });
     }, 200);
   });
@@ -414,6 +415,7 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7n5r_eitRFUZ8n5wgNlxsTKOQisB4zb8&libraries=places&loading=async&callback=initMap" async defer></script>
 <script src="main.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
