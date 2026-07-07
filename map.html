@@ -188,7 +188,6 @@
 <script>
 // Geography helpers — inlined to guarantee availability before
 // Google Maps fires initMap() via its async callback mechanism.
-// (A separate <script src> for these was not guaranteed to load first.)
 const UK_NATIONS = new Set(['Scotland', 'England', 'Wales', 'Northern Ireland']);
 function displayCountryFor(entry) {
   const country = entry.location_country || entry.country || '';
@@ -203,6 +202,7 @@ let map, infoWindow;
 let allMarkers    = [];
 let activeTypes   = { restaurant: true, place: true, country: true, post: true };
 let allAdventures = [];
+let mapDataError  = false;  // tracks whether loadAdventures failed
 
 const PIN_COLORS = { restaurant: '#c0392b', place: '#b8922a', country: '#1a1714', post: '#2980b9' };
 
@@ -217,12 +217,18 @@ async function initMap() {
   });
   infoWindow = new google.maps.InfoWindow({ maxWidth: 280 });
   await loadAdventures();
-  const loadEl = document.getElementById('mapLoading');
-  if (loadEl) loadEl.style.display = 'none';
+  // Only hide the loading screen if data loaded successfully.
+  // If there was an error, loadAdventures() already put an error
+  // message inside mapLoading — we must NOT hide it.
+  if (!mapDataError) {
+    const loadEl = document.getElementById('mapLoading');
+    if (loadEl) loadEl.style.display = 'none';
+  }
   initMapSearch();
 }
 
 async function loadAdventures() {
+  mapDataError = false;
   const loadEl = document.getElementById('mapLoading');
   try {
     const headers = { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON };
@@ -232,30 +238,37 @@ async function loadAdventures() {
       fetch(SUPABASE_URL + '/rest/v1/post_locations?select=*&order=created_at.desc', { headers }),
     ]);
 
-    if (!advRes.ok) throw new Error('adventures fetch failed: HTTP ' + advRes.status);
+    if (!advRes.ok) {
+      const body = await advRes.text().catch(() => '');
+      throw new Error('adventures HTTP ' + advRes.status + (body ? ': ' + body.substring(0, 120) : ''));
+    }
 
     const advJson  = await advRes.json();
     const postJson = postRes.ok ? await postRes.json() : [];
 
-    // Guard against non-array responses (e.g. 403 error objects, RLS issues)
-    const adventures = Array.isArray(advJson)
-      ? advJson.filter(a => a.lat && a.lng)
-      : (() => { throw new Error('adventures returned non-array: ' + JSON.stringify(advJson).substring(0, 100)); })();
+    if (!Array.isArray(advJson)) {
+      throw new Error('adventures returned unexpected response: ' + JSON.stringify(advJson).substring(0, 120));
+    }
 
-    const postLocs = Array.isArray(postJson) ? postJson : [];
-
-    const posts = postLocs
-      .filter(p => p.lat && p.lng)
-      .map(p => ({ ...p, type: 'post', name: p.place_name || p.post_title || 'Blog Post' }));
+    const adventures = advJson.filter(a => a.lat && a.lng);
+    const postLocs   = Array.isArray(postJson) ? postJson.filter(p => p.lat && p.lng) : [];
+    const posts      = postLocs.map(p => ({ ...p, type: 'post', name: p.place_name || p.post_title || 'Blog Post' }));
 
     allAdventures = [...adventures, ...posts];
     placeMarkers();
     updateCounts();
 
   } catch(err) {
+    mapDataError = true;
     console.error('[map] loadAdventures error:', err);
-    if (loadEl) loadEl.innerHTML =
-      '<span style="color:#c0392b;font-size:0.75rem;padding:1rem;text-align:center;">Failed to load map data:<br>' + esc(err.message) + '<br><br><a href="javascript:location.reload()" style="color:#c0392b;">Tap to retry</a></span>';
+    if (loadEl) {
+      loadEl.innerHTML =
+        '<div style="text-align:center;padding:1.5rem;max-width:320px;">' +
+        '<div style="font-size:2rem;margin-bottom:0.5rem;">⚠️</div>' +
+        '<div style="color:#c0392b;margin-bottom:0.75rem;line-height:1.5;">' + esc(err.message) + '</div>' +
+        '<a href="javascript:location.reload()" style="font-family:var(--font-mono);font-size:0.7rem;color:#c0392b;text-transform:uppercase;letter-spacing:0.1em;">↺ Tap to retry</a>' +
+        '</div>';
+    }
   }
 }
 
@@ -354,10 +367,9 @@ function buildPopup(a) {
     '</div>';
   }
   const notes = a.notes ? '<p class="map-popup-notes">' + esc(a.notes) + '</p>' : '';
-  const link  = (a.type === 'post' || a.post_url)
-    ? '<a href="' + esc(a.post_url || 'adventures.html') + '" class="map-popup-link">' + (a.post_url ? 'Read the post →' : 'See all adventures →') + '</a>'
+  const link = a.post_url
+    ? '<a href="' + esc(a.post_url) + '" class="map-popup-link">Read the post →</a>'
     : '<a href="adventures.html" class="map-popup-link">See all adventures →</a>';
-
   const mapsLink = a.place_id
     ? '<br><a href="https://www.google.com/maps/place/?q=place_id:' + esc(a.place_id) + '" target="_blank" rel="noopener" class="map-popup-link" style="color:#2980b9;">View on Google Maps ↗</a>'
     : '';
@@ -415,7 +427,6 @@ function esc(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7n5r_eitRFUZ8n5wgNlxsTKOQisB4zb8&libraries=places&loading=async&callback=initMap" async defer></script>
 <script src="main.js"></script>
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-KRCW4S3G9P"></script>
