@@ -188,10 +188,20 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
-<script src="js/geo-helpers.js"></script>
 <script>
 const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
+
+// Inlined from js/geo-helpers.js — keeping this inline avoids a race
+// condition where the separate script file might not finish loading before
+// Google Maps fires initMap() and calls displayCountryFor(), which was
+// causing the entire map to fail silently with no pins showing.
+const UK_NATIONS = new Set(['Scotland', 'England', 'Wales', 'Northern Ireland']);
+function displayCountryFor(entry) {
+  const country = entry.location_country || entry.country || '';
+  const region  = entry.location_region  || entry.region  || '';
+  return (country === 'United Kingdom' && UK_NATIONS.has(region)) ? region : country;
+}
 
 let map, infoWindow;
 let allMarkers    = [];
