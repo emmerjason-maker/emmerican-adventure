@@ -500,6 +500,27 @@
     gtag('js', new Date());
     gtag('config', 'G-KRCW4S3G9P');
   </script>
+<!-- Supabase keep-alive: a lightweight ping on every homepage visit
+     resets the 7-day inactivity timer that would auto-pause the free-tier
+     project. Uses a minimal SELECT 1 via the REST API — invisible to
+     visitors, costs nothing, doesn't affect page performance. -->
+<script>
+(function() {
+  try {
+    fetch(
+      'https://azjwuraxixuioeddkicq.supabase.co/rest/v1/adventures?select=id&limit=1',
+      {
+        method: 'GET',
+        headers: {
+          'apikey': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+          'Authorization': 'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44',
+        },
+        keepalive: true,
+      }
+    ).catch(function() {}); // silently ignore any errors
+  } catch(e) {}
+})();
+</script>
 </body>
 </html>
 
