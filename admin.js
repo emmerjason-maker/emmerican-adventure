@@ -492,7 +492,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
   let locationHtml = '';
   if (location) {
     const mapsUrl = postPlaceId
-      ? `https://www.google.com/maps/place/?q=place_id:${postPlaceId}`
+      ? `https://maps.google.com/?q=place_id:${postPlaceId}`
       : (postLat && postLng)
         ? `https://www.google.com/maps?q=${postLat},${postLng}`
         : `https://www.google.com/maps/search/${encodeURIComponent(location)}`;
@@ -2064,7 +2064,7 @@ async function savePostEdit(filename) {
       const editPlaceIdForLink = $('editPlaceId')?.value || '';
       let locHtml = '';
       const editMapsUrl = editPlaceIdForLink
-        ? `https://www.google.com/maps/place/?q=place_id:${editPlaceIdForLink}`
+        ? `https://maps.google.com/?q=place_id:${editPlaceIdForLink}`
         : (editLat && editLng)
           ? `https://www.google.com/maps?q=${editLat},${editLng}`
           : `https://www.google.com/maps/search/${encodeURIComponent(newLocation)}`;

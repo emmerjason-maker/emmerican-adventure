@@ -371,7 +371,7 @@ function buildPopup(a) {
     ? '<a href="' + esc(a.post_url) + '" class="map-popup-link">Read the post →</a>'
     : '<a href="adventures.html" class="map-popup-link">See all adventures →</a>';
   const mapsLink = a.place_id
-    ? '<br><a href="https://www.google.com/maps/place/?q=place_id:' + esc(a.place_id) + '" target="_blank" rel="noopener" class="map-popup-link" style="color:#2980b9;">View on Google Maps ↗</a>'
+    ? '<br><a href="https://maps.google.com/?q=place_id:' + esc(a.place_id) + '" target="_blank" rel="noopener" class="map-popup-link" style="color:#2980b9;">View on Google Maps ↗</a>'
     : '';
 
   return '<div class="map-popup">' +

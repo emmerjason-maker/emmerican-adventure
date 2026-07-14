@@ -333,7 +333,7 @@ function renderCard(a) {
     : '';
 
   const mapsLinkHtml = a.place_id
-    ? `<a href="https://www.google.com/maps/place/?q=place_id:${escHtml(a.place_id)}" target="_blank" rel="noopener" class="adv-card-maps-link">View on Maps ↗</a>`
+    ? `<a href="https://maps.google.com/?q=place_id:${escHtml(a.place_id)}" target="_blank" rel="noopener" class="adv-card-maps-link">View on Maps ↗</a>`
     : '';
 
   const hasFooter = badges.length || priceHtml || blogLinkHtml || mapsLinkHtml;
