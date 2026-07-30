@@ -318,6 +318,43 @@ function toggleType(btn, type) {
   fitMapBounds();
 }
 
+// Maps country/region names to flag emojis.
+// UK nations are listed individually since the site counts them separately.
+function countryFlag(name) {
+  const flags = {
+    'United States':    '🇺🇸',
+    'Japan':            '🇯🇵',
+    'England':          '🏴󠁧󠁢󠁥󠁮󠁧󠁿',
+    'Scotland':         '🏴󠁧󠁢󠁳󠁣󠁴󠁿',
+    'Wales':            '🏴󠁧󠁢󠁷󠁬󠁳󠁿',
+    'Northern Ireland': '🇬🇧',
+    'Ireland':          '🇮🇪',
+    'France':           '🇫🇷',
+    'Germany':          '🇩🇪',
+    'Italy':            '🇮🇹',
+    'Spain':            '🇪🇸',
+    'Portugal':         '🇵🇹',
+    'Netherlands':      '🇳🇱',
+    'Belgium':          '🇧🇪',
+    'Switzerland':      '🇨🇭',
+    'Austria':          '🇦🇹',
+    'Australia':        '🇦🇺',
+    'New Zealand':      '🇳🇿',
+    'Canada':           '🇨🇦',
+    'Mexico':           '🇲🇽',
+    'South Korea':      '🇰🇷',
+    'China':            '🇨🇳',
+    'Thailand':         '🇹🇭',
+    'Philippines':      '🇵🇭',
+    'Singapore':        '🇸🇬',
+    'Vietnam':          '🇻🇳',
+    'Indonesia':        '🇮🇩',
+    'Malaysia':         '🇲🇾',
+    'United Kingdom':   '🇬🇧',
+  };
+  return flags[name] || '🌏';
+}
+
 function updateCounts() {
   const counts = { restaurant: 0, place: 0, post: 0 };
   allAdventures.forEach(a => { if (counts[a.type] !== undefined) counts[a.type]++; });
@@ -336,7 +373,7 @@ function updateCounts() {
   const panel = document.getElementById('countriesListPanel');
   if (panel) {
     panel.innerHTML = window.__visitedCountries.length
-      ? '<ul>' + window.__visitedCountries.map(c => '<li>🏳️ ' + esc(c) + '</li>').join('') + '</ul>'
+      ? '<ul>' + window.__visitedCountries.map(c => '<li>' + countryFlag(c) + ' ' + esc(c) + '</li>').join('') + '</ul>'
       : '<p style="opacity:0.6;">No countries yet</p>';
   }
 }
