@@ -3776,9 +3776,9 @@ function initPostLocMaps() {
     }
     if (country === 'United Kingdom' && UK_NATIONS.has(state)) country = state;
 
-    if ($('plCity')    && !$('plCity').value)    $('plCity').value    = city;
-    if ($('plRegion')  && !$('plRegion').value)  $('plRegion').value  = state;
-    if ($('plCountry') && !$('plCountry').value) $('plCountry').value = country;
+    if ($('plCity'))    $('plCity').value    = city;
+    if ($('plRegion'))  $('plRegion').value  = state;
+    if ($('plCountry')) $('plCountry').value = country;
 
     plShowMapPreview(lat, lng, name);
   });
