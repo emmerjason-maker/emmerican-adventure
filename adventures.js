@@ -254,7 +254,12 @@ function renderCard(a) {
   if (!Array.isArray(photos)) photos = [];
   // Normalize root-relative URLs to absolute
   photos = photos.map(p => p && p.startsWith('/') ? 'https://emmericanadventure.com' + p : p);
-  const coverPhoto = photos[0] || null;
+
+  // Use YouTube thumbnail as cover if no photos but video exists
+  const ytVideos = Array.isArray(a.youtube_videos) ? a.youtube_videos : [];
+  const coverPhoto = photos[0] || (ytVideos.length > 0
+    ? `https://img.youtube.com/vi/${ytVideos[0].id}/maxresdefault.jpg`
+    : null);
 
   // Photo area
   const wishlistBadge = a.status === 'wishlist'
