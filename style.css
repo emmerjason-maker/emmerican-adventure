@@ -956,13 +956,13 @@ img { max-width: 100%; display: block; }
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  background: var(--white);
+  background: var(--paper-warm);
   flex: 1;
 }
 .video-title {
   font-family: var(--font-display);
   font-size: 1.05rem;
-  font-weight: 400;
+  font-weight: 700;
   color: var(--ink);
   line-height: 1.3;
 }
