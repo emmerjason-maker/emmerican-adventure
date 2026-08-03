@@ -1574,12 +1574,16 @@ async function loadPostsList() {
     }
 
     // Fetch each post to read real title, post#, date, and whether
-    // it's still marked as scheduled (data-scheduled="true")
+    // it's still marked as scheduled (data-scheduled="true").
+    // Throttle with a small delay between calls — firing 19+ concurrent
+    // GitHub API requests causes some to fail silently, leaving posts
+    // with no post number and sorting incorrectly.
     list.innerHTML = '<p class="preview-empty">Loading post details…</p>';
-    const details = await Promise.all(htmlFiles.map(async file => {
+    const details = [];
+    for (const file of htmlFiles) {
       try {
         const r = await ghFetch(`contents/posts/${file.name}`);
-        if (!r.ok) return { file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '', isScheduled: false };
+        if (!r.ok) { details.push({ file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '', isScheduled: false }); continue; }
         const j = await r.json();
         const html = decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))));
         const doc = new DOMParser().parseFromString(html, 'text/html');
@@ -1588,17 +1592,21 @@ async function loadPostsList() {
         const postNum = doc.querySelector('.post-tag')?.textContent?.trim() || '';
         const date = doc.querySelector('.post-date')?.textContent?.trim() || '';
         const isScheduled = doc.querySelector('.post-entry[data-scheduled="true"]') !== null;
-        return { file, title, postNum, date, isScheduled };
+        details.push({ file, title, postNum, date, isScheduled });
       } catch(e) {
-        return { file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '', isScheduled: false };
+        details.push({ file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '', isScheduled: false });
       }
-    }));
+      // Small delay to stay well under GitHub API rate limits
+      await new Promise(r => setTimeout(r, 80));
+    }
 
-    // Sort newest first by post number
+    // Sort newest first by post number — fall back to filename sort when postNum missing
     details.sort((a, b) => {
       const na = parseInt(a.postNum.replace('Post #','')) || 0;
       const nb = parseInt(b.postNum.replace('Post #','')) || 0;
-      return nb - na;
+      if (na !== nb) return nb - na;
+      // Fallback: alphabetical by filename (newest tend to sort last alphabetically by timestamp)
+      return b.file.name.localeCompare(a.file.name);
     });
 
     list.innerHTML = details.map(({ file, title, postNum, date, isScheduled }) => `
