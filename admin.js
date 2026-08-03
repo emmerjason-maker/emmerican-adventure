@@ -837,7 +837,7 @@ async function handlePublish() {
                    : ytId ? `https://img.youtube.com/vi/${ytId}/maxresdefault.jpg` : '';
 
     const newCard = isScheduled ? `
-    <article class="post-index-card post-scheduled" data-publish-date="${date}">
+    <article class="post-index-card post-scheduled" data-publish-date="${date}" data-slug="${slug}">
       <div class="post-index-link post-index-link-scheduled">
         <div class="post-index-img post-scheduled-img">
           ${thumbSrc ? `<img src="${escHtml(thumbSrc)}" alt="${escHtml(title)}" style="opacity:0.4;" />` : ''}
