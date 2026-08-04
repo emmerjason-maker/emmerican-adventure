@@ -51,6 +51,32 @@ document.addEventListener('DOMContentLoaded', () => {
     githubToken = localStorage.getItem('jm_gh_token') || '';
     showAdmin();
   }
+
+  // Fix encoding corruption on paste — smart quotes and emoji pasted from
+  // AI tools / Word / iOS show as â€™ and ðŸ¡ because the clipboard sends
+  // UTF-8 bytes that get misread as Latin-1. Intercept the paste event,
+  // read the plain text, fix the encoding, and insert clean text instead.
+  ['postBody', 'editBody'].forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('paste', e => {
+      const plain = (e.clipboardData || window.clipboardData)?.getData('text/plain');
+      if (!plain) return; // let browser handle rich paste
+      // Check for UTF-8 mojibake (â€™ pattern) — if found, fix before inserting
+      if (/â€[™œ™]|Ã[––©¼½¾¿]|ðŸ/.test(plain)) {
+        e.preventDefault();
+        try {
+          const bytes = new Uint8Array([...plain].map(c => c.charCodeAt(0)));
+          const fixed = new TextDecoder('utf-8').decode(bytes);
+          document.execCommand('insertText', false, fixed);
+        } catch {
+          document.execCommand('insertText', false, plain);
+        }
+        return;
+      }
+      // No mojibake detected — let the browser handle it normally
+    });
+  });
 });
 
 // ── Events ────────────────────────────────────────────────────────
@@ -730,8 +756,21 @@ async function handlePublish() {
     }
 
     // 1b. Sanitize post body — strip inline styles/fonts from editor paste
+    // and fix any UTF-8 mojibake (â€™ etc.) that slipped through
     const bodyEditor = $('postBody');
     if (bodyEditor) {
+      // Fix UTF-8 mojibake in text nodes
+      const fixEncoding = text => {
+        if (!/â€[™œ]|Ã[©¼½¾¿]|ðŸ/.test(text)) return text;
+        try {
+          const bytes = new Uint8Array([...text].map(c => c.charCodeAt(0)));
+          return new TextDecoder('utf-8').decode(bytes);
+        } catch { return text; }
+      };
+      const walker = document.createTreeWalker(bodyEditor, NodeFilter.SHOW_TEXT);
+      const textNodes = [];
+      while (walker.nextNode()) textNodes.push(walker.currentNode);
+      textNodes.forEach(node => { node.textContent = fixEncoding(node.textContent); });
       // Remove all style attributes from body content
       const tempDiv = document.createElement('div');
       tempDiv.innerHTML = bodyEditor.innerHTML;
