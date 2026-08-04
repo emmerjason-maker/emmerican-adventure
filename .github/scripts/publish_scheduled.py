@@ -268,6 +268,58 @@ for match in scheduled_pattern.finditer(blog):
         write('search.html', search)
         print(f"  ✓ search.html updated")
 
+    # ── 9. Update homepage video grid + videos.html ──────────────────
+    yt_vids = re.findall(r'src="https://www\.youtube\.com/embed/([a-zA-Z0-9_-]{11})"', post)
+    if yt_vids:
+        vid_id = yt_vids[0]
+
+        # Homepage video grid (6 most recent)
+        idx = read('index.html')
+        home_vid_marker = '        <!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->'
+        if home_vid_marker in idx and vid_id not in idx:
+            new_home_card = f"""        <!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube.com/embed/{vid_id}"
+              title="{esc(title)}" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen></iframe>
+          </div>
+          <div class="video-card-body">
+            <span class="post-tag">Vlog</span>
+            <h3 class="video-title">{esc(title)}</h3>
+            <p class="video-desc">{esc(excerpt[:80])}</p>
+          </div>
+        </div>"""
+            idx = idx.replace(home_vid_marker, new_home_card, 1)
+            parts = idx.split('<div class="video-card">')
+            if len(parts) - 1 > 6:
+                idx = '<div class="video-card">'.join(parts[:7]) + idx[idx.rindex(parts[7][:50]):]
+            write('index.html', idx)
+            print(f"  ✓ index.html video grid updated")
+
+        # videos.html archive
+        vids_html = read('videos.html')
+        vids_marker = '      <!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->'
+        if vids_marker in vids_html and vid_id not in vids_html:
+            new_vid_card = f"""{vids_marker}
+        <div class="video-card">
+          <div class="video-embed-wrap">
+            <iframe src="https://www.youtube.com/embed/{vid_id}?rel=0&modestbranding=1"
+              title="{esc(title)}" frameborder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowfullscreen loading="lazy"></iframe>
+          </div>
+          <div class="video-card-body">
+            <time class="video-date">{fmt_date}</time>
+            <h2 class="video-card-title">{esc(title)}</h2>
+            <p class="video-card-desc">{esc(excerpt[:100])}</p>
+          </div>
+        </div>"""
+            vids_html = vids_html.replace(vids_marker, new_vid_card, 1)
+            write('videos.html', vids_html)
+            print(f"  ✓ videos.html updated")
+
     published_any = True
     print(f"  ✅ Done: {title}")
 
