@@ -1213,23 +1213,47 @@ async function updateVideoGrid({ title, slug, ytVideos }) {
       const fileRes = await ghFetch('contents/index.html');
       if (!fileRes.ok) throw new Error(`Could not fetch index.html (HTTP ${fileRes.status})`);
       const fileJson = await fileRes.json();
-      let html = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+      const html = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
       const sha = fileJson.sha;
 
       const marker = '<!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->';
       if (!html.includes(marker)) throw new Error('Marker not found in index.html');
 
-      // Build video cards for each YouTube video
-      // (uses video-title/video-desc + a post-tag label — the classes the
-      // homepage's CSS actually styles; video-card-title/-desc had no
-      // matching CSS rule at all, so past auto-inserted cards rendered
-      // completely unstyled)
-      const newCards = ytVideos.map(v => `
+      // Extract all existing video cards from the grid (between videos-grid open and the marker)
+      // so we can rebuild the full list cleanly — no fragile string splitting
+      const gridStart = html.indexOf('<div class="videos-grid">');
+      const markerPos = html.indexOf(marker);
+      const gridSection = html.substring(gridStart, markerPos);
+
+      // Parse existing cards into structured objects
+      const existingCardRe = /<div class="video-card">\s*<div class="video-embed-wrap">\s*<iframe[^>]*src="https:\/\/www\.youtube\.com\/embed\/([a-zA-Z0-9_-]{11})[^"]*"[^>]*title="([^"]*)"[\s\S]*?<h3 class="video-title">([^<]*)<\/h3>\s*<p class="video-desc">([^<]*)<\/p>/g;
+      const existingCards = [];
+      let m;
+      while ((m = existingCardRe.exec(gridSection)) !== null) {
+        existingCards.push({ id: m[1], iframeTitle: m[2], title: m[3], desc: m[4] });
+      }
+
+      // Prepend new videos, dedup by ID, keep 6 most recent
+      const newEntries = ytVideos.map(v => ({
+        id: v.id,
+        iframeTitle: escHtml(v.label || title),
+        title: escHtml(v.label || title),
+        desc: escHtml(title),
+      }));
+      const seen = new Set();
+      const allCards = [...newEntries, ...existingCards].filter(c => {
+        if (seen.has(c.id)) return false;
+        seen.add(c.id);
+        return true;
+      }).slice(0, 6);
+
+      // Rebuild the grid HTML
+      const cardHtml = allCards.map(c => `
         <div class="video-card">
           <div class="video-embed-wrap">
             <iframe
-              src="https://www.youtube.com/embed/${v.id}"
-              title="${escHtml(v.label || title)}"
+              src="https://www.youtube.com/embed/${c.id}"
+              title="${c.iframeTitle}"
               frameborder="0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
               allowfullscreen>
@@ -1237,20 +1261,16 @@ async function updateVideoGrid({ title, slug, ytVideos }) {
           </div>
           <div class="video-card-body">
             <span class="post-tag">Vlog</span>
-            <h3 class="video-title">${escHtml(v.label || title)}</h3>
-            <p class="video-desc">${escHtml(title)}</p>
+            <h3 class="video-title">${c.title}</h3>
+            <p class="video-desc">${c.desc}</p>
           </div>
         </div>`).join('\n');
 
-      // Insert before marker
-      let updated = html.replace(marker, newCards + '\n        ' + marker);
-
-      // Trim to 6 most recent video cards
-      const parts = updated.split('<div class="video-card">');
-      if (parts.length - 1 > 6) {
-        updated = parts.slice(0, 7).join('<div class="video-card">') +
-                  updated.substring(updated.lastIndexOf(parts[7] || ''));
-      }
+      // Replace everything between videos-grid open and the marker
+      const newGridSection = `<div class="videos-grid">\n        ${marker}${cardHtml}\n        `;
+      const updated = html.substring(0, gridStart) +
+                      newGridSection +
+                      html.substring(markerPos + marker.length);
 
       const putRes = await ghFetch('contents/index.html', 'PUT', {
         message: `Update homepage videos: ${title}`,
@@ -1344,13 +1364,10 @@ async function updatePhotoGrids({ title, uploadedImages }) {
   if (!uploadedImages || uploadedImages.length === 0) return;
   const failures = [];
 
-  const newItems = uploadedImages.map(img => `
-        <div class="photo-item" data-caption="${escHtml(title)}">
-          <img src="${escHtml(img.path)}" alt="${escHtml(title)}" />
-        </div>`).join('\n');
+  const photoMarker = '<!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
+  const gridOpen    = '<div class="photo-grid">';
 
-  const indexMarker = '        <!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
-  const trimMarker  = '<!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->';
+  const newPhotoPaths = uploadedImages.map(img => img.path);
 
   // ── Update index.html (keep 6 most recent) ────────────────────
   try {
@@ -1358,23 +1375,35 @@ async function updatePhotoGrids({ title, uploadedImages }) {
       const indexRes = await ghFetch('contents/index.html');
       if (!indexRes.ok) throw new Error(`Could not fetch index.html (HTTP ${indexRes.status})`);
       const indexJson = await indexRes.json();
-      const indexHtml = decodeURIComponent(escape(atob(indexJson.content.replace(/\n/g, ''))));
+      const html = decodeURIComponent(escape(atob(indexJson.content.replace(/\n/g, ''))));
       const indexSha = indexJson.sha;
 
-      if (!indexHtml.includes(indexMarker)) throw new Error('Marker not found in index.html');
-      let updated = indexHtml.replace(indexMarker, newItems + '\n' + indexMarker);
+      if (!html.includes(photoMarker)) throw new Error('Photo marker not found in index.html');
 
-      // Trim to exactly 6 most recent photo-items
-      const markerIdx = updated.indexOf(trimMarker);
-      if (markerIdx !== -1) {
-        const beforeMarker = updated.substring(0, markerIdx);
-        const afterMarker = updated.substring(markerIdx);
-        const parts = beforeMarker.split('<div class="photo-item"');
-        if (parts.length - 1 > 6) {
-          const kept = parts.slice(0, 7);
-          updated = kept.join('<div class="photo-item"') + afterMarker;
-        }
-      }
+      // Extract existing photo paths from the current grid
+      const gridStart = html.indexOf(gridOpen);
+      const markerPos = html.indexOf(photoMarker);
+      const gridSection = html.substring(gridStart, markerPos);
+      const existingPaths = [...gridSection.matchAll(/<img src="([^"]+)"/g)].map(m => m[1]);
+
+      // Prepend new, dedup, keep 6
+      const seen = new Set();
+      const finalPaths = [...newPhotoPaths, ...existingPaths].filter(p => {
+        if (seen.has(p)) return false;
+        seen.add(p);
+        return true;
+      }).slice(0, 6);
+
+      // Rebuild grid
+      const gridItems = finalPaths.map(p => `
+        <div class="photo-item" data-caption="${escHtml(title)}">
+          <img src="${escHtml(p)}" alt="${escHtml(title)}" />
+        </div>`).join('\n');
+
+      const newGridSection = `${gridOpen}${gridItems}\n        ${photoMarker}`;
+      const updated = html.substring(0, gridStart) +
+                      newGridSection +
+                      html.substring(markerPos + photoMarker.length);
 
       const putRes = await ghFetch('contents/index.html', 'PUT', {
         message: `Add photo to homepage grid: ${title}`,
@@ -1392,17 +1421,31 @@ async function updatePhotoGrids({ title, uploadedImages }) {
     failures.push('Homepage photo grid');
   }
 
-  // ── Update photos.html (keep all) ────────────────────────────
+  // ── Update photos.html (keep all — just prepend, no trim) ────────────────────
   try {
     await withGhRetry('Photos page', async () => {
       const photosRes = await ghFetch('contents/photos.html');
       if (!photosRes.ok) throw new Error(`Could not fetch photos.html (HTTP ${photosRes.status})`);
       const photosJson = await photosRes.json();
-      const photosHtml = decodeURIComponent(escape(atob(photosJson.content.replace(/\n/g, ''))));
+      let photosHtml = decodeURIComponent(escape(atob(photosJson.content.replace(/\n/g, ''))));
       const photosSha = photosJson.sha;
 
-      if (!photosHtml.includes(indexMarker)) throw new Error('Marker not found in photos.html');
-      const updatedPhotos = photosHtml.replace(indexMarker, newItems + '\n' + indexMarker);
+      if (!photosHtml.includes(photoMarker)) throw new Error('Photo marker not found in photos.html');
+
+      // Only add photos not already in the page
+      const existingInPage = new Set([...photosHtml.matchAll(/<img src="([^"]+)"/g)].map(m => m[1]));
+      const toAdd = newPhotoPaths.filter(p => !existingInPage.has(p));
+      if (toAdd.length === 0) return; // nothing new to add
+
+      const newItems = toAdd.map(p => `
+        <div class="photo-item" data-caption="${escHtml(title)}">
+          <img src="${escHtml(p)}" alt="${escHtml(title)}" />
+        </div>`).join('\n');
+
+      const updatedPhotos = photosHtml.replace(
+        `<!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== --></div>`,
+        newItems + '\n        <!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== --></div>'
+      );
 
       const putRes = await ghFetch('contents/photos.html', 'PUT', {
         message: `Add photo to gallery: ${title}`,
