@@ -1644,50 +1644,63 @@ async function loadPostsList() {
   list.innerHTML = '<p class="preview-empty">Loading posts…</p>';
 
   try {
-    const res = await ghFetch('contents/posts');
-    if (!res.ok) throw new Error('Could not fetch posts folder');
-    const files = await res.json();
+    // Fetch blog.html once (1 API call) to read all post metadata — title,
+    // post#, date, scheduled status — instead of fetching every post file
+    // individually (which was 20+ sequential requests taking 20+ seconds).
+    const [postsRes, blogRes] = await Promise.all([
+      ghFetch('contents/posts'),
+      ghFetch('contents/blog.html'),
+    ]);
+    if (!postsRes.ok) throw new Error('Could not fetch posts folder');
+    if (!blogRes.ok) throw new Error('Could not fetch blog.html');
 
-    const htmlFiles = files.filter(f => f.name.endsWith('.html'));
+    const files = (await postsRes.json()).filter(f => f.name.endsWith('.html'));
+    if (files.length === 0) { list.innerHTML = '<p class="preview-empty">No posts found yet.</p>'; return; }
 
-    if (htmlFiles.length === 0) {
-      list.innerHTML = '<p class="preview-empty">No posts found yet.</p>';
-      return;
-    }
+    // Build a slug→file map
+    const fileMap = {};
+    files.forEach(f => { fileMap[f.name.replace('.html', '')] = f; });
 
-    // Fetch each post to read real title, post#, date, and whether
-    // it's still marked as scheduled (data-scheduled="true").
-    // Throttle with a small delay between calls — firing 19+ concurrent
-    // GitHub API requests causes some to fail silently, leaving posts
-    // with no post number and sorting incorrectly.
-    list.innerHTML = '<p class="preview-empty">Loading post details…</p>';
+    const blogJson = await blogRes.json();
+    const blogHtml = decodeURIComponent(escape(atob(blogJson.content.replace(/\n/g, ''))));
+    const blogDoc  = new DOMParser().parseFromString(blogHtml, 'text/html');
+
+    // Read all post cards from blog.html
     const details = [];
-    for (const file of htmlFiles) {
-      try {
-        const r = await ghFetch(`contents/posts/${file.name}`);
-        if (!r.ok) { details.push({ file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '', isScheduled: false }); continue; }
-        const j = await r.json();
-        const html = decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))));
-        const doc = new DOMParser().parseFromString(html, 'text/html');
-        const title = doc.querySelector('.post-entry-title')?.textContent?.trim()
-          || file.name.replace('.html','').replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
-        const postNum = doc.querySelector('.post-tag')?.textContent?.trim() || '';
-        const date = doc.querySelector('.post-date')?.textContent?.trim() || '';
-        const isScheduled = doc.querySelector('.post-entry[data-scheduled="true"]') !== null;
-        details.push({ file, title, postNum, date, isScheduled });
-      } catch(e) {
-        details.push({ file, title: file.name.replace('.html','').replace(/-/g,' '), postNum: '', date: '', isScheduled: false });
-      }
-      // Small delay to stay well under GitHub API rate limits
-      await new Promise(r => setTimeout(r, 80));
-    }
+    const seenSlugs = new Set();
 
-    // Sort newest first by post number — fall back to filename sort when postNum missing
+    blogDoc.querySelectorAll('.post-index-card').forEach(card => {
+      const isScheduled = card.classList.contains('post-scheduled');
+      const slug = isScheduled
+        ? card.getAttribute('data-slug')
+        : card.querySelector('a.post-index-link')?.getAttribute('href')?.replace('posts/','')?.replace('.html','');
+      if (!slug || seenSlugs.has(slug)) return;
+      seenSlugs.add(slug);
+
+      const file = fileMap[slug];
+      if (!file) return;
+
+      const title   = card.querySelector('.post-index-title')?.textContent?.trim()
+                   || slug.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase());
+      const postNum = card.querySelector('.post-tag:not(.post-tag-scheduled)')?.textContent?.trim() || '';
+      const date    = card.querySelector('.post-date')?.textContent?.trim() || '';
+
+      details.push({ file, title, postNum, date, isScheduled });
+    });
+
+    // Any post file not in blog.html (very old or orphaned) — add with filename only
+    files.forEach(f => {
+      const slug = f.name.replace('.html', '');
+      if (!seenSlugs.has(slug)) {
+        details.push({ file: f, title: slug.replace(/-/g,' ').replace(/\b\w/g, c => c.toUpperCase()), postNum: '', date: '', isScheduled: false });
+      }
+    });
+
+    // Sort newest first by post number
     details.sort((a, b) => {
       const na = parseInt(a.postNum.replace('Post #','')) || 0;
       const nb = parseInt(b.postNum.replace('Post #','')) || 0;
       if (na !== nb) return nb - na;
-      // Fallback: alphabetical by filename (newest tend to sort last alphabetically by timestamp)
       return b.file.name.localeCompare(a.file.name);
     });
 
