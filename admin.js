@@ -885,6 +885,7 @@ async function handlePublish() {
         <div class="post-index-body">
           <div class="post-meta">
             <span class="post-tag post-tag-scheduled">Scheduled</span>
+            <span class="post-tag" style="display:none;">${tag}</span>
             <time class="post-date">${escHtml(fmtDate)}</time>
           </div>
           <h2 class="post-index-title scheduled-title">${escHtml(title)}</h2>
@@ -1696,8 +1697,10 @@ async function loadPostsList() {
       }
     });
 
-    // Sort newest first by post number
+    // Sort newest first — scheduled posts go to top, then by post number
     details.sort((a, b) => {
+      if (a.isScheduled && !b.isScheduled) return -1;
+      if (!a.isScheduled && b.isScheduled) return 1;
       const na = parseInt(a.postNum.replace('Post #','')) || 0;
       const nb = parseInt(b.postNum.replace('Post #','')) || 0;
       if (na !== nb) return nb - na;
