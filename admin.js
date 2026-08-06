@@ -399,8 +399,12 @@ function renderPreview() {
 
 // ── Count existing posts ─────────────────────────────────────────
 function countExistingPosts(html) {
-  const matches = html.match(/class="post-index-card"/g);
-  return matches ? matches.length : 0;
+  // Count all cards then subtract scheduled ones — scheduled posts have
+  // "post-index-card post-scheduled" while live posts have "post-index-card"
+  // alone (or followed by a space+other class but NOT post-scheduled).
+  const all = (html.match(/class="post-index-card/g) || []).length;
+  const scheduled = (html.match(/class="post-index-card post-scheduled"/g) || []).length;
+  return all - scheduled;
 }
 
 // ── Build post HTML for blog.html ─────────────────────────────────
