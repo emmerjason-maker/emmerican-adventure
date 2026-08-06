@@ -204,19 +204,25 @@ function groupAdventures(data) {
 
   data.forEach(a => {
     const country = a.location_country || 'Unknown';
-    const city    = a.location_city    || '';
     const displayCountry = displayCountryFor(a) || country;
-    // Region (state/province) is only shown separately when it's NOT
-    // already folded into displayCountry (i.e. not a UK nation) — drop
-    // it for UK entries since "England, United Kingdom" would be
-    // redundant once England itself is the displayed "country".
-    const isUkNation = displayCountry !== country;
-    const region = (!isUkNation && a.location_region) ? a.location_region : '';
-    const key = [displayCountry, region, city].filter(Boolean).join('||') || displayCountry;
+    // Group by country only — previously grouped by city, which created
+    // 20 separate one-entry sections for US cities. Now all US entries
+    // share one section, with city shown on each card instead.
+    const key = displayCountry;
     if (!map.has(key)) {
-      map.set(key, { country: displayCountry, region, city, items: [] });
+      map.set(key, { country: displayCountry, items: [] });
     }
     map.get(key).items.push(a);
+  });
+
+  // Sort items within each country group: city A→Z, then newest date first
+  map.forEach(group => {
+    group.items.sort((a, b) => {
+      const cityA = a.location_city || '';
+      const cityB = b.location_city || '';
+      if (cityA !== cityB) return cityA.localeCompare(cityB);
+      return (b.visited_date || '').localeCompare(a.visited_date || '');
+    });
   });
 
   // Sort groups by their newest entry's visited_date (newest group first)
@@ -228,13 +234,11 @@ function groupAdventures(data) {
 }
 
 function renderGroup(group) {
-  const parts = [group.city, group.region, group.country].filter(Boolean);
-  const label = parts.filter((v, i, a) => a.indexOf(v) === i).join(', ') || group.country;
   const count = group.items.length;
   return `
     <div class="adv-group">
       <div class="adv-group-header">
-        <h2 class="adv-group-label">${escHtml(label)}</h2>
+        <h2 class="adv-group-label">${escHtml(group.country)}</h2>
         <span class="adv-group-count">${count} entr${count === 1 ? 'y' : 'ies'}</span>
       </div>
       <div class="adv-cards">
