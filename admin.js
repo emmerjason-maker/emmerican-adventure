@@ -870,6 +870,7 @@ async function handlePublish() {
 
     // 5. Build index card for blog.html
     const fmtDate = date ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' }) : '';
+    const tag = `Post #${postNumber}`;
     const plainText = $('postBody').innerText.trim();
     const excerpt = plainText.length > 140 ? plainText.substring(0, 140).replace(/\s+\S*$/, '') + '…' : plainText;
     const thumbSrc = uploadedImages.length > 0 ? uploadedImages[0].path
