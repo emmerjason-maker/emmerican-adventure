@@ -141,8 +141,29 @@ for match in scheduled_pattern.finditer(blog):
     </article>'''
 
     blog = blog.replace(card_html, live_card)
+
+    # Re-sort all live cards by post number (descending) so publishing
+    # out-of-order or multiple posts on the same day never leaves the
+    # journal listing jumbled. Scheduled cards stay at the top as-is.
+    all_scheduled = re.findall(r'    <article class="post-index-card post-scheduled".*?</article>\n', blog, re.S)
+    all_live      = re.findall(r'    <article class="post-index-card">.*?</article>\n', blog, re.S)
+
+    def card_num(card):
+        m = re.search(r'Post #(\d+)', card)
+        return int(m.group(1)) if m else 0
+
+    all_live_sorted = sorted(all_live, key=card_num, reverse=True)
+
+    # Find the block containing all cards and replace it
+    first_card_start = re.search(r'    <article class="post-index-card', blog)
+    last_card_end    = blog.rfind('    </article>\n') + len('    </article>\n')
+    if first_card_start:
+        before = blog[:first_card_start.start()]
+        after  = blog[last_card_end:]
+        blog   = before + ''.join(all_scheduled) + ''.join(all_live_sorted) + after
+
     write('blog.html', blog)
-    print(f"  ✓ blog.html card flipped live")
+    print(f"  ✓ blog.html card flipped live (cards re-sorted)")
 
     # ── 3. Update homepage featured post ────────────────────────────
     idx = read('index.html')
