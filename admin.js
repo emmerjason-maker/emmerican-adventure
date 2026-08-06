@@ -1,3 +1,4 @@
+// BUILD: 2026-08-06-C
 /* ═══════════════════════════════════════════════════════════════
    Japan Move — Admin Panel JS
    Multi-image support, rich text editor, YouTube, GitHub publish
