@@ -315,6 +315,7 @@ function addYtVideo() {
   if ($('ytVideoLabel')) $('ytVideoLabel').value = '';
   renderYtVideoList();
   renderPreview();
+  showStatus(`✓ Video added (${ytVideos.length} total) — remember to click Publish.`, false);
 }
 
 function removeYtVideo(id) {
@@ -716,6 +717,21 @@ async function handlePublish() {
   const date     = $('postDate').value;
   const location = $('postLocationName')?.value.trim() || $('postLocationSearch')?.value.trim() || '';
   const body     = $('postBody').innerHTML.trim();
+
+  // Derive ytId — primary source is the ytVideos array, but fall back
+  // to reading from the rendered DOM list in case the array was reset
+  // (e.g. tab sleep/wake) while the UI still shows the video pill.
+  if ((!ytVideos || ytVideos.length === 0)) {
+    const pills = document.querySelectorAll('#ytVideoList .yt-video-item');
+    const fromDom = [...pills].map(p => {
+      const idEl = p.querySelector('.yt-video-id');
+      return idEl ? { id: idEl.textContent.trim(), label: '' } : null;
+    }).filter(Boolean);
+    if (fromDom.length > 0) {
+      ytVideos = fromDom;
+      console.warn('[admin] ytVideos was empty — restored from DOM:', ytVideos);
+    }
+  }
   const ytId     = (typeof ytVideos !== 'undefined' && ytVideos.length > 0) ? ytVideos[0].id : null;
   const linkUrl  = $('postLink').value.trim();
   const linkText = $('postLinkText').value.trim();
