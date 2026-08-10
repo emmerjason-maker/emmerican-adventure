@@ -1361,3 +1361,18 @@ select.field-input { cursor: pointer; }
   text-transform: none;
   letter-spacing: 0;
 }
+
+/* ── Adventure Details (New Post form) ───────────────────────── */
+.adv-star-btn {
+  background: none;
+  border: none;
+  font-size: 1.4rem;
+  color: var(--ink-faint);
+  cursor: pointer;
+  padding: 0 2px;
+  line-height: 1;
+  transition: color 0.15s;
+}
+.adv-star-btn:hover {
+  color: var(--gold);
+}

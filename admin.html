@@ -68,7 +68,6 @@
       <div class="admin-tabs">
         <button class="admin-tab active" id="tabNew" onclick="switchTab('new')">✏️ New Post</button>
         <button class="admin-tab" id="tabEdit" onclick="switchTab('edit')">📝 Edit Posts</button>
-        <button class="admin-tab" id="tabAdventures" onclick="switchTab('adventures')">🗺️ Adventures</button>
         <button class="admin-tab" id="tabImages" onclick="switchTab('images')">🖼️ Images</button>
         <button class="admin-tab" id="tabPostLoc" onclick="switchTab('postloc')">📌 Post Locations</button>
       </div>
@@ -209,6 +208,66 @@
             <label class="field-label">External Link <span class="optional">optional</span></label>
             <input type="text" class="field-input" id="postLink" placeholder="https://..." />
             <input type="text" class="field-input" id="postLinkText" placeholder="Link label (e.g. Read more on GaijinPot)" style="margin-top:0.5rem;" />
+          </div>
+
+          <!-- ── ADVENTURE DETAILS ────────────────────────────────── -->
+          <div class="field-group" style="border:1px solid var(--paper-dark);padding:1rem;border-radius:2px;">
+            <label class="field-label" style="font-size:0.85rem;letter-spacing:0.08em;">🗺️ Adventure Details <span class="optional">fill in to also log this on the Adventures page</span></label>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:0.75rem;">
+              <div>
+                <label class="field-label">Type</label>
+                <select class="field-input" id="advPostType">
+                  <option value="">— Not an adventure —</option>
+                  <option value="restaurant">🍜 Restaurant</option>
+                  <option value="place">📍 Place</option>
+                </select>
+              </div>
+              <div>
+                <label class="field-label">Price</label>
+                <select class="field-input" id="advPostPrice">
+                  <option value="Budget">💚 Budget</option>
+                  <option value="Moderate">🟡 Moderate</option>
+                  <option value="Splurge">🟠 Splurge</option>
+                  <option value="Special">🔴 Special Occasion</option>
+                </select>
+              </div>
+            </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:0.75rem;">
+              <div>
+                <label class="field-label">Cuisine / Category <span class="optional">optional</span></label>
+                <input type="text" class="field-input" id="advPostCuisine" placeholder="e.g. Japanese, Sushi, Ramen…" />
+              </div>
+              <div>
+                <label class="field-label">Overall Rating</label>
+                <div id="advPostStars" style="display:flex;gap:6px;margin-top:6px;">
+                  <button type="button" class="adv-star-btn" data-val="1" onclick="setAdvPostRating(1)">★</button>
+                  <button type="button" class="adv-star-btn" data-val="2" onclick="setAdvPostRating(2)">★</button>
+                  <button type="button" class="adv-star-btn" data-val="3" onclick="setAdvPostRating(3)">★</button>
+                  <button type="button" class="adv-star-btn" data-val="4" onclick="setAdvPostRating(4)">★</button>
+                  <button type="button" class="adv-star-btn" data-val="5" onclick="setAdvPostRating(5)">★</button>
+                  <span id="advPostRatingVal" style="font-size:0.8rem;opacity:0.6;margin-left:4px;"></span>
+                </div>
+                <input type="hidden" id="advPostRating" value="" />
+              </div>
+            </div>
+
+            <div style="margin-top:0.75rem;">
+              <label class="field-label">Tags</label>
+              <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem;">
+                <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="tagKidFriendly" value="Kid-Friendly" /> Kid-Friendly</label>
+                <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="tagWouldReturn" value="Would Return" /> Would Return</label>
+                <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="tagMustTry" value="Must Try" /> Must Try</label>
+                <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="tagHiddenGem" value="Hidden Gem" /> Hidden Gem</label>
+                <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="tagEnglishMenu" value="English Menu" /> English Menu</label>
+              </div>
+            </div>
+
+            <div style="margin-top:0.75rem;">
+              <label class="field-label">Notes <span class="optional">optional — shows on adventure card</span></label>
+              <input type="text" class="field-input" id="advPostNotes" placeholder="Short note, e.g. 'Order the curry rice!'" />
+            </div>
           </div>
 
           <!-- Publish -->

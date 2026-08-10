@@ -339,6 +339,102 @@ function renderYtVideoList() {
     </div>`).join('');
 }
 
+// ── Adventure Details (from New Post form) ────────────────────────
+function setAdvPostRating(val) {
+  $('advPostRating').value = val;
+  $('advPostRatingVal').textContent = '★'.repeat(val);
+  document.querySelectorAll('#advPostStars .adv-star-btn').forEach(btn => {
+    btn.style.color = parseInt(btn.dataset.val) <= val ? 'var(--gold)' : 'var(--ink-faint)';
+  });
+}
+
+async function saveAdvFromPost({ title, slug, date, uploadedImages }) {
+  const type = $('advPostType')?.value;
+  if (!type) return; // Not an adventure — skip
+
+  const location    = $('postLocationName')?.value.trim() || $('postLocationSearch')?.value.trim() || '';
+  const lat         = parseFloat($('postLat')?.value)  || null;
+  const lng         = parseFloat($('postLng')?.value)  || null;
+  const placeId     = $('postPlaceId')?.value.trim()   || null;
+
+  // Split location into components using cached place data
+  const locationParts = location.split(',').map(s => s.trim());
+  const locationCity    = locationParts[0] || null;
+  const locationRegion  = locationParts[1] || null;
+  const locationCountry = locationParts[locationParts.length - 1] || null;
+
+  const rating     = parseInt($('advPostRating')?.value) || null;
+  const cuisine    = $('advPostCuisine')?.value.trim()   || null;
+  const price      = $('advPostPrice')?.value            || null;
+  const notes      = $('advPostNotes')?.value.trim()     || null;
+
+  const tags = ['tagKidFriendly','tagWouldReturn','tagMustTry','tagHiddenGem','tagEnglishMenu']
+    .filter(id => document.getElementById(id)?.checked)
+    .map(id => document.getElementById(id).value);
+
+  const photos = uploadedImages.length > 0
+    ? uploadedImages.map(img => img.path)
+    : null;
+
+  const ytId = ytVideos.length > 0 ? ytVideos[0].id : null;
+  const youtubeVideos = ytId ? [{ id: ytId, label: title }] : null;
+
+  const payload = {
+    name:             title,
+    type,
+    status:           'visited',
+    location_city:    locationCity,
+    location_region:  locationRegion,
+    location_country: locationCountry,
+    lat,
+    lng,
+    place_id:         placeId,
+    visited_date:     date || new Date().toISOString().split('T')[0],
+    rating,
+    cuisine,
+    price_range:      price,
+    tags:             tags.length > 0 ? tags : null,
+    notes,
+    post_url:         `posts/${slug}.html`,
+    photos,
+    youtube_videos:   youtubeVideos,
+    created_by:       '3fd413d3-d92d-440f-b0ff-ca98b36cf251',
+  };
+
+  try {
+    const res = await fetch(`${ADV_SUPABASE_URL}/rest/v1/adventures`, {
+      method: 'POST',
+      headers: {
+        'apikey':        ADV_SUPABASE_ANON,
+        'Authorization': `Bearer ${ADV_SUPABASE_ANON}`,
+        'Content-Type':  'application/json',
+        'Prefer':        'return=minimal',
+      },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) {
+      const err = await res.text();
+      console.warn('Adventures insert failed:', err);
+    } else {
+      console.log('Adventure saved:', title);
+    }
+  } catch(e) {
+    console.warn('Adventures insert error:', e.message);
+  }
+}
+
+function resetAdvFields() {
+  if ($('advPostType'))    $('advPostType').value   = '';
+  if ($('advPostPrice'))   $('advPostPrice').value  = 'Budget';
+  if ($('advPostCuisine')) $('advPostCuisine').value = '';
+  if ($('advPostRating'))  $('advPostRating').value = '';
+  if ($('advPostRatingVal')) $('advPostRatingVal').textContent = '';
+  if ($('advPostNotes'))   $('advPostNotes').value  = '';
+  document.querySelectorAll('#advPostStars .adv-star-btn').forEach(btn => btn.style.color = '');
+  ['tagKidFriendly','tagWouldReturn','tagMustTry','tagHiddenGem','tagEnglishMenu']
+    .forEach(id => { if ($(id)) $(id).checked = false; });
+}
+
 // ── Preview ───────────────────────────────────────────────────────
 function renderPreview() {
   const title    = $('postTitle').value.trim();
@@ -1029,6 +1125,9 @@ async function handlePublish() {
       await updateSearchIndex({ slug, title, date: fmtDate, excerpt, tag: 'Journal', img: thumbPath, keywords: title });
     }
 
+    // 11c. Save adventure entry to Supabase (if Adventure Details filled in)
+    await saveAdvFromPost({ title, slug, date, uploadedImages });
+
     showStatus(isScheduled ? `✓ Scheduled! Post will go live on ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}` : '✓ Published! Your post will be live in ~60 seconds.', false);
     resetForm();
 
@@ -1611,6 +1710,7 @@ function resetForm() {
   images = [];
   renderImageList();
   $('previewBox').innerHTML = '<p class="preview-empty">Fill in the form and click Preview to see your post.</p>';
+  resetAdvFields();
 }
 
 function escHtml(str) {
