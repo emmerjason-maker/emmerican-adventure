@@ -301,6 +301,15 @@
                 <div class="toolbar">
                   <button class="toolbar-btn" onclick="document.getElementById('editBody').focus();document.execCommand('bold')"><b>B</b></button>
                   <button class="toolbar-btn italic" onclick="document.getElementById('editBody').focus();document.execCommand('italic')"><i>I</i></button>
+                  <button class="toolbar-btn" title="Add hyperlink" onclick="
+                    var sel = window.getSelection();
+                    var text = sel && sel.toString().trim();
+                    var url = prompt('Enter URL:', 'https://');
+                    if (!url) return;
+                    document.getElementById('editBody').focus();
+                    if (text) { document.execCommand('createLink', false, url); }
+                    else { var label = prompt('Link text:', url); document.execCommand('insertHTML', false, '<a href=\'' + url + '\' target=\'_blank\'>' + (label || url) + '</a>'); }
+                  ">🔗</button>
                   <button class="toolbar-btn" onclick="document.getElementById('editBody').focus();document.execCommand('formatBlock',false,'h3')">H</button>
                 </div>
                 <div class="body-editor" id="editBody" contenteditable="true"></div>
