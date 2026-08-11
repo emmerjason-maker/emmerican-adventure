@@ -90,6 +90,7 @@ for match in scheduled_pattern.finditer(blog):
     post_num    = post_num_m.group(1) if post_num_m else ''
     fmt_date    = publish_date.strftime('%B %-d, %Y')
     og_image    = og_img_m.group(1) if og_img_m else (
+                    thumb_src if thumb_src.startswith('http') else
                     f'https://emmericanadventure.com/{thumb_src}' if thumb_src else '')
 
     # Build excerpt from post body if not in card
