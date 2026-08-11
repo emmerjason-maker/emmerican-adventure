@@ -496,12 +496,12 @@ function renderPreview() {
 
 // ── Count existing posts ─────────────────────────────────────────
 function countExistingPosts(html) {
-  // Count all cards then subtract scheduled ones — scheduled posts have
-  // "post-index-card post-scheduled" while live posts have "post-index-card"
-  // alone (or followed by a space+other class but NOT post-scheduled).
-  const all = (html.match(/class="post-index-card/g) || []).length;
-  const scheduled = (html.match(/class="post-index-card post-scheduled"/g) || []).length;
-  return all - scheduled;
+  // Count ALL cards — live and scheduled — so that multiple queued
+  // scheduled posts each get a unique incrementing number.
+  // (Previously excluded scheduled posts, which caused two scheduled
+  // posts created in sequence to both receive the same post number.)
+  const matches = html.match(/class="post-index-card/g);
+  return matches ? matches.length : 0;
 }
 
 // ── Build post HTML for blog.html ─────────────────────────────────
