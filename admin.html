@@ -217,13 +217,19 @@
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:0.75rem;">
               <div>
                 <label class="field-label">Type</label>
-                <select class="field-input" id="advPostType">
+                <select class="field-input" id="advPostType" onchange="
+                  var isRestaurant = this.value === 'restaurant';
+                  var priceWrap = document.getElementById('advPriceWrap');
+                  var cuisineWrap = document.getElementById('advCuisineWrap');
+                  if (priceWrap) priceWrap.style.display = isRestaurant ? '' : 'none';
+                  if (cuisineWrap) cuisineWrap.style.display = isRestaurant ? '' : 'none';
+                ">
                   <option value="">— Not an adventure —</option>
                   <option value="restaurant">🍜 Restaurant</option>
                   <option value="place">📍 Place</option>
                 </select>
               </div>
-              <div>
+              <div id="advPriceWrap" style="display:none;">
                 <label class="field-label">Price</label>
                 <select class="field-input" id="advPostPrice">
                   <option value="Budget">💚 Budget</option>
@@ -235,7 +241,7 @@
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:0.75rem;">
-              <div>
+              <div id="advCuisineWrap" style="display:none;">
                 <label class="field-label">Cuisine / Category <span class="optional">optional</span></label>
                 <input type="text" class="field-input" id="advPostCuisine" placeholder="e.g. Japanese, Sushi, Ramen…" />
               </div>

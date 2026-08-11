@@ -365,7 +365,7 @@ async function saveAdvFromPost({ title, slug, date, uploadedImages }) {
 
   const rating     = parseInt($('advPostRating')?.value) || null;
   const cuisine    = $('advPostCuisine')?.value.trim()   || null;
-  const price      = $('advPostPrice')?.value            || null;
+  const price      = type === 'restaurant' ? ($('advPostPrice')?.value || null) : null;
   const notes      = $('advPostNotes')?.value.trim()     || null;
 
   const tags = ['tagKidFriendly','tagWouldReturn','tagMustTry','tagHiddenGem','tagEnglishMenu']
