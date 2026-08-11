@@ -217,4 +217,16 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://emmericanadventure.com/posts/ascending-an-icon-what-it-s-really-like-inside-tokyo-tower.html</loc>
+    <lastmod>2026-08-10</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://emmericanadventure.com/posts/walking-the-flight-deck-our-tour-of-the-uss-nimitz-at-naval-station-mayport.html</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
