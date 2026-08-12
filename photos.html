@@ -381,6 +381,7 @@
         <a href="photos.html" class="nav-link active">Photos</a>
         <a href="about.html" class="nav-link">About</a>
       </nav>
+      <button class="translate-toggle" aria-label="Translate" onclick="toggleTranslate()" title="Translate this page">🌐</button>
       <button class="search-toggle" aria-label="Search" aria-expanded="false" aria-controls="headerSearchBar">🔍</button>
       <button class="theme-toggle" id="themeToggle" aria-label="Switch to dark mode">🌙</button>
       <button class="mobile-menu-btn" aria-label="Menu">☰</button>
@@ -952,6 +953,50 @@
     gtag('js', new Date());
     gtag('config', 'G-KRCW4S3G9P');
   </script>
+  <!-- Google Translate (hidden widget, triggered by 🌐 button) -->
+  <div id="google_translate_element" style="display:none;"></div>
+  <script>
+    function googleTranslateElementInit() {
+      new google.translate.TranslateElement({
+        pageLanguage: 'en',
+        includedLanguages: 'ja,ko,zh-CN,fr,de,es,pt,da',
+        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+        autoDisplay: false,
+      }, 'google_translate_element');
+    }
+    function toggleTranslate() {
+      const el = document.getElementById('google_translate_element');
+      const sel = el.querySelector('select.goog-te-combo');
+      if (el.style.display === 'none') {
+        el.style.display = 'block';
+        // Position near the button
+        const btn = document.querySelector('.translate-toggle');
+        if (btn) {
+          const r = btn.getBoundingClientRect();
+          el.style.position = 'fixed';
+          el.style.top = (r.bottom + 8) + 'px';
+          el.style.right = (window.innerWidth - r.right) + 'px';
+          el.style.zIndex = '9999';
+          el.style.background = 'var(--paper)';
+          el.style.border = '1px solid var(--paper-dark)';
+          el.style.borderRadius = '4px';
+          el.style.padding = '8px';
+          el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+        }
+        if (sel) sel.focus();
+      } else {
+        el.style.display = 'none';
+      }
+    }
+    // Close on outside click
+    document.addEventListener('click', e => {
+      const el = document.getElementById('google_translate_element');
+      if (!e.target.closest('.translate-toggle') && !e.target.closest('#google_translate_element')) {
+        if (el) el.style.display = 'none';
+      }
+    });
+  </script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
 </body>
 </html>
 
