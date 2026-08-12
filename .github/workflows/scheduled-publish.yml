@@ -31,6 +31,9 @@ jobs:
           SUPABASE_ANON: ${{ secrets.SUPABASE_ANON }}
         run: python3 .github/scripts/publish_scheduled.py
 
+      - name: Backfill video grids
+        run: python3 .github/scripts/backfill_videos.py
+
       - name: Commit and push if anything changed
         run: |
           git config user.email "github-actions[bot]@users.noreply.github.com"
