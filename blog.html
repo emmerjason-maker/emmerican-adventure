@@ -566,8 +566,8 @@ It is officially crunch time for our international move! As many of you know, br
       }
     }
   </script>
-  <!-- Google Translate (hidden widget, triggered by 🌐 button) -->
-  <div id="google_translate_element" style="display:none;"></div>
+  <!-- Google Translate -->
+  <div id="google_translate_element" style="display:none;position:fixed;z-index:9999;"></div>
   <script>
     function googleTranslateElementInit() {
       new google.translate.TranslateElement({
@@ -578,38 +578,47 @@ It is officially crunch time for our international move! As many of you know, br
       }, 'google_translate_element');
     }
     function toggleTranslate() {
-      const el = document.getElementById('google_translate_element');
-      const sel = el.querySelector('select.goog-te-combo');
-      if (el.style.display === 'none') {
+      var el = document.getElementById('google_translate_element');
+      if (!el) return;
+      if (el.style.display === 'none' || !el.style.display) {
+        // Position near trigger
+        var trigger = document.querySelector('.translate-toggle') ||
+                      document.querySelector('.mobile-translate-btn');
         el.style.display = 'block';
-        // Position near the button
-        const btn = document.querySelector('.translate-toggle');
-        if (btn) {
-          const r = btn.getBoundingClientRect();
-          el.style.position = 'fixed';
-          el.style.top = (r.bottom + 8) + 'px';
+        if (trigger) {
+          var r = trigger.getBoundingClientRect();
+          el.style.top  = (r.bottom + window.scrollY + 8) + 'px';
           el.style.right = (window.innerWidth - r.right) + 'px';
-          el.style.zIndex = '9999';
-          el.style.background = 'var(--paper)';
-          el.style.border = '1px solid var(--paper-dark)';
-          el.style.borderRadius = '4px';
-          el.style.padding = '8px';
-          el.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+          el.style.left = 'auto';
+        } else {
+          el.style.top  = '70px';
+          el.style.right = '1rem';
         }
-        if (sel) sel.focus();
+        el.style.background    = 'var(--paper)';
+        el.style.border        = '1px solid var(--paper-dark)';
+        el.style.borderRadius  = '4px';
+        el.style.padding       = '8px 12px';
+        el.style.boxShadow     = '0 4px 16px rgba(0,0,0,0.18)';
+        // Focus the select
+        setTimeout(function() {
+          var sel = el.querySelector('select');
+          if (sel) sel.focus();
+        }, 100);
       } else {
         el.style.display = 'none';
       }
     }
-    // Close on outside click
-    document.addEventListener('click', e => {
-      const el = document.getElementById('google_translate_element');
-      if (!e.target.closest('.translate-toggle') && !e.target.closest('#google_translate_element')) {
-        if (el) el.style.display = 'none';
+    document.addEventListener('click', function(e) {
+      var el = document.getElementById('google_translate_element');
+      if (!el || el.style.display === 'none') return;
+      if (!e.target.closest('#google_translate_element') &&
+          !e.target.closest('.translate-toggle') &&
+          !e.target.closest('.mobile-translate-btn')) {
+        el.style.display = 'none';
       }
     });
   </script>
-  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async></script>
+  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async defer></script>
 </body>
 </html>
 
