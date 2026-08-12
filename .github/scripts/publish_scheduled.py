@@ -17,12 +17,13 @@ has arrived, then for each one:
 import re
 import sys
 import os
-from datetime import date, datetime
+from datetime import date, datetime, timezone, timedelta
 from html import unescape
 from urllib.parse import quote_plus
 
-TODAY = date.today()
-print(f"Running scheduled publisher for {TODAY}")
+JST = timezone(timedelta(hours=9))
+TODAY = datetime.now(JST).date()
+print(f"Running scheduled publisher for {TODAY} (JST)")
 
 # ── Load files ──────────────────────────────────────────────────────
 def read(path):
