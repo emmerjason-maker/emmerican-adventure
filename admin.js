@@ -1854,6 +1854,37 @@ async function loadPostsList() {
 // scheduled date naturally arrives (and even then, nothing currently
 // re-runs those steps automatically). This lets an admin force all of
 // that to happen right now, today, regardless of the post's stored date.
+async function publishScheduledPostNow(filename) {
+  if (!confirm(`Publish "${filename.replace('.html','').replace(/-/g,' ')}" now?`)) return;
+  showStatus('Publishing scheduled post…', false, true);
+  try {
+    const slug = filename.replace('.html', '');
+    const postRes = await ghFetch(`contents/posts/${filename}`);
+    if (!postRes.ok) throw new Error('Could not fetch post file');
+    const postJson = await postRes.json();
+    let postHtml = decodeURIComponent(escape(atob(postJson.content.replace(/\n/g, ''))));
+    const postSha = postJson.sha;
+    const doc = new DOMParser().parseFromString(postHtml, 'text/html');
+    const title   = doc.querySelector('.post-entry-title')?.textContent?.trim() || slug;
+    const dateEl  = doc.querySelector('.post-date');
+    const postNum = doc.querySelector('.post-tag')?.textContent?.trim() || '';
+    const today   = localTodayStr();
+    const fmtDate = new Date(today + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+    postHtml = postHtml
+      .replace('data-scheduled="true"', '')
+      .replace(/<time class="post-date">[^<]*<\/time>/, `<time class="post-date">${fmtDate}</time>`);
+    await ghFetch(`contents/posts/${filename}`, 'PUT', {
+      message: `Publish scheduled post: ${title}`,
+      content: btoa(unescape(encodeURIComponent(postHtml))),
+      sha: postSha, branch: CONFIG.branch,
+    });
+    showStatus(`✓ Published! "${title}" is now live.`, false);
+    loadPostsList();
+  } catch(err) {
+    showStatus('✗ Publish failed: ' + err.message, true);
+  }
+}
+
 async function reschedulePost(filename, currentDate) {
   const newDate = prompt('Enter new publish date (YYYY-MM-DD):', currentDate || new Date().toISOString().split('T')[0]);
   if (!newDate || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)) { showStatus('Invalid date format — use YYYY-MM-DD', true); return; }
