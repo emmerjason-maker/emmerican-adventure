@@ -1837,7 +1837,8 @@ async function loadPostsList() {
             ${isScheduled ? `<span class="post-list-num" style="color:#eb5757;border-color:#eb5757;">⏱ Scheduled</span>` : ''}
           </div>
           <div class="post-list-title">${title}</div>
-          ${isScheduled ? `<button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation(); publishScheduledPostNow('${file.name}')">🚀 Publish Now</button>` : ''}
+          ${isScheduled ? `<button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation(); publishScheduledPostNow('${file.name}')">🚀 Publish Now</button>
+          <button type="button" class="btn-ghost btn-sm" onclick="event.stopPropagation(); reschedulePost('${file.name}', '${date}')">📅 Reschedule</button>` : ''}
           <span class="post-list-arrow">Edit →</span>
         </div>`).join('');
 
@@ -1853,7 +1854,66 @@ async function loadPostsList() {
 // scheduled date naturally arrives (and even then, nothing currently
 // re-runs those steps automatically). This lets an admin force all of
 // that to happen right now, today, regardless of the post's stored date.
-async function publishScheduledPostNow(filename) {
+async function reschedulePost(filename, currentDate) {
+  const newDate = prompt('Enter new publish date (YYYY-MM-DD):', currentDate || new Date().toISOString().split('T')[0]);
+  if (!newDate || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)) { showStatus('Invalid date format — use YYYY-MM-DD', true); return; }
+
+  const fmtDate = new Date(newDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  showStatus('Rescheduling…', false, true);
+
+  try {
+    const slug = filename.replace('.html', '');
+
+    // 1. Update the post file date
+    const postRes = await ghFetch(`contents/posts/${filename}`);
+    if (!postRes.ok) throw new Error('Could not fetch post file');
+    const postJson = await postRes.json();
+    let postHtml = decodeURIComponent(escape(atob(postJson.content.replace(/\n/g, ''))));
+    postHtml = postHtml.replace(
+      /<time class="post-date">[^<]+<\/time>/,
+      `<time class="post-date">${fmtDate}</time>`
+    );
+    await ghFetch(`contents/posts/${filename}`, 'PUT', {
+      message: `Reschedule ${slug} to ${newDate}`,
+      content: btoa(unescape(encodeURIComponent(postHtml))),
+      sha: postJson.sha,
+      branch: CONFIG.branch,
+    });
+
+    // 2. Update blog.html card date and data-publish-date
+    const blogRes = await ghFetch('contents/blog.html');
+    if (!blogRes.ok) throw new Error('Could not fetch blog.html');
+    const blogJson = await blogRes.json();
+    let blogHtml = decodeURIComponent(escape(atob(blogJson.content.replace(/\n/g, ''))));
+
+    // Update data-publish-date attribute
+    blogHtml = blogHtml.replace(
+      new RegExp(`data-publish-date="[^"]*"(\\s+data-slug="${slug}")`),
+      `data-publish-date="${newDate}"$1`
+    );
+    // Update displayed date and "Going live on" text within the card
+    const cardStart = blogHtml.indexOf(`data-slug="${slug}"`);
+    const cardEnd   = blogHtml.indexOf('</article>', cardStart) + '</article>'.length;
+    let card = blogHtml.slice(cardStart, cardEnd);
+    card = card
+      .replace(/<time class="post-date">[^<]+<\/time>/, `<time class="post-date">${fmtDate}</time>`)
+      .replace(/Going live on [^.]+\./, `Going live on ${fmtDate}.`);
+    blogHtml = blogHtml.slice(0, cardStart) + card + blogHtml.slice(cardEnd);
+
+    await ghFetch('contents/blog.html', 'PUT', {
+      message: `Reschedule ${slug} to ${newDate}`,
+      content: btoa(unescape(encodeURIComponent(blogHtml))),
+      sha: blogJson.sha,
+      branch: CONFIG.branch,
+    });
+
+    showStatus(`✓ Rescheduled to ${fmtDate}`, false);
+    setTimeout(() => loadPostsList(), 1500);
+
+  } catch(err) {
+    showStatus('✗ Reschedule failed: ' + err.message, true);
+  }
+}
   if (!confirm('Publish this scheduled post now, with today\'s date? This updates the homepage, photo/video grids, sitemap, RSS feed, and search index.')) return;
 
   showStatus('Publishing scheduled post…', false, true);
