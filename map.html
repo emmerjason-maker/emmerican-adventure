@@ -299,7 +299,9 @@ function placeMarkers() {
     allMarkers.push({ marker, type: a.type });
   });
 
-  fitMapBounds();
+  // Don't auto-fitBounds on initial load — keep the Japan-centered
+  // default view set in initMap(). fitBounds is still called when
+  // the user toggles country/type filters.
 }
 
 function fitMapBounds() {
