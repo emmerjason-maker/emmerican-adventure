@@ -54,7 +54,17 @@ document.addEventListener('DOMContentLoaded', () => {
       btn.className = 'mobile-translate-btn';
       btn.style.cssText = 'display:block; padding:0.85rem 0; border:none; border-bottom:1px solid var(--paper-dark); background:none; width:100%; text-align:left; color:inherit; cursor:pointer; font-family:inherit; font-size:inherit; letter-spacing:0.08em;';
       btn.textContent = '🌐 Translate';
-      btn.addEventListener('click', () => { closeMobileNav(); toggleTranslate(); });
+      btn.addEventListener('click', () => {
+        closeMobileNav();
+        setTimeout(() => {
+          var el = document.getElementById('translate-picker');
+          if (!el) return;
+          el.style.display = 'block';
+          el.style.top  = '80px';
+          el.style.right = '1rem';
+          el.style.left  = 'auto';
+        }, 150);
+      });
       nav.appendChild(btn);
     }
     menuBtn.textContent = '✕';
@@ -70,6 +80,17 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   if (menuBtn && nav) {
+    // Add translate button to header for desktop only
+    if (window.innerWidth > 900) {
+      const tBtn = document.createElement('button');
+      tBtn.className = 'translate-toggle';
+      tBtn.setAttribute('aria-label', 'Translate');
+      tBtn.setAttribute('title', 'Translate this page');
+      tBtn.textContent = '🌐';
+      tBtn.onclick = toggleTranslate;
+      menuBtn.parentNode.insertBefore(tBtn, menuBtn.nextSibling);
+    }
+
     menuBtn.addEventListener('click', () => {
       nav.classList.contains('mobile-open') ? closeMobileNav() : openMobileNav();
     });
