@@ -48,6 +48,15 @@ document.addEventListener('DOMContentLoaded', () => {
     nav.querySelectorAll('.nav-link').forEach(l => {
       l.style.cssText = 'display:block; padding:0.85rem 0; border-bottom:1px solid var(--paper-dark); border-radius:0; width:100%; color:inherit; text-decoration:none;';
     });
+    // Add translate option if not already there
+    if (!nav.querySelector('.mobile-translate-btn')) {
+      const btn = document.createElement('button');
+      btn.className = 'mobile-translate-btn';
+      btn.style.cssText = 'display:block; padding:0.85rem 0; border:none; border-bottom:1px solid var(--paper-dark); background:none; width:100%; text-align:left; color:inherit; cursor:pointer; font-family:inherit; font-size:inherit; letter-spacing:0.08em;';
+      btn.textContent = '🌐 Translate';
+      btn.addEventListener('click', () => { closeMobileNav(); toggleTranslate(); });
+      nav.appendChild(btn);
+    }
     menuBtn.textContent = '✕';
     menuBtn.setAttribute('aria-label', 'Close menu');
   }
