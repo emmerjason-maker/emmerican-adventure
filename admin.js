@@ -357,11 +357,11 @@ async function saveAdvFromPost({ title, slug, date, uploadedImages }) {
   const lng         = parseFloat($('postLng')?.value)  || null;
   const placeId     = $('postPlaceId')?.value.trim()   || null;
 
-  // Split location into components using cached place data
-  const locationParts = location.split(',').map(s => s.trim());
-  const locationCity    = locationParts[0] || null;
-  const locationRegion  = locationParts[1] || null;
-  const locationCountry = locationParts[locationParts.length - 1] || null;
+  // Use geo components from autocomplete (stored in hidden fields) — 
+  // more reliable than splitting the display name which may be a venue name
+  const locationCity    = $('postGeoCity')?.value.trim()    || location.split(',')[0]?.trim() || null;
+  const locationRegion  = $('postGeoRegion')?.value.trim()  || location.split(',')[1]?.trim() || null;
+  const locationCountry = $('postGeoCountry')?.value.trim() || location.split(',').pop()?.trim() || null;
 
   const rating     = parseInt($('advPostRating')?.value) || null;
   const cuisine    = $('advPostCuisine')?.value.trim()   || null;
@@ -430,6 +430,9 @@ function resetAdvFields() {
   if ($('advPostRating'))  $('advPostRating').value = '';
   if ($('advPostRatingVal')) $('advPostRatingVal').textContent = '';
   if ($('advPostNotes'))   $('advPostNotes').value  = '';
+  if ($('postGeoCity'))    $('postGeoCity').value    = '';
+  if ($('postGeoRegion'))  $('postGeoRegion').value  = '';
+  if ($('postGeoCountry')) $('postGeoCountry').value = '';
   document.querySelectorAll('#advPostStars .adv-star-btn').forEach(btn => btn.style.color = '');
   ['tagKidFriendly','tagWouldReturn','tagMustTry','tagHiddenGem','tagEnglishMenu']
     .forEach(id => { if ($(id)) $(id).checked = false; });
@@ -3936,6 +3939,20 @@ function initPostLocationSearch() {
     document.getElementById('postLat').value = lat;
     if (document.getElementById('postPlaceId')) document.getElementById('postPlaceId').value = placeId;
     document.getElementById('postLng').value = lng;
+
+    // Parse address components for city/region/country
+    // Store in hidden fields so saveAdvFromPost can use accurate geo data
+    // instead of trying to split the display name string
+    let city = '', region = '', country = '';
+    (place.address_components || []).forEach(c => {
+      if (c.types.includes('locality'))                city    = c.long_name;
+      if (c.types.includes('administrative_area_level_1')) region = c.long_name;
+      if (c.types.includes('country'))                 country = c.long_name;
+      if (!city && c.types.includes('sublocality_level_1')) city = c.long_name;
+    });
+    if (document.getElementById('postGeoCity'))    document.getElementById('postGeoCity').value    = city;
+    if (document.getElementById('postGeoRegion'))  document.getElementById('postGeoRegion').value  = region;
+    if (document.getElementById('postGeoCountry')) document.getElementById('postGeoCountry').value = country;
 
     showPostMapPreview(lat, lng, name);
   });
