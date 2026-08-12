@@ -421,58 +421,61 @@
       document.querySelectorAll('#videoGrid .video-card').length;
   </script>
 
-  <!-- Google Translate -->
-  <div id="google_translate_element" style="display:none;position:fixed;z-index:9999;"></div>
+  <!-- Google Translate — opens translate.google.com with current page URL -->
+  <div id="translate-picker" style="display:none;position:fixed;z-index:9999;background:var(--paper);border:1px solid var(--paper-dark);border-radius:4px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,0.18);min-width:160px;">
+    <div style="font-size:0.7rem;opacity:0.6;margin-bottom:6px;letter-spacing:0.06em;">TRANSLATE TO</div>
+    <div id="translate-langs"></div>
+  </div>
   <script>
-    function googleTranslateElementInit() {
-      new google.translate.TranslateElement({
-        pageLanguage: 'en',
-        includedLanguages: 'ja,ko,zh-CN,fr,de,es,pt,da',
-        layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-        autoDisplay: false,
-      }, 'google_translate_element');
-    }
+    var LANGS = [
+      ['🇯🇵 Japanese','ja'],['🇰🇷 Korean','ko'],['🇨🇳 Chinese','zh-CN'],
+      ['🇫🇷 French','fr'],['🇩🇪 German','de'],['🇪🇸 Spanish','es'],
+      ['🇵🇹 Portuguese','pt'],['🇩🇰 Danish','da'],
+    ];
+    (function(){
+      var container = document.getElementById('translate-langs');
+      if (!container) return;
+      LANGS.forEach(function(l){
+        var a = document.createElement('a');
+        a.href = 'https://translate.google.com/translate?sl=en&tl=' + l[1] + '&u=' + encodeURIComponent(window.location.href);
+        a.target = '_blank';
+        a.rel = 'noopener';
+        a.textContent = l[0];
+        a.style.cssText = 'display:block;padding:6px 4px;color:inherit;text-decoration:none;font-size:0.88rem;border-radius:2px;';
+        a.addEventListener('mouseover',function(){this.style.background='var(--paper-dark)';});
+        a.addEventListener('mouseout',function(){this.style.background='';});
+        container.appendChild(a);
+      });
+    })();
     function toggleTranslate() {
-      var el = document.getElementById('google_translate_element');
+      var el = document.getElementById('translate-picker');
       if (!el) return;
       if (el.style.display === 'none' || !el.style.display) {
-        // Position near trigger
         var trigger = document.querySelector('.translate-toggle') ||
                       document.querySelector('.mobile-translate-btn');
         el.style.display = 'block';
         if (trigger) {
           var r = trigger.getBoundingClientRect();
+          var right = window.innerWidth - r.right;
           el.style.top  = (r.bottom + window.scrollY + 8) + 'px';
-          el.style.right = (window.innerWidth - r.right) + 'px';
-          el.style.left = 'auto';
+          el.style.right = Math.max(8, right) + 'px';
+          el.style.left  = 'auto';
         } else {
-          el.style.top  = '70px';
-          el.style.right = '1rem';
+          el.style.top = '70px'; el.style.right = '1rem';
         }
-        el.style.background    = 'var(--paper)';
-        el.style.border        = '1px solid var(--paper-dark)';
-        el.style.borderRadius  = '4px';
-        el.style.padding       = '8px 12px';
-        el.style.boxShadow     = '0 4px 16px rgba(0,0,0,0.18)';
-        // Focus the select
-        setTimeout(function() {
-          var sel = el.querySelector('select');
-          if (sel) sel.focus();
-        }, 100);
       } else {
         el.style.display = 'none';
       }
     }
     document.addEventListener('click', function(e) {
-      var el = document.getElementById('google_translate_element');
+      var el = document.getElementById('translate-picker');
       if (!el || el.style.display === 'none') return;
-      if (!e.target.closest('#google_translate_element') &&
+      if (!e.target.closest('#translate-picker') &&
           !e.target.closest('.translate-toggle') &&
           !e.target.closest('.mobile-translate-btn')) {
         el.style.display = 'none';
       }
     });
   </script>
-  <script src="https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit" async defer></script>
 </body>
 </html>

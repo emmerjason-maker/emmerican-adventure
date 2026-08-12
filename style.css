@@ -800,10 +800,6 @@ img { max-width: 100%; display: block; }
 }
 .translate-toggle:hover { border-color: var(--red); }
 
-/* Hide Google Translate toolbar that appears at top of page */
-.goog-te-banner-frame, .skiptranslate { display: none !important; }
-body { top: 0 !important; }
-
 .header-search-bar {
   position: fixed;
   top: 0;
