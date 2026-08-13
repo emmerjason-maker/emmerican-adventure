@@ -581,6 +581,40 @@ It is officially crunch time for our international move! As many of you know, br
         el.innerHTML = `<span class="last-updated-label">Latest post:</span> <span class="last-updated-date">${firstLivePost.textContent}</span>`;
       }
     }
+
+    // Collapse scheduled cards into a compact pill
+    const scheduledCards = document.querySelectorAll('.post-index-card.post-scheduled');
+    if (scheduledCards.length > 0) {
+      // Build pill content
+      const items = Array.from(scheduledCards).map(card => {
+        const title = card.querySelector('.scheduled-title')?.textContent?.trim() || '';
+        const date  = card.querySelector('.post-date')?.textContent?.trim() || '';
+        return `<div class="coming-soon-item">
+          <span class="coming-soon-title">${title}</span>
+          <span class="coming-soon-date">${date}</span>
+        </div>`;
+      }).join('');
+
+      // Create pill element
+      const pill = document.createElement('div');
+      pill.className = 'coming-soon-pill';
+      pill.innerHTML = `
+        <button class="coming-soon-toggle" aria-expanded="false" onclick="
+          var d = this.nextElementSibling;
+          var open = d.style.display !== 'none';
+          d.style.display = open ? 'none' : 'block';
+          this.setAttribute('aria-expanded', !open);
+          this.querySelector('.coming-soon-chevron').textContent = open ? '›' : '‹';
+        ">
+          <span class="coming-soon-label">📅 Coming soon — ${scheduledCards.length} post${scheduledCards.length > 1 ? 's' : ''}</span>
+          <span class="coming-soon-chevron">›</span>
+        </button>
+        <div class="coming-soon-drawer" style="display:none;">${items}</div>`;
+
+      // Insert pill before first scheduled card, hide all scheduled cards
+      scheduledCards[0].parentNode.insertBefore(pill, scheduledCards[0]);
+      scheduledCards.forEach(c => c.style.display = 'none');
+    }
   </script>
   <!-- Google Translate — opens translate.google.com with current page URL -->
   <div id="translate-picker" style="display:none;position:fixed;z-index:9999;background:var(--paper);border:1px solid var(--paper-dark);border-radius:4px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,0.18);min-width:160px;">

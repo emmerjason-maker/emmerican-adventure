@@ -1460,3 +1460,43 @@ img { max-width: 100%; display: block; }
   }
 }
 
+
+/* ── Coming Soon pill (blog page) ───────────────────────────────── */
+.coming-soon-pill {
+  margin-bottom: 1.5rem;
+  border: 1px solid var(--paper-dark);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.coming-soon-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0.75rem 1.25rem;
+  background: var(--paper-warm);
+  border: none;
+  cursor: pointer;
+  color: var(--ink);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  transition: background 0.2s;
+}
+.coming-soon-toggle:hover { background: var(--paper-dark); }
+.coming-soon-label { opacity: 0.8; }
+.coming-soon-chevron { font-size: 1.1rem; opacity: 0.5; }
+.coming-soon-drawer { padding: 0.5rem 1.25rem 0.75rem; }
+.coming-soon-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--paper-dark);
+  font-size: 0.85rem;
+}
+.coming-soon-item:last-child { border-bottom: none; }
+.coming-soon-title { color: var(--ink); flex: 1; }
+.coming-soon-date { color: var(--ink-faint); white-space: nowrap; font-size: 0.78rem; }
