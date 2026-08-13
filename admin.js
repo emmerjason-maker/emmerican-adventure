@@ -438,6 +438,86 @@ function resetAdvFields() {
     .forEach(id => { if ($(id)) $(id).checked = false; });
 }
 
+// ── Edit Post — Adventure Details ─────────────────────────────────
+function setEditAdvRating(val) {
+  $('editAdvRating').value = val;
+  $('editAdvRatingVal').textContent = '★'.repeat(val);
+  document.querySelectorAll('#editAdvStars .adv-star-btn').forEach(btn => {
+    btn.style.color = parseInt(btn.dataset.val) <= val ? 'var(--gold)' : 'var(--ink-faint)';
+  });
+}
+
+async function loadEditAdvDetails(slug) {
+  const statusEl = $('editAdvStatus');
+  if (!statusEl) return;
+  try {
+    const res = await fetch(
+      `${ADV_SUPABASE_URL}/rest/v1/adventures?post_url=eq.posts/${slug}.html&select=*`,
+      { headers: { 'apikey': ADV_SUPABASE_ANON, 'Authorization': `Bearer ${ADV_SUPABASE_ANON}` } }
+    );
+    const data = await res.json();
+    if (data && data.length > 0) {
+      const adv = data[0];
+      statusEl.textContent = `Linked: "${adv.name}"`;
+      if ($('editAdvType')) {
+        $('editAdvType').value = adv.type || '';
+        const isRest = adv.type === 'restaurant';
+        if ($('editAdvPriceWrap')) $('editAdvPriceWrap').style.display = isRest ? '' : 'none';
+        if ($('editAdvCuisineWrap')) $('editAdvCuisineWrap').style.display = isRest ? '' : 'none';
+      }
+      if (adv.rating) setEditAdvRating(Math.round(adv.rating));
+      if ($('editAdvPrice') && adv.price_range) $('editAdvPrice').value = adv.price_range;
+      if ($('editAdvCuisine') && adv.cuisine) $('editAdvCuisine').value = adv.cuisine;
+      if ($('editAdvNotes') && adv.notes) $('editAdvNotes').value = adv.notes;
+      const tags = adv.tags || [];
+      ['editTagKidFriendly','editTagWouldReturn','editTagMustTry','editTagHiddenGem','editTagEnglishMenu']
+        .forEach(id => { const el = $(id); if (el) el.checked = tags.includes(el.value); });
+      $('editAdvType').dataset.advId = adv.id;
+    } else {
+      statusEl.textContent = 'No adventure entry yet — fill in Type above to create one.';
+    }
+  } catch(e) { if (statusEl) statusEl.textContent = ''; }
+}
+
+async function saveEditAdv(slug) {
+  const type = $('editAdvType')?.value;
+  if (!type) return;
+  const rating  = parseInt($('editAdvRating')?.value) || null;
+  const price   = type === 'restaurant' ? ($('editAdvPrice')?.value || null) : null;
+  const cuisine = type === 'restaurant' ? ($('editAdvCuisine')?.value.trim() || null) : null;
+  const notes   = $('editAdvNotes')?.value.trim() || null;
+  const tags    = ['editTagKidFriendly','editTagWouldReturn','editTagMustTry','editTagHiddenGem','editTagEnglishMenu']
+    .filter(id => $(id)?.checked).map(id => $(id).value);
+  const advId   = $('editAdvType')?.dataset.advId;
+  const payload = { type, rating, price_range: price, cuisine, notes, tags: tags.length ? tags : null, post_url: `posts/${slug}.html`, status: 'visited' };
+  try {
+    if (advId) {
+      await fetch(`${ADV_SUPABASE_URL}/rest/v1/adventures?id=eq.${advId}`, {
+        method: 'PATCH',
+        headers: { 'apikey': ADV_SUPABASE_ANON, 'Authorization': `Bearer ${ADV_SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload),
+      });
+    } else {
+      const loc = $('editLocation')?.value.trim() || '';
+      const parts = loc.split(',').map(s => s.trim());
+      Object.assign(payload, {
+        name: $('editTitle')?.value.trim() || slug,
+        location_city: parts[0] || null, location_region: parts[1] || null,
+        location_country: parts[parts.length-1] || null,
+        lat: parseFloat($('editLat')?.value) || null,
+        lng: parseFloat($('editLng')?.value) || null,
+        place_id: $('editPlaceId')?.value.trim() || null,
+        created_by: '3fd413d3-d92d-440f-b0ff-ca98b36cf251',
+      });
+      await fetch(`${ADV_SUPABASE_URL}/rest/v1/adventures`, {
+        method: 'POST',
+        headers: { 'apikey': ADV_SUPABASE_ANON, 'Authorization': `Bearer ${ADV_SUPABASE_ANON}`, 'Content-Type': 'application/json', 'Prefer': 'return=minimal' },
+        body: JSON.stringify(payload),
+      });
+    }
+  } catch(e) { console.warn('Adventure save error:', e.message); }
+}
+
 // ── Preview ───────────────────────────────────────────────────────
 function renderPreview() {
   const title    = $('postTitle').value.trim();
@@ -1973,6 +2053,8 @@ async function loadPostForEditing(filename, sha) {
   editingSlug = filename.replace('.html', '');
 
   showStatus('Loading post…', false, true);
+  // Load adventure details for this post in parallel
+  loadEditAdvDetails(editingSlug);
 
   try {
     const res = await ghFetch(`contents/posts/${filename}`);
@@ -2470,6 +2552,8 @@ async function savePostEdit(filename) {
     }
 
     showStatus('✓ Post saved! Changes will be live in ~60 seconds.', false);
+    // Save adventure details if filled in
+    await saveEditAdv(editingSlug);
 
   } catch (err) {
     showStatus('✗ Error: ' + err.message, true);

@@ -382,6 +382,72 @@
                 </div>
                 <div class="body-editor" id="editBody" contenteditable="true"></div>
               </div>
+
+              <!-- ── ADVENTURE DETAILS (Edit Post) ────────────────── -->
+              <div class="field-group" style="border:1px solid var(--paper-dark);padding:1rem;border-radius:2px;margin-top:1rem;">
+                <label class="field-label" style="font-size:0.85rem;letter-spacing:0.08em;">🗺️ Adventure Details <span class="optional">updates the Adventures page entry for this post</span></label>
+                <div id="editAdvStatus" style="font-size:0.8rem;opacity:0.6;margin-top:0.4rem;"></div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:0.75rem;">
+                  <div>
+                    <label class="field-label">Type</label>
+                    <select class="field-input" id="editAdvType" onchange="
+                      var r = this.value === 'restaurant';
+                      document.getElementById('editAdvPriceWrap').style.display = r ? '' : 'none';
+                      document.getElementById('editAdvCuisineWrap').style.display = r ? '' : 'none';
+                    ">
+                      <option value="">— Not an adventure —</option>
+                      <option value="restaurant">🍜 Restaurant</option>
+                      <option value="place">📍 Place</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="field-label">Overall Rating</label>
+                    <div id="editAdvStars" style="display:flex;gap:6px;margin-top:6px;">
+                      <button type="button" class="adv-star-btn" data-val="1" onclick="setEditAdvRating(1)">★</button>
+                      <button type="button" class="adv-star-btn" data-val="2" onclick="setEditAdvRating(2)">★</button>
+                      <button type="button" class="adv-star-btn" data-val="3" onclick="setEditAdvRating(3)">★</button>
+                      <button type="button" class="adv-star-btn" data-val="4" onclick="setEditAdvRating(4)">★</button>
+                      <button type="button" class="adv-star-btn" data-val="5" onclick="setEditAdvRating(5)">★</button>
+                      <span id="editAdvRatingVal" style="font-size:0.8rem;opacity:0.6;margin-left:4px;"></span>
+                    </div>
+                    <input type="hidden" id="editAdvRating" value="" />
+                  </div>
+                </div>
+
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-top:0.75rem;">
+                  <div id="editAdvPriceWrap" style="display:none;">
+                    <label class="field-label">Price</label>
+                    <select class="field-input" id="editAdvPrice">
+                      <option value="Budget">💚 Budget</option>
+                      <option value="Moderate">🟡 Moderate</option>
+                      <option value="Splurge">🟠 Splurge</option>
+                      <option value="Special">🔴 Special Occasion</option>
+                    </select>
+                  </div>
+                  <div id="editAdvCuisineWrap" style="display:none;">
+                    <label class="field-label">Cuisine / Category <span class="optional">optional</span></label>
+                    <input type="text" class="field-input" id="editAdvCuisine" placeholder="e.g. Japanese, BBQ…" />
+                  </div>
+                </div>
+
+                <div style="margin-top:0.75rem;">
+                  <label class="field-label">Tags</label>
+                  <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem;">
+                    <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="editTagKidFriendly" value="Kid-Friendly" /> Kid-Friendly</label>
+                    <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="editTagWouldReturn" value="Would Return" /> Would Return</label>
+                    <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="editTagMustTry" value="Must Try" /> Must Try</label>
+                    <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="editTagHiddenGem" value="Hidden Gem" /> Hidden Gem</label>
+                    <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="editTagEnglishMenu" value="English Menu" /> English Menu</label>
+                  </div>
+                </div>
+
+                <div style="margin-top:0.75rem;">
+                  <label class="field-label">Notes <span class="optional">optional</span></label>
+                  <input type="text" class="field-input" id="editAdvNotes" placeholder="Short note for the adventure card" />
+                </div>
+              </div>
+
               <div class="publish-row">
                 <button class="btn-preview" id="editPreviewBtn">Preview</button>
                 <button class="btn-publish" id="saveEditBtn">
