@@ -1941,8 +1941,9 @@ async function reschedulePost(filename, currentDate) {
       branch: CONFIG.branch,
     });
 
-    showStatus(`✓ Rescheduled to ${fmtDate}`, false);
-    setTimeout(() => loadPostsList(), 1500);
+    showStatus(`✓ Rescheduled to ${fmtDate} — refreshing list…`, false);
+    // Wait 3 seconds for GitHub's API to propagate the write before re-reading
+    setTimeout(() => loadPostsList(), 3000);
 
   } catch(err) {
     showStatus('✗ Reschedule failed: ' + err.message, true);
