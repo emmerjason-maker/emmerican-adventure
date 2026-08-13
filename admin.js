@@ -1889,10 +1889,28 @@ async function publishScheduledPostNow(filename) {
 }
 
 async function reschedulePost(filename, currentDate) {
-  const newDate = prompt('Enter new publish date (YYYY-MM-DD):', currentDate || new Date().toISOString().split('T')[0]);
-  if (!newDate || !/^\d{4}-\d{2}-\d{2}$/.test(newDate)) { showStatus('Invalid date format — use YYYY-MM-DD', true); return; }
+  // Convert "August 14, 2026" → "2026-08-14" for the prompt default
+  let defaultDate = currentDate || '';
+  if (defaultDate && !/^\d{4}-\d{2}-\d{2}$/.test(defaultDate)) {
+    const parsed = new Date(defaultDate);
+    if (!isNaN(parsed)) {
+      defaultDate = parsed.toLocaleDateString('en-CA'); // en-CA gives YYYY-MM-DD
+    }
+  }
+  if (!defaultDate) defaultDate = new Date().toISOString().split('T')[0];
 
-  const fmtDate = new Date(newDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+  const newDate = prompt('Enter new publish date:', defaultDate);
+  if (!newDate) return;
+
+  // Accept both YYYY-MM-DD and natural dates like "August 15, 2026"
+  let isoDate = newDate.trim();
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(isoDate)) {
+    const parsed = new Date(isoDate);
+    if (isNaN(parsed)) { showStatus('Could not parse date — try YYYY-MM-DD format', true); return; }
+    isoDate = parsed.toLocaleDateString('en-CA');
+  }
+
+  const fmtDate = new Date(isoDate + 'T12:00:00').toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
   showStatus('Rescheduling…', false, true);
 
   try {
@@ -1908,7 +1926,7 @@ async function reschedulePost(filename, currentDate) {
       `<time class="post-date">${fmtDate}</time>`
     );
     await ghFetch(`contents/posts/${filename}`, 'PUT', {
-      message: `Reschedule ${slug} to ${newDate}`,
+      message: `Reschedule ${slug} to ${isoDate}`,
       content: btoa(unescape(encodeURIComponent(postHtml))),
       sha: postJson.sha,
       branch: CONFIG.branch,
@@ -1923,7 +1941,7 @@ async function reschedulePost(filename, currentDate) {
     // Update data-publish-date attribute
     blogHtml = blogHtml.replace(
       new RegExp(`data-publish-date="[^"]*"(\\s+data-slug="${slug}")`),
-      `data-publish-date="${newDate}"$1`
+      `data-publish-date="${isoDate}"$1`
     );
     // Update displayed date and "Going live on" text within the card
     const cardStart = blogHtml.indexOf(`data-slug="${slug}"`);
@@ -1935,7 +1953,7 @@ async function reschedulePost(filename, currentDate) {
     blogHtml = blogHtml.slice(0, cardStart) + card + blogHtml.slice(cardEnd);
 
     await ghFetch('contents/blog.html', 'PUT', {
-      message: `Reschedule ${slug} to ${newDate}`,
+      message: `Reschedule ${slug} to ${isoDate}`,
       content: btoa(unescape(encodeURIComponent(blogHtml))),
       sha: blogJson.sha,
       branch: CONFIG.branch,
