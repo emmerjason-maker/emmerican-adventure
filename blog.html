@@ -573,12 +573,12 @@ It is officially crunch time for our international move! As many of you know, br
 
   <script src="main.js"></script>
   <script>
-    // Show last updated date from most recent post
-    const firstPost = document.querySelector('.post-index-card time');
-    if (firstPost) {
+    // Show last updated date from most recent LIVE post (skip scheduled cards)
+    const firstLivePost = document.querySelector('.post-index-card:not(.post-scheduled) time');
+    if (firstLivePost) {
       const el = document.getElementById('blogLastUpdated');
       if (el) {
-        el.innerHTML = `<span class="last-updated-label">Latest post:</span> <span class="last-updated-date">${firstPost.textContent}</span>`;
+        el.innerHTML = `<span class="last-updated-label">Latest post:</span> <span class="last-updated-date">${firstLivePost.textContent}</span>`;
       }
     }
   </script>
