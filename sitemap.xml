@@ -250,4 +250,22 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+  <url>
+    <loc>https://emmericanadventure.com/posts/late-night-gyoza-drinks-in-shibuya-the-ultimate-tokyo-comfort-food-experience.html</loc>
+    <lastmod>August 19, 2026</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://emmericanadventure.com/posts/this-japanese-vending-machine-makes-real-coffee.html</loc>
+    <lastmod>August 17, 2026</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://emmericanadventure.com/posts/tokyo-s-ultimate-shopping-maze-exploring-mega-don-quijote-shibuya.html</loc>
+    <lastmod>August 18, 2026</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>

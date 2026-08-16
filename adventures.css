@@ -92,11 +92,6 @@
 }
 
 .adv-pill {
-  position: relative;
-  z-index: 1;
-}
-
-.adv-pill {
   font-family: var(--font-mono);
   font-size: 0.7rem;
   text-transform: uppercase;
@@ -108,6 +103,8 @@
   cursor: pointer;
   transition: all 0.2s;
   white-space: nowrap;
+  position: relative;
+  z-index: 0;
 }
 
 .adv-pill:hover {
