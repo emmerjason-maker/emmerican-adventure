@@ -7,7 +7,7 @@ name: Scheduled Post Publisher
 # RSS feed, and search index.
 on:
   schedule:
-    - cron: '0 15 * * *'   # 15:00 UTC = midnight JST — script uses JST date so no boundary issues
+    - cron: '0 16 * * *'   # 16:00 UTC = 1:00am JST — full hour buffer past midnight so early runner starts don't cause wrong date
   workflow_dispatch:        # also triggerable manually
 
 jobs:
