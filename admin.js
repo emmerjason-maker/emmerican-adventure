@@ -1881,9 +1881,9 @@ function filterPlPostList(query) {
 }
 
 function selectPlPost(value, label) {
-  $('plPostUrl').value        = value;
-  $('plPostUrlSearch').value  = label;
-  $('plPostUrlDropdown').style.display = 'none';
+  if ($('plPostUrl'))          $('plPostUrl').value        = value;
+  if ($('plPostUrlSearch'))    $('plPostUrlSearch').value  = label;
+  if ($('plPostUrlDropdown'))  $('plPostUrlDropdown').style.display = 'none';
 }
 
 // ── Load list of posts from /posts/ folder ────────────────────
@@ -4355,21 +4355,20 @@ async function plDelete(id, name) {
   else showStatus('✗ Delete failed.', true);
 }
 
-// ── Reset ─────────────────────────────────────────────────────────
 function plReset() {
-  $('plEditId').value       = '';
-  $('plPostUrl').value      = '';
+  if ($('plEditId'))        $('plEditId').value       = '';
+  if ($('plPostUrl'))       $('plPostUrl').value      = '';
   if ($('plPostUrlSearch')) $('plPostUrlSearch').value = '';
-  $('plPlaceName').value    = '';
-  $('plCity').value         = '';
-  if ($('plRegion')) $('plRegion').value = '';
-  $('plCountry').value      = '';
-  $('plDate').value         = '';
-  $('plLat').value          = '';
-  $('plLng').value          = '';
-  $('plPlaceSearch').value  = '';
-  $('plFormTitle').textContent  = 'Add Post Location';
-  $('plSaveLabel').textContent  = 'Save Location →';
-  $('plCancelBtn').style.display = 'none';
+  if ($('plPlaceName'))     $('plPlaceName').value    = '';
+  if ($('plCity'))          $('plCity').value         = '';
+  if ($('plRegion'))        $('plRegion').value       = '';
+  if ($('plCountry'))       $('plCountry').value      = '';
+  if ($('plDate'))          $('plDate').value         = '';
+  if ($('plLat'))           $('plLat').value          = '';
+  if ($('plLng'))           $('plLng').value          = '';
+  if ($('plPlaceSearch'))   $('plPlaceSearch').value  = '';
+  if ($('plFormTitle'))     $('plFormTitle').textContent  = 'Add Post Location';
+  if ($('plSaveLabel'))     $('plSaveLabel').textContent  = 'Save Location →';
+  if ($('plCancelBtn'))     $('plCancelBtn').style.display = 'none';
   $('plMapPreview')?.classList.add('hidden');
 }
