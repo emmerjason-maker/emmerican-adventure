@@ -389,6 +389,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }
       }
     });
+
+    // Build coming-soon pill AFTER reveal check so count is accurate
+    const scheduledCards = document.querySelectorAll('.post-index-card.post-scheduled');
+    if (scheduledCards.length > 0) {
+      const items = Array.from(scheduledCards).map(card => {
+        const title = card.querySelector('.scheduled-title')?.textContent?.trim() || '';
+        const date  = card.querySelector('.post-date')?.textContent?.trim() || '';
+        return `<div class="coming-soon-item">
+          <span class="coming-soon-title">${title}</span>
+          <span class="coming-soon-date">${date}</span>
+        </div>`;
+      }).join('');
+      const pill = document.createElement('div');
+      pill.className = 'coming-soon-pill';
+      pill.innerHTML = `
+        <button class="coming-soon-toggle" aria-expanded="false" onclick="
+          var d = this.nextElementSibling;
+          var open = d.style.display !== 'none';
+          d.style.display = open ? 'none' : 'block';
+          this.setAttribute('aria-expanded', !open);
+          this.querySelector('.coming-soon-chevron').textContent = open ? '›' : '‹';
+        ">
+          <span class="coming-soon-label">📅 Coming soon — ${scheduledCards.length} post${scheduledCards.length > 1 ? 's' : ''}</span>
+          <span class="coming-soon-chevron">›</span>
+        </button>
+        <div class="coming-soon-drawer" style="display:none;">${items}</div>`;
+      scheduledCards[0].parentNode.insertBefore(pill, scheduledCards[0]);
+      scheduledCards.forEach(c => { c.style.display = 'none'; });
+    }
   });
 })();
 
