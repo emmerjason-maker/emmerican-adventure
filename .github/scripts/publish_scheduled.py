@@ -162,7 +162,8 @@ for match in scheduled_pattern.finditer(blog):
     if first_card_start:
         before = blog[:first_card_start.start()]
         after  = blog[last_card_end:]
-        blog   = before + ''.join(all_scheduled) + ''.join(all_live_sorted) + after
+        # Live posts first (newest → oldest), then scheduled at bottom
+        blog   = before + ''.join(all_live_sorted) + ''.join(all_scheduled) + after
 
     write('blog.html', blog)
     print(f"  ✓ blog.html card flipped live (cards re-sorted)")
