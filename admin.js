@@ -4337,7 +4337,13 @@ function plEdit(id) {
   $('plDate').value        = p.visited_date || '';
   $('plLat').value         = p.lat || '';
   $('plLng').value         = p.lng || '';
-  $('plPlaceSearch').value = p.place_name || '';
+  // Set the search field to the saved place name and clear any previous autocomplete state
+  const plSearch = $('plPlaceSearch');
+  if (plSearch) {
+    plSearch.value = p.place_name || '';
+    // Dispatch an input event to reset any autocomplete dropdown
+    plSearch.dispatchEvent(new Event('input'));
+  }
   $('plFormTitle').textContent  = 'Edit Location';
   $('plSaveLabel').textContent  = 'Update Location →';
   $('plCancelBtn').style.display = '';
