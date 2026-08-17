@@ -4270,12 +4270,15 @@ async function plSave() {
   const lng       = parseFloat($('plLng')?.value);
   const editId    = $('plEditId')?.value;
 
-  if (!post_url) { showStatus('Please select a post.', true); return; }
+  if (!post_url) { showStatus('Please select a post from the dropdown.', true); return; }
   if (!lat || !lng) { showStatus('Please search and select a location — lat/lng must be filled.', true); return; }
+
+  // Get post title from the search input text (used as display label)
+  const post_title = $('plPostUrlSearch')?.value.trim() || null;
 
   const payload = {
     post_url,
-    post_title: $('plPostUrl')?.options[$('plPostUrl')?.selectedIndex]?.text || null,
+    post_title,
     place_name:       $('plPlaceName')?.value.trim() || null,
     place_id:         $('plPlaceId')?.value.trim()    || null,
     lat, lng,
