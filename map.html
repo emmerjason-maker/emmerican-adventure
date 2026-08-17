@@ -253,7 +253,12 @@ async function loadAdventures() {
 
     const adventures = advJson.filter(a => a.lat && a.lng);
     const postLocs   = Array.isArray(postJson) ? postJson.filter(p => p.lat && p.lng) : [];
-    const posts      = postLocs.map(p => ({ ...p, type: 'post', name: p.place_name || p.post_title || 'Blog Post' }));
+    // Only show post location pins for posts that don't already have an adventure entry
+    // — prevents duplicate pins when a post has both a post_location and an adventures entry
+    const advPostUrls = new Set(adventures.map(a => a.post_url).filter(Boolean));
+    const posts = postLocs
+      .filter(p => !advPostUrls.has(p.post_url))
+      .map(p => ({ ...p, type: 'post', name: p.place_name || p.post_title || 'Blog Post' }));
 
     allAdventures = [...adventures, ...posts];
     placeMarkers();
