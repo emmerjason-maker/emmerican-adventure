@@ -1841,7 +1841,49 @@ function switchTab(tab) {
     $('panelPostLoc')?.classList.remove('hidden');
     $('tabPostLoc')?.classList.add('active');
     plAdminLoad();
+    loadPlPostList();
   }
+}
+
+// Post URL searchable dropdown for Post Locations form
+let plPostOptions = [];
+async function loadPlPostList() {
+  if (plPostOptions.length > 0) return; // already loaded
+  try {
+    const res = await ghFetch('contents/blog.html');
+    if (!res.ok) return;
+    const json = await res.json();
+    const html = decodeURIComponent(escape(atob(json.content.replace(/\n/g, ''))));
+    const doc  = new DOMParser().parseFromString(html, 'text/html');
+    plPostOptions = [];
+    doc.querySelectorAll('.post-index-card:not(.post-scheduled)').forEach(card => {
+      const href  = card.querySelector('a.post-index-link')?.getAttribute('href');
+      const title = card.querySelector('.post-index-title')?.textContent?.trim();
+      if (href && title) plPostOptions.push({ value: href, label: title });
+    });
+  } catch(e) { console.warn('Could not load post list:', e); }
+}
+
+function filterPlPostList(query) {
+  const dd = $('plPostUrlDropdown');
+  if (!dd) return;
+  const q = query.toLowerCase().trim();
+  const matches = q
+    ? plPostOptions.filter(o => o.label.toLowerCase().includes(q))
+    : plPostOptions;
+  dd.innerHTML = matches.slice(0, 20).map(o =>
+    `<div style="padding:8px 12px;cursor:pointer;font-size:0.85rem;border-bottom:1px solid var(--paper-dark);"
+      onmousedown="selectPlPost('${o.value.replace(/'/g,"\\'")}','${o.label.replace(/'/g,"\\'")}')">
+      ${o.label}
+    </div>`
+  ).join('') || '<div style="padding:8px 12px;opacity:0.5;font-size:0.85rem;">No posts found</div>';
+  dd.style.display = 'block';
+}
+
+function selectPlPost(value, label) {
+  $('plPostUrl').value        = value;
+  $('plPostUrlSearch').value  = label;
+  $('plPostUrlDropdown').style.display = 'none';
 }
 
 // ── Load list of posts from /posts/ folder ────────────────────
@@ -4278,6 +4320,13 @@ function plEdit(id) {
   if (!p) return;
   $('plEditId').value      = p.id;
   $('plPostUrl').value     = p.post_url || '';
+  // Pre-fill the search box with the matched post title if available
+  if (p.post_url && plPostOptions.length > 0) {
+    const match = plPostOptions.find(o => o.value === p.post_url);
+    if ($('plPostUrlSearch')) $('plPostUrlSearch').value = match ? match.label : p.post_url;
+  } else if ($('plPostUrlSearch')) {
+    $('plPostUrlSearch').value = p.post_url || '';
+  }
   $('plPlaceName').value   = p.place_name || '';
   $('plCity').value        = p.location_city   || '';
   if ($('plRegion')) $('plRegion').value = p.location_region || '';
@@ -4307,6 +4356,7 @@ async function plDelete(id, name) {
 function plReset() {
   $('plEditId').value       = '';
   $('plPostUrl').value      = '';
+  if ($('plPostUrlSearch')) $('plPostUrlSearch').value = '';
   $('plPlaceName').value    = '';
   $('plCity').value         = '';
   if ($('plRegion')) $('plRegion').value = '';

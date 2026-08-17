@@ -828,17 +828,14 @@
 
             <div class="field-group">
               <label class="field-label">Blog Post</label>
-              <select class="field-input" id="plPostUrl">
-                <option value="">— select a post —</option>
-                <option value="posts/summer-fun-at-the-nas-jax-pool.html">Summer Fun at the NAS Jax Pool</option>
-                <option value="posts/from-jacksonville-to-japan-mastering-golden-curry-at-home.html">Mastering Golden Curry at Home</option>
-                <option value="posts/tacos-travels-and-tokyo-dreams-a-tampa-farewell.html">Tacos, Travels, and Tokyo Dreams</option>
-                <option value="posts/decluttering-diamond-dirt-and-dinner-the-pcs-countdown-continues.html">Decluttering, Diamond Dirt, and Dinner</option>
-                <option value="posts/pcs-chronicles-the-medical-milestone.html">PCS Chronicles: The Medical Milestone</option>
-                <option value="posts/chasing-dreams-under-the-wings-of-legends-a-day-at-nas-jax.html">Chasing Dreams Under the Wings of Legends</option>
-                <option value="posts/training-my-palate-hot-pot-feast.html">Training My Palate: Hot Pot Feast</option>
-                <option value="posts/packing-up-for-japan-the-purge-begins.html">Packing Up for Japan: The Purge Begins</option>
-              </select>
+              <div style="position:relative;">
+                <input type="text" class="field-input" id="plPostUrlSearch" placeholder="Search posts…" autocomplete="off"
+                  oninput="filterPlPostList(this.value)"
+                  onfocus="document.getElementById('plPostUrlDropdown').style.display='block'"
+                  onblur="setTimeout(()=>document.getElementById('plPostUrlDropdown').style.display='none',200)" />
+                <input type="hidden" id="plPostUrl" value="" />
+                <div id="plPostUrlDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;max-height:200px;overflow-y:auto;background:var(--paper);border:1px solid var(--paper-dark);z-index:999;box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
+              </div>
             </div>
 
             <div class="field-group">
