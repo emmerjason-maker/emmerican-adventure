@@ -1961,7 +1961,7 @@ async function loadPostsList() {
             ${date ? `<span class="post-list-date">${date}</span>` : ''}
             ${isScheduled ? `<span class="post-list-num" style="color:#eb5757;border-color:#eb5757;">⏱ Scheduled</span>` : ''}
           </div>
-          <div class="post-list-title" style="font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:320px;">${title}</div>
+          <div class="post-list-title" style="font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;">${title}</div>
           ${isScheduled ? `<div style="display:flex;gap:0.4rem;flex-shrink:0;" onclick="event.stopPropagation()">
             <button type="button" class="btn-ghost btn-sm" onclick="publishScheduledPostNow('${file.name}')">🚀 Publish Now</button>
             <button type="button" class="btn-ghost btn-sm" onclick="reschedulePost('${file.name}', '${date}')">📅 Reschedule</button>
