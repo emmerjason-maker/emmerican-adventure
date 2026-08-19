@@ -1,4 +1,4 @@
-// BUILD: 2026-08-19-A
+// BUILD: 2026-08-19-B
 /* ═══════════════════════════════════════════════════════════════
    Japan Move — Admin Panel JS
    Multi-image support, rich text editor, YouTube, GitHub publish
@@ -1955,18 +1955,18 @@ async function loadPostsList() {
     });
 
     list.innerHTML = details.map(({ file, title, postNum, date, isScheduled }) => `
-        <div class="post-list-item" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
+        <div class="post-list-item" style="flex-wrap:wrap;" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
           <div class="post-list-meta">
             ${postNum ? `<span class="post-list-num">${postNum}</span>` : ''}
             ${date ? `<span class="post-list-date">${date}</span>` : ''}
             ${isScheduled ? `<span class="post-list-num" style="color:#eb5757;border-color:#eb5757;">⏱ Scheduled</span>` : ''}
           </div>
-          <div class="post-list-title" style="font-size:0.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;flex:1;min-width:0;">${title}</div>
-          ${isScheduled ? `<div style="display:flex;gap:0.4rem;flex-shrink:0;" onclick="event.stopPropagation()">
+          <div class="post-list-title" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${title}</div>
+          <span class="post-list-arrow">Edit →</span>
+          ${isScheduled ? `<div style="width:100%;display:flex;gap:0.5rem;margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border);" onclick="event.stopPropagation()">
             <button type="button" class="btn-ghost btn-sm" onclick="publishScheduledPostNow('${file.name}')">🚀 Publish Now</button>
             <button type="button" class="btn-ghost btn-sm" onclick="reschedulePost('${file.name}', '${date}')">📅 Reschedule</button>
           </div>` : ''}
-          <span class="post-list-arrow">Edit →</span>
         </div>`).join('');
 
   } catch (err) {
