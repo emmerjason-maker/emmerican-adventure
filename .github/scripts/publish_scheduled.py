@@ -108,8 +108,29 @@ for match in scheduled_pattern.finditer(blog):
         if post_photos:
             feed_image = f'https://emmericanadventure.com/{post_photos[0]}'
         else:
-            # Fall back to site logo/share image Instagram can load
-            feed_image = 'https://emmericanadventure.com/images/og-share.jpg'
+            # Try to download and cache the YouTube thumbnail locally
+            vid_match = re.search(r'(?:youtube\.com/vi/|youtu\.be/)([a-zA-Z0-9_-]{11})', feed_image)
+            if vid_match:
+                vid_id = vid_match.group(1)
+                local_thumb = f'images/thumb-{vid_id}.jpg'
+                if not os.path.exists(local_thumb):
+                    import urllib.request
+                    headers = {'User-Agent': 'Mozilla/5.0'}
+                    for quality in ['maxresdefault', 'hqdefault']:
+                        try:
+                            url = f'https://img.youtube.com/vi/{vid_id}/{quality}.jpg'
+                            req = urllib.request.Request(url, headers=headers)
+                            with urllib.request.urlopen(req) as r:
+                                data = r.read()
+                            if len(data) > 5000:  # real image, not placeholder
+                                with open(local_thumb, 'wb') as f:
+                                    f.write(data)
+                                print(f'  ✓ Downloaded thumbnail: {local_thumb}')
+                                break
+                        except Exception as e:
+                            pass
+                if os.path.exists(local_thumb):
+                    feed_image = f'https://emmericanadventure.com/{local_thumb}'
 
     # Build excerpt from post body if not in card
     if excerpt_m and 'Going live on' not in excerpt_m.group(1):
