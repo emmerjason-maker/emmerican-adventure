@@ -34,6 +34,9 @@ jobs:
       - name: Backfill video grids
         run: python3 .github/scripts/backfill_videos.py
 
+      - name: Download missing YouTube thumbnails
+        run: python3 .github/scripts/download_thumbnails.py
+
       - name: Backfill photo grids
         run: python3 .github/scripts/backfill_photos.py
 
