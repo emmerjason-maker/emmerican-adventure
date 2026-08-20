@@ -93,12 +93,23 @@ for match in scheduled_pattern.finditer(blog):
     og_image    = og_img_m.group(1) if og_img_m else (
                     thumb_src if thumb_src.startswith('http') else
                     f'https://emmericanadventure.com/{thumb_src}' if thumb_src else '')
-    # Ensure no doubled URL (e.g. https://emmericanadventure.com/https://...)
+    # Ensure no doubled URL
     if og_image.startswith('https://emmericanadventure.com/https://'):
         og_image = og_image.replace('https://emmericanadventure.com/https://', 'https://')
-    # Ensure relative image paths are fully qualified
+    # Ensure relative paths are fully qualified
     if og_image and not og_image.startswith('http'):
         og_image = f'https://emmericanadventure.com/{og_image}'
+
+    # For feed enclosures, prefer photos hosted on our domain (Instagram blocks YouTube CDN)
+    # Check if post has photos and use the first one if og_image is a YouTube URL
+    feed_image = og_image
+    if 'youtube.com' in feed_image or 'ytimg.com' in feed_image:
+        post_photos = re.findall(r'<img src="\.\./([^"]+)"', post)
+        if post_photos:
+            feed_image = f'https://emmericanadventure.com/{post_photos[0]}'
+        else:
+            # Fall back to site logo/share image Instagram can load
+            feed_image = 'https://emmericanadventure.com/images/og-share.jpg'
 
     # Build excerpt from post body if not in card
     if excerpt_m and 'Going live on' not in excerpt_m.group(1):
@@ -274,8 +285,8 @@ for match in scheduled_pattern.finditer(blog):
     feed = read('feed.xml')
     if post_url not in feed:
         pub_date = datetime.combine(publish_date, datetime.min.time()).strftime('%a, %d %b %Y 00:00:00 +0900')
-        enclosure = (f'\n      <enclosure url="{og_image}" type="image/jpeg" length="204800" />'
-                     if og_image else '')
+        enclosure = (f'\n      <enclosure url="{feed_image}" type="image/jpeg" length="204800" />'
+                     if feed_image else '')
         new_item = f'''    <item>
       <title>{esc(title)}</title>
       <link>{post_url}</link>
