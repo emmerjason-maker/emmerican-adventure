@@ -93,6 +93,12 @@ for match in scheduled_pattern.finditer(blog):
     og_image    = og_img_m.group(1) if og_img_m else (
                     thumb_src if thumb_src.startswith('http') else
                     f'https://emmericanadventure.com/{thumb_src}' if thumb_src else '')
+    # Ensure no doubled URL (e.g. https://emmericanadventure.com/https://...)
+    if og_image.startswith('https://emmericanadventure.com/https://'):
+        og_image = og_image.replace('https://emmericanadventure.com/https://', 'https://')
+    # Ensure relative image paths are fully qualified
+    if og_image and not og_image.startswith('http'):
+        og_image = f'https://emmericanadventure.com/{og_image}'
 
     # Build excerpt from post body if not in card
     if excerpt_m and 'Going live on' not in excerpt_m.group(1):
