@@ -1,4 +1,4 @@
-// BUILD: 2026-08-19-B
+// BUILD: 2026-08-19-C
 /* ═══════════════════════════════════════════════════════════════
    Japan Move — Admin Panel JS
    Multi-image support, rich text editor, YouTube, GitHub publish
@@ -1955,15 +1955,17 @@ async function loadPostsList() {
     });
 
     list.innerHTML = details.map(({ file, title, postNum, date, isScheduled }) => `
-        <div class="post-list-item" style="flex-wrap:wrap;" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
-          <div class="post-list-meta">
-            ${postNum ? `<span class="post-list-num">${postNum}</span>` : ''}
-            ${date ? `<span class="post-list-date">${date}</span>` : ''}
-            ${isScheduled ? `<span class="post-list-num" style="color:#eb5757;border-color:#eb5757;">⏱ Scheduled</span>` : ''}
+        <div class="post-list-item" style="flex-wrap:wrap;gap:0.4rem;" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
+          <div style="display:flex;align-items:center;gap:0.5rem;width:100%;">
+            <div class="post-list-meta" style="flex-shrink:0;">
+              ${postNum ? `<span class="post-list-num">${postNum}</span>` : ''}
+              ${date ? `<span class="post-list-date">${date}</span>` : ''}
+              ${isScheduled ? `<span class="post-list-num" style="color:#eb5757;border-color:#eb5757;">⏱ Scheduled</span>` : ''}
+            </div>
+            <span class="post-list-arrow" style="margin-left:auto;flex-shrink:0;">Edit →</span>
           </div>
-          <div class="post-list-title" style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${title}</div>
-          <span class="post-list-arrow">Edit →</span>
-          ${isScheduled ? `<div style="width:100%;display:flex;gap:0.5rem;margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border);" onclick="event.stopPropagation()">
+          <div class="post-list-title" style="width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${title}</div>
+          ${isScheduled ? `<div style="width:100%;display:flex;gap:0.5rem;padding-top:0.4rem;border-top:1px solid var(--border);" onclick="event.stopPropagation()">
             <button type="button" class="btn-ghost btn-sm" onclick="publishScheduledPostNow('${file.name}')">🚀 Publish Now</button>
             <button type="button" class="btn-ghost btn-sm" onclick="reschedulePost('${file.name}', '${date}')">📅 Reschedule</button>
           </div>` : ''}
