@@ -453,6 +453,16 @@ for match in scheduled_pattern.finditer(blog):
     published_any = True
     print(f"  ✅ Done: {title}")
 
+    # Check if this post has an adventure entry — warn if not
+    try:
+        adv_check = requests.get(
+            f"{SUPABASE_URL}/rest/v1/adventures",
+            params={'post_url': f'eq.posts/{slug_file}', 'select': 'id'},
+            headers={'apikey': SUPABASE_ANON, 'Authorization': f'Bearer {SUPABASE_ANON}'}
+        )
+        if adv_check.ok and len(adv_check.json()) == 0:
+            print(f"  ⚠ No adventure entry for this post — add via Edit Post → Adventure Details")
+
 if not published_any:
     print("No posts due for publishing today.")
 

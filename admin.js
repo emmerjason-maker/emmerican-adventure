@@ -1258,7 +1258,15 @@ async function handlePublish() {
     // 11c. Save adventure entry to Supabase (if Adventure Details filled in)
     await saveAdvFromPost({ title, slug, date, uploadedImages });
 
-    showStatus(isScheduled ? `✓ Scheduled! Post will go live on ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}` : '✓ Published! Your post will be live in ~60 seconds.', false);
+    const advType = $('advPostType')?.value;
+    const hasLocation = lat && lng;
+    const reminderMsg = !advType && hasLocation
+      ? ' (Tip: fill in Adventure Details next time to add this to the Adventures page & map)'
+      : '';
+
+    showStatus(isScheduled
+      ? `✓ Scheduled! Post will go live on ${new Date(date + 'T00:00:00').toLocaleDateString('en-US', {month:'long', day:'numeric', year:'numeric'})}${reminderMsg}`
+      : `✓ Published! Your post will be live in ~60 seconds.${reminderMsg}`, false);
     resetForm();
 
   } catch (err) {
