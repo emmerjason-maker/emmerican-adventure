@@ -4360,12 +4360,11 @@ function plRenderList() {
 // ── Save ──────────────────────────────────────────────────────────
 async function plSave() {
   const post_url  = $('plPostUrl')?.value;
-  const lat       = parseFloat($('plLat')?.value);
-  const lng       = parseFloat($('plLng')?.value);
-  const editId    = $('plEditId')?.value;
-
   if (!post_url) { showStatus('Please select a post from the dropdown.', true); return; }
-  if (!lat || !lng) { showStatus('Please search and select a location — lat/lng must be filled.', true); return; }
+
+  const lat    = parseFloat($('plLat')?.value) || null;
+  const lng    = parseFloat($('plLng')?.value) || null;
+  const editId = $('plEditId')?.value;
 
   // Get post title from the search input text (used as display label)
   const post_title = $('plPostUrlSearch')?.value.trim() || null;
