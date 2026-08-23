@@ -1253,7 +1253,7 @@ img { max-width: 100%; display: block; }
   gap: 4rem;
   align-items: center;
   min-height: 55vh;
-  padding: 4rem 0 3rem;
+  padding: 4rem 2rem 3rem;
 }
 
 /* ─── Hero Timeline Snippet ──────────────────────────────────────── */
