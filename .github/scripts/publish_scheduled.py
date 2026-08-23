@@ -462,6 +462,8 @@ for match in scheduled_pattern.finditer(blog):
         )
         if adv_check.ok and len(adv_check.json()) == 0:
             print(f"  ⚠ No adventure entry for this post — add via Edit Post → Adventure Details")
+    except Exception:
+        pass
 
 if not published_any:
     print("No posts due for publishing today.")
