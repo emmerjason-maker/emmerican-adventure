@@ -193,6 +193,7 @@ for match in scheduled_pattern.finditer(blog):
         return int(m.group(1)) if m else 0
 
     all_live_sorted = sorted(all_live, key=card_num, reverse=True)
+    all_scheduled   = sorted(all_scheduled, key=lambda c: re.search(r'data-publish-date="([^"]+)"', c).group(1) if re.search(r'data-publish-date="([^"]+)"', c) else '')
 
     # Renumber all cards so Post # always matches date order (oldest=1, newest=N)
     # This fixes numbering drift when posts are inserted or rescheduled
