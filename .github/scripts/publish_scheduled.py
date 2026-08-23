@@ -290,6 +290,24 @@ for match in scheduled_pattern.finditer(blog):
         hero_card, idx, count=1, flags=re.S
     )
 
+    # Update mobile compact card
+    mobile_card = f'''        <!-- Latest post — mobile only -->
+        <div class="hero-latest-mobile">
+          <a href="posts/{slug_file}" class="hero-latest-mobile-card">
+            <div class="hero-latest-mobile-img">
+              {hero_img}
+            </div>
+            <div class="hero-latest-mobile-body">
+              <div class="hero-latest-mobile-label">Latest Post</div>
+              <div class="hero-latest-mobile-title">{esc(title)}</div>
+            </div>
+          </a>
+        </div>'''
+    idx = re.sub(
+        r'        <!-- Latest post — mobile only -->.*?</div>\s*</div>',
+        mobile_card, idx, count=1, flags=re.S
+    )
+
     # ── 4. Update homepage photo grid (6 most recent) ───────────────
     if photo_imgs:
         photo_marker = '<!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->'
