@@ -110,6 +110,42 @@
         <div><span style="color: rgb(245, 240, 232);">There’s nothing quite like a little taste of home when you’re traveling abroad, and our latest family adventure brought us right to a iconic classic: **Randy’s Donuts**!</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">Known for its world-famous giant rooftop donut sign in Los Angeles, Randy’s has brought its famous recipe and bright orange aesthetic all the way to Japan. Seeing the vibrant shop, signature giant hanging donut, and massive display cases stacked high with rows of colorful treats instantly made us feel like we were back in Southern California.</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">Standing in front of the display was a tough decision—there were dozens of options to choose from! After a quick family debate in line, everyone picked out their favorite treat:</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">* **S'mores Donut:** A fluffy base topped with rich chocolate drizzle, toasted marshmallows, and graham cracker crumbs.</span></div><div><span style="font-size: 15.2px;">* **Glazed Bear Claw / Twist:** Golden, flaky, and coated in just the right amount of sweet glaze.</span></div><div><span style="font-size: 15.2px;">* **Candy &amp; Sprinkles:** Cheerful, chocolate-frosted donuts loaded with colorful M&amp;M-style candies and bright pink frosting.</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">Sipping coffee, holding our classic white Randy’s paper bags, and indulging in these giant, soft donuts was the perfect sweet pitstop. It’s amazing how food can bridge the distance between two places and bring back so many great memories.</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">If you ever spot a Randy’s Donuts while exploring, definitely grab a bag to share—it's sweet, delicious, and totally worth the stop! 🍩✨</span></div>
         
       </div>
+      <div class="post-share">
+        <span class="post-share-label">Share this post</span>
+        <div class="post-share-btns">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener" title="Share on Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            Facebook
+          </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener" title="Share on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          document.getElementById('shareX').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        })();
+        function sharePost() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function(){});
+          } else {
+            navigator.clipboard?.writeText(url).then(function() {
+              alert('Link copied to clipboard!');
+            });
+          }
+        }
+      </script>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
         <a href="../posts/ultimate-comfort-food-a-night-out-at-coco-ichibanya.html" class="read-more small">← Previous: Ultimate Comfort Food: A Night Out at CoCo Ichibanya</a>

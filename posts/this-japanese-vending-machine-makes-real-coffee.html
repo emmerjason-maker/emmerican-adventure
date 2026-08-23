@@ -94,6 +94,42 @@
         <div><span style="font-size: 15.2px;"># This Japanese Vending Machine Makes REAL Coffee ☕🇯🇵</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">If you’ve traveled around Japan, you already know that vending machines (*jidouhanbeiki*) are practically on every corner. From ice-cold green teas to hot canned coffees, they’re an essential part of daily life. But during our latest spot for **Emmerican Adventure**, we ran into a specific type of vending machine that takes Japan’s street-side convenience to an entirely new level: **a machine that grinds and brews REAL fresh coffee right in front of your eyes.**</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">---</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">---</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">## Not Your Average Canned Coffee Machine</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">While canned coffee from Boss or Georgia is iconic in its own right, these specialty cup-dispensing machines (often branded under Georgia or Apex) operate like an automated micro-cafe.</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">Instead of popping out a pre-made aluminum can, the machine goes through an entire freshly brewed drip process:</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">1. **Customization Controls:** Before brewing, you can adjust your preferences right on the control panel—selecting your desired sweetness level, amount of cream/milk, and coffee strength.</span></div><div><span style="font-size: 15.2px;">2. **Watch the Drip:** The machine features a clear glass viewing window illuminated by LED lights. As soon as you press start, you can literally watch the coffee beans get ground, dropped into the filter, and freshly dripped.</span></div><div><span style="font-size: 15.2px;">3. **Automated Door:** Once the pour is complete, the protective glass door opens automatically to reveal a steaming cup of freshly brewed coffee, complete with real crema or microfoam.</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">## Why Japan's Vending Machine Culture Hits Different</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">What makes these machines so memorable for travelers in Japan isn't just the novelty—it's the surprising quality. For around 160 to 200 yen (roughly $1.00 to $1.40 USD), you get a cup of coffee that easily rivals standard coffee shop drip coffee, available 24/7 inside train stations, rest stops, and office buildings.</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">Whether you're grabbing a quick morning pick-me-up before hopping on the Shinkansen or stopping for an afternoon treat while exploring, keeping an eye out for these fresh-drip coffee machines is a must-try experience on your Japan itinerary!</span></div>
         
       </div>
+      <div class="post-share">
+        <span class="post-share-label">Share this post</span>
+        <div class="post-share-btns">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener" title="Share on Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            Facebook
+          </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener" title="Share on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          document.getElementById('shareX').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        })();
+        function sharePost() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function(){});
+          } else {
+            navigator.clipboard?.writeText(url).then(function() {
+              alert('Link copied to clipboard!');
+            });
+          }
+        }
+      </script>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
         <a href="../posts/sizzle-smoke-our-japanese-bbq-night-at-gyu-kaku.html" class="read-more small">← Previous: Sizzle &amp;amp; Smoke: Our Japanese BBQ Night at Gyu-Kaku 🔥🥩</a>

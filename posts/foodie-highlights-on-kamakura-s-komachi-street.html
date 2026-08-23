@@ -98,6 +98,42 @@
 <div class="markdown markdown-main-panel enable-luminous-fast-follows enable-updated-hr-color md-content stronger tutor-markdown-rendering" id="model-response-message-contentr_0cb10cb667331499" aria-busy="false" aria-live="polite" dir="ltr"><h1><p><b>If there is one thing we’ve quickly learned since making the move to Japan, it’s that snacking our way through a historic town is top-tier weekend entertainment.<br><br></b></p><p>We recently spent the day exploring <b>Kamakura</b>, and while the temples and coastal views are stunning, let’s be honest—the food on <b>Komachi-dori (Komachi Street)</b> stole the show! Here is a breakdown of everything we devoured on our latest adventure.<br><b><br>1. The Ultimate Comfort Bowl: Wagyu Gyudon </b><b>🥩</b></p><p>For lunch, we stepped in for something hearty at <b>Kamakura Shinsouen</b>.</p><ul type="disc"><li><b>The Dish:</b> A Kamakura Komachi Street exclusive—<b><span>150g Wagyu Beef Bowl (<i>Wagyu Kiwami Gyudon</i>)</b> for ¥1,800.</span></li><li><b>The Experience:</b> Tender, thin-sliced wagyu simmered with sweet onions over a bed of steamed rice. Rich, melt-in-your-mouth flavor that takes standard beef bowls to an entirely different level.<br><br></li></ul><p><b>2. Crispy Perfection: Japanese Karaage </b><b>🍗</b><b></b></p><p>Of course, no Japanese meal is complete without a side of Japanese fried chicken (<i>Karaage</i>)!</p><ul type="disc"><li><b>The Details:</b> A plate of hot, golden-brown deep-fried chicken served with fresh cabbage salad and a lemon wedge for ¥900.</li><li><b>The Verdict:</b> Super crunchy on the outside, incredibly juicy on the inside, with just the right touch of citrus.<br><br></li></ul></h1><h1><p><b>3. Sweet &amp; Savory Street Treats: Dango</b></p><p>You can’t walk down Komachi Street without smelling warm, grilled rice cakes. We stopped at a street stall for some fresh dango.</p><ul type="disc"><li><b>The Pick:</b> <i>Kuromitsu Mitarashi</i> (Brown sugar soy sauce glazed dango) for just ¥210.</li><li><b>The Verdict:</b> Warm, chewy, perfectly sweet with that savory soy glaze drip. It’s impossible to eat cleanly, but worth every sticky finger!<br><br></li></ul></h1><h1><p>Quick Tips if You Visit Komachi Street:</p><ul type="disc"><li><b>Eat as you go (sort of):</b> While street food is everywhere, remember to stand near the stall/vendor while eating rather than walking down the street—it’s local etiquette!</li><li><b>Bring Yen:</b> Many smaller street vendors prefer cash for quick ¥200–¥300 items.<br><br></li></ul><p><i>Where should our taste buds take us next? Let us know your favorite spots in Kanagawa!</i></p></h1></div>
         
       </div>
+      <div class="post-share">
+        <span class="post-share-label">Share this post</span>
+        <div class="post-share-btns">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener" title="Share on Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            Facebook
+          </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener" title="Share on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          document.getElementById('shareX').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        })();
+        function sharePost() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function(){});
+          } else {
+            navigator.clipboard?.writeText(url).then(function() {
+              alert('Link copied to clipboard!');
+            });
+          }
+        }
+      </script>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
         <a href="../posts/the-ultimate-summer-day-out-at-soleil-hill.html" class="read-more small">← Previous: The Ultimate Summer Day Out at Soleil Hill! 🌻🎢</a>

@@ -90,6 +90,42 @@
 <h2>Preparing for Japan: Charley’s Big Vet Day!</h2><p>It is officially crunch time for our international move! As many of you know, bringing a dog to Japan is a process that requires a lot of careful planning, strict timelines, and a whole lot of paperwork. Today was a major milestone for our sweet girl, Charley, as we checked several critical boxes on our pre-travel to-do list.</p><p><br></p><p>We headed into the vet this morning to ensure everything is perfectly aligned for our upcoming adventure. Here is a breakdown of what Charley got done today:</p><p><br></p><ul><li><p><b>FAVN Testing:</b> This was the main event! We have officially submitted her sample for the Fluorescent Antibody Virus Neutralization (FAVN) test. This test is essential to prove that her rabies vaccination is effective before we can clear her for entry into Japan. Now, the waiting game begins for those results!</p></li><li><p><b>Rabies Booster:</b> To ensure everything is in strict accordance with the regulations, Charley received a second rabies dose. We made sure it was documented exactly as required—complete with the all-important "blue ink" signature to ensure the paperwork is flawless.</p></li><li><p><b>Preventative Care:</b> While we were there, we also kept up with her standard health needs. She received her <b>DAPv</b>(Distemper, Adenovirus, Parvovirus) booster to keep her protected, and another <b>Cytopoint</b> injection to keep her comfortable and itch-free.</p></li></ul><h3>What’s Next?</h3><p>With today’s appointments behind us, our focus shifts to the waiting period. Once those FAVN results come back in, we are one giant step closer.</p><p>The final piece of this puzzle will be our follow-up appointment to secure her official health certificate. Per the regulations, this must be completed within 10 days of our arrival in Japan, so we are keeping a very close eye on the calendar!</p><p><br></p><p>It’s been a busy day, but we are so proud of how well Charley handled it all. One step closer to our new home in Japan!</p>
         
       </div>
+      <div class="post-share">
+        <span class="post-share-label">Share this post</span>
+        <div class="post-share-btns">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener" title="Share on Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            Facebook
+          </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener" title="Share on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          document.getElementById('shareX').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        })();
+        function sharePost() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function(){});
+          } else {
+            navigator.clipboard?.writeText(url).then(function() {
+              alert('Link copied to clipboard!');
+            });
+          }
+        }
+      </script>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
         <a href="../posts/summer-fun-at-the-nas-jax-pool.html" class="read-more small">← Previous: Summer Fun at the NAS Jax Pool!</a>

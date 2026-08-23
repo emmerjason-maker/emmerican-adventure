@@ -103,6 +103,42 @@
 <h1>Ascending an Icon: What It’s Really Like Inside Tokyo Tower! 🗼</h1><br>If you’re planning a trip to Japan, standing beneath the iconic red-and-white lattice of <b>Tokyo Tower</b> is almost certainly on your travel bucket list. Standing at 333 meters, this classic landmark has defined the Tokyo skyline since 1958.<br>We recently visited Tokyo Tower on a bright, sunny day—and captured the whole journey in our latest YouTube Short! Here’s your ultimate guide to visiting Tokyo Tower, what to expect inside, and how to make the most of your views over the city.<br><h2>1. Arriving &amp; Beating the Summer Heat</h2>As you approach Tokyo Tower from street level [], the sheer scale of the structure is breathtaking. On hot Tokyo summer days, the venue sets up cooling mist stations around the grounds near the entrance []—a lifesaver before you head inside!<br><h2>2. Tickets &amp; Pricing Breakdown</h2>When entering FootTown (the building directly beneath the tower), head toward the main ticketing hall []. Tokyo Tower offers a few observation options depending on how high you want to go:<br><ul><li><b>Main Deck (150m):</b><br><ul><li>Adults: ¥1,500<br></li><li>High School: ¥1,200<br></li><li>Elementary / Junior High: ¥900<br></li><li>Children (4+): ¥600<br></li></ul></li><li><b>Top Deck Tour (250m):</b> Includes an audio guide, photo service, and access to the upper observation deck (¥3,500 for adults).<br></li></ul>We opted for the <b>Main Deck Ticket</b> [], which delivers fantastic 360-degree panoramic views of Tokyo without needing advance reservations for the top tour!<br><h2>3. History Alley &amp; Construction Marvels</h2>Before boarding the elevator, you'll walk through <b>Histories Alley</b> []. This exhibit gives a fascinating look into the tower's history:<br><ul><li><b>Scale Models:</b> Detailed 1:20 antenna models showing how broadcasting signals operate [].<br></li><li><b>Archival Photography:</b> Historic black-and-white photos documenting the brave steeplejacks and steelworkers who assembled the tower by hand in the late 1950s [].<br></li></ul><h2>4. The Glass Elevator Experience</h2>The ride up to the 150-meter Main Deck is an experience in itself []. The elevators feature glass panels facing inward toward the tower, giving you an up-close look at the crisscrossing red steel beams as you rise above the city [].<br><h2>5. 360° Views Over Tokyo</h2>Stepping onto the observation deck reveals sprawling views in every direction []:<br><ul><li><b>Historic Landmarks:</b> Look straight down to spot <b>Zojoji Temple</b> nestled amidst green trees right next to the tower [].<br></li><li><b>Tokyo Bay &amp; Rainbow Bridge:</b> On clear days, you can see all the way out to Tokyo Bay and the Odaiba waterfront [].<br></li><li><b>Interactive View Guides:</b> NFC/QR code stickers on the windows let you tap your phone for digital guides explaining what buildings and landmarks you're looking at [].<br></li><li><b>Look Down!</b> Don't miss the glass floor sections where you can look straight down to see the shadow of Tokyo Tower cast over the grounds below [].<br></li></ul><h2>Practical Tips for Visitors</h2><ol start="1"><li><b>Best Time to Visit:</b> Mid-afternoon allows you to catch daylight views, enjoy the historical displays, and watch the city transitions into evening light.<br></li><li><b>Nearest Stations:</b> Walkable from <b>Akabanebashi Station</b> (Oedo Line), <b>Kamiyacho Station</b> (Hibiya Line), or <b>Onarimon Station</b> (Mita Line).<br></li><li><b>Don't Forget FootTown:</b> The base of the tower is packed with souvenir shops, character cafes, and neon photo-ops [].<br></li></ol><h3>Watch the Short!</h3>Check out our full experience in motion here:<br>👉 <b></b><br><br>
         
       
+      <div class="post-share">
+        <span class="post-share-label">Share this post</span>
+        <div class="post-share-btns">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener" title="Share on Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            Facebook
+          </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener" title="Share on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          document.getElementById('shareX').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        })();
+        function sharePost() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function(){});
+          } else {
+            navigator.clipboard?.writeText(url).then(function() {
+              alert('Link copied to clipboard!');
+            });
+          }
+        }
+      </script>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
         <a href="../posts/exploring-kamakura-the-ultimate-easy-day-trip-from-tokyo.html" class="read-more small">← Previous: Exploring Kamakura: The Ultimate Easy Day Trip from Tokyo ⛩️🌊</a>

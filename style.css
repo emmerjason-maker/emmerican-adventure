@@ -1500,3 +1500,49 @@ img { max-width: 100%; display: block; }
 .coming-soon-item:last-child { border-bottom: none; }
 .coming-soon-title { color: var(--ink); flex: 1; }
 .coming-soon-date { color: var(--ink-faint); white-space: nowrap; font-size: 0.78rem; }
+
+/* ── Post share buttons ─────────────────────────────────────────── */
+.post-share {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--paper-dark);
+  margin-top: 2rem;
+}
+.post-share-label {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  flex-shrink: 0;
+}
+.post-share-btns {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.share-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.9rem;
+  border: 1px solid var(--paper-dark);
+  border-radius: 2px;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--ink-faint);
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: color 0.2s, border-color 0.2s;
+}
+.share-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+.share-native { display: none; }
+@media (max-width: 900px) {
+  .share-native { display: inline-flex; }
+}

@@ -106,6 +106,42 @@
         <div><div><span style="color: rgb(245, 240, 232);">Ever wondered what it feels like to step straight into a time machine? On our latest adventure, we took a trip to the **Shin-Yokohama Ramen Museum** in Yokohama, Japan—a place that transports you back to 1958, the year instant ramen was invented.</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">As soon as you head downstairs, you’re immersed in a breathtaking, two-story replica of post-war Showa-era Tokyo. The glowing neon shop signs, narrow back alleys, vintage phone booths, and nostalgic retro advertisements make you feel like you’ve stepped onto an active historic movie set.</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">---</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">**The Ultimate Retro Foodie Experience at Komurasaki**</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">After exploring the alleys, it was time for the main event: **Ramen!**</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">The museum hosts famous ramen shops from across Japan, and we stopped at **Komurasaki**, a legendary spot originally from Kumamoto:</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">* **Ordering retro-style:** We grabbed our meal tickets using ticket machines outside the shop before heading over to the counter.</span></div><div><span style="font-size: 15.2px;">* **Watching the masters at work:** We got a front-row seat watching the chefs prepare fresh, steaming bowls right in the open kitchen.</span></div><div><span style="font-size: 15.2px;">* **The verdict:** Komurasaki’s signature Kumamoto-style tonkotsu broth with roasted garlic oil, tender chashu pork, wood-ear mushrooms, and perfectly cooked noodles made for pure comfort food heaven!</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">---</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">If you are traveling through Japan and love a mix of history, unique ambiance, and mouth-watering food, the Shin-Yokohama Ramen Museum is an absolute must-add to your bucket list. It’s not just dinner—it’s a full-on journey back in time!</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">Check out the full vibe in our latest YouTube Short on the channel, and let us know: what’s your ultimate comfort food when you travel?</span></div><div><span style="font-size: 15.2px;"><br></span></div><div><span style="font-size: 15.2px;">---</span></div></div>
         
       </div>
+      <div class="post-share">
+        <span class="post-share-label">Share this post</span>
+        <div class="post-share-btns">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener" title="Share on Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            Facebook
+          </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener" title="Share on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          document.getElementById('shareX').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        })();
+        function sharePost() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function(){});
+          } else {
+            navigator.clipboard?.writeText(url).then(function() {
+              alert('Link copied to clipboard!');
+            });
+          }
+        }
+      </script>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
         <a href="../posts/ultimate-comfort-food-a-night-out-at-coco-ichibanya.html" class="read-more small">← Previous: Ultimate Comfort Food: A Night Out at CoCo Ichibanya</a>

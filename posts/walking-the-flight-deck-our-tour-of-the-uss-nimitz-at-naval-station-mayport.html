@@ -115,6 +115,42 @@
 <p>We recently had an absolutely incredible opportunity to get an up-close look at naval history and cutting-edge aviation engineering. We got to tour the legendary aircraft carrier <b>USS Nimitz (CVN 68)</b> while it was docked at Naval Station Mayport!</p><p>Stepping onto the pier and seeing the sheer scale of the ship for the first time is hard to put into words. It is a floating city.</p><h2>Standing Next to a Giant</h2><p>Before even heading up to the flight deck, just walking along the pier gives you an intense appreciation for the engineering behind a Nimitz-class carrier. Looking up at the massive hull, the hangar bay doors, and the towering island superstructure adorned with its famous number 68 makes you feel incredibly small.</p><h2>The Ultimate Flight Deck Experience</h2><p>Once we made our way up to the flight deck, the true scale of the carrier’s operations became clear. The massive, open expanse of the deck stretches out toward the horizon, and looking down the runway gives you a firsthand perspective of where the magic happens.</p><p>The "island"—the command center of the ship—rises high above the deck. Standing right next to it, you can see the intricate web of radars, communication arrays, and the giant "68" designation painted on the side.</p><h2>Up Close with Naval Aviation</h2><p>The absolute highlight for us was getting to see the aircraft currently parked on the deck. We were lucky enough to check out an incredible mix of traditional manned fighters and next-generation tech:</p><ul><li><p><b>The F/A-18 Super Hornet:</b> Seeing these iconic fighter jets chained down to the flight deck is unforgettable. We got to see a couple of different Super Hornets up close, including jet number 303 and jet number 301, showcasing their sleek design and the rugged hardware used to secure them.</p></li><li><p><b>The MQ-25 Stingray:</b> This was a massive treat! We spotted the Boeing MQ-25 drone resting on the deck. Seeing this cutting-edge, unmanned carrier-aviation refueling platform in person felt like looking straight into the future of naval operations.</p></li><li><p><b>MH-60R Seahawk Helicopter:</b> No carrier deck is complete without its rotary wing assets. We stood right beside Navy helicopter number 613, getting a great view of its rotors and tail design against the beautiful blue Mayport sky.</p></li></ul><p>It was an unforgettable day exploring the decks of CVN 68. A huge thank you to everyone who made this tour possible and to the sailors who keep this incredible machine running!</p><p>Have you ever toured an aircraft carrier? Let us know in the comments below!</p>
         
       </div>
+      <div class="post-share">
+        <span class="post-share-label">Share this post</span>
+        <div class="post-share-btns">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener" title="Share on Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            Facebook
+          </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener" title="Share on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          document.getElementById('shareX').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        })();
+        function sharePost() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function(){});
+          } else {
+            navigator.clipboard?.writeText(url).then(function() {
+              alert('Link copied to clipboard!');
+            });
+          }
+        }
+      </script>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
         <a href="../posts/jacksonville-flavors-mastering-the-diy-grill-and-boil.html" class="read-more small">← Previous: Jacksonville Flavors: Mastering the DIY Grill and Boil</a>

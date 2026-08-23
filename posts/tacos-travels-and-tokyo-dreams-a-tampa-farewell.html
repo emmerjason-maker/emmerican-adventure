@@ -106,6 +106,42 @@
       <div class="post-gallery gallery-3"><figure class="gallery-item"><img src="../images/1780972378822-img-2113.jpeg" alt="Tacos, Travels, and Tokyo Dreams: A Tampa Farewell"><figcaption>Tacos, Travels, and Tokyo Dreams: A Tampa Farewell</figcaption></figure><figure class="gallery-item"><img src="../images/1780972380089-img-0038.jpg" alt="Tacos, Travels, and Tokyo Dreams: A Tampa Farewell"><figcaption>Tacos, Travels, and Tokyo Dreams: A Tampa Farewell</figcaption></figure><figure class="gallery-item"><img src="../images/1780972381009-img-3294.jpg" alt="Tacos, Travels, and Tokyo Dreams: A Tampa Farewell"><figcaption>Tacos, Travels, and Tokyo Dreams: A Tampa Farewell</figcaption></figure></div><div class="post-body">
 <h3><p>As July creeps closer and the reality of our upcoming move to Yokosuka sets in, the endless checklists and packing logistics have started to take a backseat to something much heavier: the goodbyes. Or, as I’m trying to frame it, the "see you laters."</p><p>Recently, I met up with David, one of my oldest friends, for dinner at Miguel's down in Tampa. Over plates of Mexican food, the emotional weight of this transition really hit me. How do you adequately prepare to move halfway across the globe? It’s one thing to figure out how to box up your life and ship it across the Pacific; it’s entirely another to sit across from someone you talk to on a daily basis and realize you don't know exactly when you'll share a meal in the same timezone again.</p><p>When you speak to someone every single day, their presence in your life feels permanent and immediate. To suddenly inject a 13-hour time difference and thousands of miles into that dynamic is a tough pill to swallow.</p><p><br></p><p>We spent a lot of the evening looking back at the miles and memories we’ve shared over the years. We've been there for each other through all the biggest milestones—including standing right next to one another as the best men at each other's weddings. Beyond the big life events, we’ve put together a pretty solid travel resume: navigating the neon chaos of Las Vegas, freezing in front of The Bean in Chicago, and walking the monuments up in DC. Through all the life changes, we've always managed to make time for a good trip and to cheer on the Noles together.</p><p><br></p><p>While the physical distance is going to be a massive adjustment, I’m holding onto the hope that this move just opens up a new chapter for our travel record. We’ve conquered some great US cities, but it’s definitely time to add an international destination to the list. I’m already looking forward to the day he can fly out to visit us in Japan, and we can catch up just like we did in Tampa—only next time, maybe over a bowl of authentic ramen instead of tacos.</p></h3>
       </div>
+      <div class="post-share">
+        <span class="post-share-label">Share this post</span>
+        <div class="post-share-btns">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener" title="Share on Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            Facebook
+          </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener" title="Share on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          document.getElementById('shareX').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        })();
+        function sharePost() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function(){});
+          } else {
+            navigator.clipboard?.writeText(url).then(function() {
+              alert('Link copied to clipboard!');
+            });
+          }
+        }
+      </script>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
         <a href="../posts/decluttering-diamond-dirt-and-dinner-the-pcs-countdown-continues.html" class="read-more small">← Previous: Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues</a>

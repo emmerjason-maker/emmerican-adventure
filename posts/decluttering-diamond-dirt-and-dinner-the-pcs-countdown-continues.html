@@ -107,6 +107,42 @@
       <div class="post-gallery gallery-many"><figure class="gallery-item"><img src="../images/1780803463143-0ffc98f8-eac5-466b-a68e-bb65a5e653b4-1-105-c.jpeg" alt="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues"><figcaption>Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues</figcaption></figure><figure class="gallery-item"><img src="../images/1780803464418-6b5c29d5-b997-49f7-991d-7f83dcd642ff-1-105-c.jpeg" alt="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues"><figcaption>Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues</figcaption></figure><figure class="gallery-item"><img src="../images/1780803465402-a2df99ef-1351-4243-8f67-1b620ecd1913-1-105-c.jpeg" alt="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues"><figcaption>Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues</figcaption></figure><figure class="gallery-item"><img src="../images/1780803466272-f4b48abb-9872-4a2d-b2a6-8311d42b9651-1-105-c.jpeg" alt="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues"><figcaption>Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues</figcaption></figure><figure class="gallery-item"><img src="../images/1780803467098-ca13573c-5311-477a-938e-d559e2226085-1-105-c.jpeg" alt="Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues"><figcaption>Decluttering, Diamond Dirt, and Dinner: The PCS Countdown Continues</figcaption></figure></div><div class="post-videos-grid"><div class="post-body">
 <p>The countdown to Japan is officially in double digits, and our days are flying by in a blur of packing tape, baseball dirt, and savory kitchen experiments. Life right now is a delicate balancing act between emptying out our current life and squeezing every last drop of fun out of our remaining time here.</p><p>Here’s a look at what went down today on our Emmerican Adventure.</p><p><br></p><h2>The Great Purge: Round 4,500</h2><p>If you want to know what a looming international PCS looks like, it looks like a mountain of donation bags in the living room and an ongoing internal debate over whether we <i>really</i> need to bring a lifetime supply of random charging cables across the Pacific. Hint: We don't.</p><p>Today was all about the continued purge. We tackled more closets, sorted through drawers, and made yet another run to the local donation center. There is something incredibly liberating about lightening the load, even if the house looks a bit like a construction zone while it's happening. Every bag out the door feels like a step closer to Tokyo.</p><p><br></p><h2>All-Star Season is officially Here ⚾</h2><p>Just because we’re planning a massive move doesn’t mean the sports calendar slows down! The kids are deep into the hustle, and today was all about intense scrimmages to get locked in for the upcoming Little League All-Star tournament.</p><p>There’s nothing quite like the energy of summer ball. The weather is heating up, the dugouts are loud, and the competition is fierce. Watching the kids dig in, make plays, and shake off the rust with their teammates is the perfect reminder of why we love this community so much. Win or lose, these scrimmage games are exactly what they need to get mentally and physically ready for the big tournament ahead.</p><p><br></p><h2>Fueling Up: Pot Stickers &amp; Japchae 🥢</h2><p>After a long day of hauling donation boxes and chasing baseballs under the Florida sun, nobody had the energy for a massive, complicated cleanup—but we still wanted a killer meal.</p><p>Tonight’s menu was a perfect, comforting mashup: crispy pan-fried pot stickers paired with homemade Japchae (Korean glass noodles loaded with stir-fried veggies).</p><blockquote><p><b>Pro-Tip:</b> Getting that perfect crisp-yet-tender texture on the pot stickers is a science, but when you nail it, there's nothing better.</p></blockquote><p>It was the ultimate reward after a high-energy day. Plus, it’s a little sneak peek for our palates as we gear up for all the incredible food adventures waiting for us in Asia later this summer.</p><h3>What’s Next?</h3><p>Tomorrow brings more packing tape, more field time, and hopefully a few more empty shelves. We're taking it one day at a time, making memories, and keeping the adventure alive.</p><p>Thanks for following along on our journey! Drop your best moving tips or your favorite quick weeknight dinner recipes in the comments below.</p><p><br></p><p><i>Until next time,</i> </p><p><b>The Emmers</b></p>
       </div>
+      <div class="post-share">
+        <span class="post-share-label">Share this post</span>
+        <div class="post-share-btns">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener" title="Share on Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            Facebook
+          </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener" title="Share on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          document.getElementById('shareX').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        })();
+        function sharePost() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function(){});
+          } else {
+            navigator.clipboard?.writeText(url).then(function() {
+              alert('Link copied to clipboard!');
+            });
+          }
+        }
+      </script>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
         <a href="../posts/pcs-chronicles-the-medical-milestone.html" class="read-more small">← Previous: PCS Chronicles: The Medical Milestone</a>

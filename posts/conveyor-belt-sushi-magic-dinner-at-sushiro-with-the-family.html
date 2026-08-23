@@ -88,6 +88,42 @@
 <div class="markdown markdown-main-panel enable-luminous-fast-follows enable-updated-hr-color md-content stronger tutor-markdown-rendering" id="model-response-message-contentr_c66a87bd25686967" aria-busy="false" aria-live="polite" dir="ltr"><p>If you're traveling in Japan with family, there is one culinary experience that is an absolute must: <b>conveyor belt sushi (kaitenzushi)</b>! During our recent trip, we stopped by <b>Sushiro (</b><b>スシロー</b><b>)</b>, one of Japan's most famous and popular conveyor belt sushi chains, and it was an absolute blast from start to finish.</p><p><br></p><p><b>🎟️</b><b> Getting Started: Self-Service &amp; Seating</b></p><p>Right when you step into Sushiro, the high-tech, seamless experience begins:</p><ul type="disc"><li><b>Ticketing System:</b> The front entrance features an automated kiosk where you can easily select your language (English is available!) and grab a queue ticket.</li><li><b>The Waiting Game:</b> Overhead screens show ticket numbers and estimated wait times—plus fun interactive games and announcements to keep everyone entertained while waiting for a table.</li><li><b>Finding Your Booth:</b> Once our number (<b>No. 406</b>) was called, we headed straight over to our cozy red booth at Table 46.<br><br></li></ul><p><b>🍵</b><b> DIY Hot Tea &amp; Table Set-Up</b></p><p>Before the food even arrives, setting up your spot is half the fun!</p><ul type="disc"><li><b>Hot Water Spigots:</b> Each table comes equipped with built-in hot water taps.</li><li><b>Matcha Powder:</b> You spoon your own green tea powder right into your cup, fill it with hot water, and stir up fresh hot tea at your convenience.</li><li><b>Sauces galore:</b> On the table, you’ll find different soy sauce options (including sweet soy sauce and low-sodium options) alongside fresh pickled ginger (<i>gari</i>).<br><br></li></ul><p><b>📱</b><b> Ordering via Tablet &amp; The Conveyor Belt</b></p><p>The highlight for the kids (and let’s be honest, adults too!) is ordering from the personal touchscreen tablet mounted right at your booth.</p><ul type="disc"><li><b>Huge Variety:</b> The menu is extensive! Beyond fresh classic sushi like salmon (<i>sake</i>), tuna (<i>maguro</i>), egg (<i>tamago</i>), and corn mayo gunkan, they serve ramen, fried side dishes, and fun desserts.</li><li><b>Express Delivery:</b> Once you tap "Order," your dishes zoom right down the upper conveyor track and stop right at your table number.<br><br></li></ul><p><b>🍨</b><b> Sweet Finish &amp; Easy Checkout</b></p><p>No Sushiro run is complete without dessert! We wrapped up our meal with a delicious iced coffee jelly topped with whipped cream—a total hit.</p><p>When it’s time to head out, the payment process is just as smooth:</p><ol start="1" type="1"><li>Scan your table ticket at the automated checkout kiosk.</li><li>Pay using cash or card.</li><li>Head out with happy, full bellies!</li></ol><p><b>Traveler's Tip:</b> Sushiro is incredibly family-friendly, budget-friendly, and stress-free for non-Japanese speakers thanks to full English language support on both the entry kiosks and ordering tablets!</p><p>What’s your favorite sushi topping to grab off the conveyor belt? Let us know in the comments below! 👇</p></div>
         
       </div>
+      <div class="post-share">
+        <span class="post-share-label">Share this post</span>
+        <div class="post-share-btns">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+            Share
+          </button>
+          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener" title="Share on Facebook">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+            Facebook
+          </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener" title="Share on X">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+        </div>
+      </div>
+      <script>
+        (function() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          document.getElementById('shareX').href = 'https://x.com/intent/tweet?text=' + encodeURIComponent(title) + '&url=' + encodeURIComponent(url);
+        })();
+        function sharePost() {
+          var url   = window.location.href;
+          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
+          if (navigator.share) {
+            navigator.share({ title: title, url: url }).catch(function(){});
+          } else {
+            navigator.clipboard?.writeText(url).then(function() {
+              alert('Link copied to clipboard!');
+            });
+          }
+        }
+      </script>
       <footer class="post-entry-footer">
         <a href="../blog.html" class="read-more small">← Back to Journal</a>
         <a href="../posts/the-ultimate-summer-day-out-at-soleil-hill.html" class="read-more small">← Previous: The Ultimate Summer Day Out at Soleil Hill! 🌻🎢</a>
