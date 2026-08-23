@@ -134,11 +134,11 @@ for match in scheduled_pattern.finditer(blog):
 
     # Build excerpt from post body if not in card
     if excerpt_m and 'Going live on' not in excerpt_m.group(1):
-        excerpt = excerpt_m.group(1).strip()
+        excerpt = excerpt_m.group(1).strip().replace('&nbsp;', ' ').replace('&amp;nbsp;', ' ')
     else:
         body_m = re.search(r'<div class="post-body">(.*?)</div>', post, re.S)
         body_text = strip_tags(body_m.group(1)).strip() if body_m else ''
-        body_text = re.sub(r'\s+', ' ', body_text)
+        body_text = re.sub(r'\s+', ' ', body_text).replace('&nbsp;', ' ').replace('&amp;nbsp;', ' ')
         excerpt = body_text[:140].rsplit(' ', 1)[0] + '…' if len(body_text) > 140 else body_text
 
     # Collect photos from the post
