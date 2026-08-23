@@ -1692,6 +1692,12 @@ img { max-width: 100%; display: block; }
   .hero-latest-mobile { max-width: 100%; }
   .hero-latest-mobile a { max-width: 100%; box-sizing: border-box; }
   .hero-latest-mobile img { max-width: 100%; width: 100%; }
-  .hero-socials { flex-wrap: wrap; gap: 0.75rem 1rem; }
+  /* Socials: icons only, single row */
+  .hero-socials { flex-wrap: nowrap; gap: 1.25rem; }
+  .hero-social-link span, .hero-social-link br { display: none; }
+  .hero-social-link { font-size: 0; gap: 0; }
+  .hero-social-link svg { width: 20px; height: 20px; }
+  /* Hamburger: flush to right edge */
+  .header-inner { padding-right: 0.25rem !important; }
   .translate-toggle { display: none !important; }
 }
