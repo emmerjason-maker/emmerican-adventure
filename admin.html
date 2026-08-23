@@ -303,9 +303,15 @@
       <div id="panelEdit" class="hidden">
         <div class="edit-posts-panel">
           <h2 class="panel-title">Edit Posts</h2>
-          <p class="field-hint" style="margin-bottom:1.5rem;">Click any post to load it into the editor.</p>
+          <div style="display:flex;align-items:center;gap:0.75rem;margin-bottom:1.25rem;">
+            <input type="search" id="postsSearch" class="field-input" placeholder="Search posts…" oninput="filterPostsList(this.value)" style="max-width:320px;margin:0;" />
+            <span id="postsSearchCount" style="font-size:0.75rem;opacity:0.5;white-space:nowrap;"></span>
+          </div>
           <div id="postsList" class="posts-list">
             <p class="preview-empty">Loading posts…</p>
+          </div>
+          <div id="postsShowMore" style="display:none;text-align:center;margin-top:1rem;">
+            <button class="btn-ghost" onclick="showAllPosts()">Show all <span id="postsHiddenCount"></span> older posts ↓</button>
           </div>
         </div>
 

@@ -2045,7 +2045,7 @@ async function loadPostsList() {
     });
 
     list.innerHTML = details.map(({ file, title, postNum, date, isScheduled }) => `
-        <div class="post-list-item" style="flex-direction:column;align-items:stretch;gap:0.3rem;" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
+        <div class="post-list-item" style="flex-direction:column;align-items:stretch;gap:0.3rem;" data-title="${title.toLowerCase()}" data-num="${postNum}" onclick="loadPostForEditing('${file.name}', '${file.sha}')">
           <div style="display:flex;align-items:center;justify-content:space-between;gap:0.4rem;">
             <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
               ${postNum ? `<span class="post-list-num">${postNum}</span>` : ''}
@@ -2061,9 +2061,57 @@ async function loadPostsList() {
           </div>` : ''}
         </div>`).join('');
 
+    // Collapse older posts — show most recent 15, hide the rest
+    const SHOW_DEFAULT = 15;
+    const allItems = list.querySelectorAll('.post-list-item');
+    const showMore = document.getElementById('postsShowMore');
+    const hiddenCount = document.getElementById('postsHiddenCount');
+    const searchCount = document.getElementById('postsSearchCount');
+
+    if (allItems.length > SHOW_DEFAULT) {
+      allItems.forEach((item, i) => {
+        if (i >= SHOW_DEFAULT) item.classList.add('post-list-collapsed');
+      });
+      if (showMore) showMore.style.display = 'block';
+      if (hiddenCount) hiddenCount.textContent = `${allItems.length - SHOW_DEFAULT}`;
+    }
+    if (searchCount) searchCount.textContent = `${allItems.length} posts`;
+
+    // Reset search field
+    const searchEl = document.getElementById('postsSearch');
+    if (searchEl) searchEl.value = '';
+
   } catch (err) {
     list.innerHTML = `<p class="preview-empty" style="color:var(--red)">Error: ${err.message}</p>`;
   }
+}
+
+function filterPostsList(query) {
+  const items = document.querySelectorAll('#postsList .post-list-item');
+  const showMore = document.getElementById('postsShowMore');
+  const searchCount = document.getElementById('postsSearchCount');
+  const q = query.toLowerCase().trim();
+
+  let visible = 0;
+  items.forEach(item => {
+    const title = item.dataset.title || '';
+    const num   = item.dataset.num || '';
+    const match = !q || title.includes(q) || num.toLowerCase().includes(q);
+    item.style.display = match ? '' : 'none';
+    item.classList.remove('post-list-collapsed'); // show all when searching
+    if (match) visible++;
+  });
+
+  if (showMore) showMore.style.display = q ? 'none' : (items.length > 15 ? 'block' : 'none');
+  if (searchCount) searchCount.textContent = q ? `${visible} of ${items.length} posts` : `${items.length} posts`;
+}
+
+function showAllPosts() {
+  document.querySelectorAll('#postsList .post-list-item.post-list-collapsed').forEach(item => {
+    item.classList.remove('post-list-collapsed');
+  });
+  const showMore = document.getElementById('postsShowMore');
+  if (showMore) showMore.style.display = 'none';
 }
 
 // ── Publish a scheduled post immediately ──────────────────────────

@@ -1388,3 +1388,6 @@ select.field-input { cursor: pointer; }
 .adv-star-btn:hover {
   color: var(--gold);
 }
+
+/* ── Post list search + collapse ─────────────────────────────── */
+.post-list-collapsed { display: none !important; }
