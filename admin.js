@@ -472,7 +472,7 @@ async function saveAdvFromPost({ title, slug, date, uploadedImages }) {
 
 function resetAdvFields() {
   if ($('advPostType'))    $('advPostType').value   = '';
-  if ($('advPostPrice'))   $('advPostPrice').value  = 'Budget';
+  if ($('advPostPrice'))   $('advPostPrice').value  = 'budget';
   if ($('advPostCuisine')) $('advPostCuisine').value = '';
   if ($('advPostRating'))  $('advPostRating').value = '';
   if ($('advPostRatingVal')) $('advPostRatingVal').textContent = '';
@@ -1291,8 +1291,10 @@ async function handlePublish() {
     // 11c. Save adventure entry to Supabase (if Adventure Details filled in)
     await saveAdvFromPost({ title, slug, date, uploadedImages });
 
-    const advType = $('advPostType')?.value;
-    const hasLocation = lat && lng;
+    const advType    = $('advPostType')?.value;
+    const postLatVal = parseFloat($('postLat')?.value);
+    const postLngVal = parseFloat($('postLng')?.value);
+    const hasLocation = !isNaN(postLatVal) && !isNaN(postLngVal);
     const reminderMsg = !advType && hasLocation
       ? ' (Tip: fill in Adventure Details next time to add this to the Adventures page & map)'
       : '';
