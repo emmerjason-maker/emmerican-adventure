@@ -4339,12 +4339,14 @@ function plRenderList() {
   }
   list.innerHTML = plAllEntries.map(p => {
     const loc = [p.location_city, p.location_region, p.location_country].filter(Boolean).join(', ');
+    const displayName = p.place_name || p.post_title || p.post_url?.replace('posts/', '').replace('.html', '').replace(/-/g, ' ') || '?';
+    const displayUrl  = p.post_url?.replace('posts/', '') || '';
     return '<div class="adv-admin-entry">' +
       '<div class="adv-admin-entry-info">' +
         '<span class="adv-admin-type">📌</span>' +
         '<div>' +
-          '<strong>' + escHtmlAdmin(p.place_name || p.post_url) + '</strong>' +
-          '<span class="adv-admin-meta">' + escHtmlAdmin(loc) + ' · ' + escHtmlAdmin(p.post_url || '') + '</span>' +
+          '<strong>' + escHtmlAdmin(displayName) + '</strong>' +
+          '<span class="adv-admin-meta">' + escHtmlAdmin(loc) + ' · ' + escHtmlAdmin(displayUrl) + '</span>' +
         '</div>' +
       '</div>' +
       '<div class="adv-admin-actions">' +
@@ -4413,9 +4415,17 @@ async function plSave() {
 function plEdit(id) {
   const p = plAllEntries.find(e => e.id === id);
   if (!p) return;
+
+  // Clear all fields first to prevent stale data from previous edit
+  ['plPlaceName','plCity','plRegion','plCountry','plDate','plLat','plLng','plPlaceId'].forEach(f => {
+    if ($(f)) $(f).value = '';
+  });
+  const plSearch = $('plPlaceSearch');
+  if (plSearch) { plSearch.value = ''; plSearch.dispatchEvent(new Event('input')); }
+
+  // Now populate with the selected entry
   $('plEditId').value      = p.id;
   $('plPostUrl').value     = p.post_url || '';
-  // Pre-fill the search box with the matched post title if available
   if (p.post_url && plPostOptions.length > 0) {
     const match = plPostOptions.find(o => o.value === p.post_url);
     if ($('plPostUrlSearch')) $('plPostUrlSearch').value = match ? match.label : p.post_url;
@@ -4429,13 +4439,8 @@ function plEdit(id) {
   $('plDate').value        = p.visited_date || '';
   $('plLat').value         = p.lat || '';
   $('plLng').value         = p.lng || '';
-  // Set the search field to the saved place name and clear any previous autocomplete state
-  const plSearch = $('plPlaceSearch');
-  if (plSearch) {
-    plSearch.value = p.place_name || '';
-    // Dispatch an input event to reset any autocomplete dropdown
-    plSearch.dispatchEvent(new Event('input'));
-  }
+  if (plSearch) plSearch.value = p.place_name || '';
+
   $('plFormTitle').textContent  = 'Edit Location';
   $('plSaveLabel').textContent  = 'Update Location →';
   $('plCancelBtn').style.display = '';
