@@ -1601,7 +1601,11 @@ img { max-width: 100%; display: block; }
 }
 @media (max-width: 900px) {
   .hero-latest-post { display: none; }
-  .hero-latest-mobile { display: block; }
+  .hero-latest-mobile { display: block !important; }
+  .hero { padding: 3rem 1.25rem 2rem; }
+  .hero-content { padding: 0; }
+  .hero-socials { gap: 1rem; flex-wrap: wrap; }
+  .hero-social-link { font-size: 0.6rem; }
 }
 
 /* ── Hero social links ───────────────────────────────────────── */
