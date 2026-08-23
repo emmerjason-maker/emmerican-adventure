@@ -763,10 +763,10 @@ select.field-input { cursor: pointer; }
   .login-card { padding: 2rem 1.5rem; }
   .admin-header-inner { padding: 0 0.75rem; gap: 0.5rem; }
   .admin-header-actions { gap: 0.4rem; }
-  .admin-header-actions .btn-ghost {
-    padding: 0.35rem 0.6rem;
-    font-size: 0.65rem;
-    letter-spacing: 0.06em;
+  .admin-hdr-btn {
+    padding: 0.3rem 0.5rem !important;
+    font-size: 0.62rem !important;
+    letter-spacing: 0.05em !important;
   }
   .image-item { grid-template-columns: 56px 1fr auto; }
   .image-thumb { width: 56px; height: 42px; }
