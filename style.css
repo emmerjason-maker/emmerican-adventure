@@ -185,12 +185,12 @@ img { max-width: 100%; display: block; }
 
 .hero-title {
   font-family: var(--font-display);
-  font-size: clamp(4rem, 9vw, 8rem);
+  font-size: clamp(3rem, 7vw, 6rem);
   font-weight: 400;
   line-height: 0.95;
   letter-spacing: -0.02em;
   color: var(--ink);
-  margin-bottom: 2rem;
+  margin-bottom: 1.5rem;
   opacity: 0;
   animation: fadeUp 0.9s var(--ease-out) 0.2s forwards;
 }
@@ -1249,7 +1249,7 @@ img { max-width: 100%; display: block; }
 /* ─── Hero Two-Column Layout ─────────────────────────────────────── */
 .hero {
   display: grid;
-  grid-template-columns: 1fr 320px;
+  grid-template-columns: 1fr 420px;
   gap: 4rem;
   align-items: center;
   min-height: 55vh;
@@ -1585,16 +1585,16 @@ img { max-width: 100%; display: block; }
 .hero-latest-card:hover { border-color: var(--red); }
 .hero-latest-img img {
   width: 100%;
-  aspect-ratio: 16/9;
+  aspect-ratio: 4/3;
   object-fit: cover;
   display: block;
 }
 .hero-latest-body {
-  padding: 1rem;
+  padding: 1.25rem;
 }
 .hero-latest-title {
   font-family: var(--font-serif);
-  font-size: 1rem;
+  font-size: 1.2rem;
   font-weight: 400;
   line-height: 1.4;
   margin: 0;
