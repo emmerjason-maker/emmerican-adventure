@@ -4202,6 +4202,7 @@ function plShowMapPreview(lat, lng, label) {
   const inner = $('plMapPreviewInner');
   const coords = $('plMapCoords');
   if (!wrap || !inner) return;
+  if (!lat || !lng || isNaN(lat) || isNaN(lng)) return;
 
   wrap.classList.remove('hidden');
 
@@ -4443,7 +4444,10 @@ function plEdit(id) {
   $('plFormTitle').textContent  = 'Edit Location';
   $('plSaveLabel').textContent  = 'Update Location →';
   $('plCancelBtn').style.display = '';
-  if (p.lat && p.lng) plShowMapPreview(parseFloat(p.lat), parseFloat(p.lng), p.place_name || '');
+  if (p.lat && p.lng) {
+    const lat = parseFloat(p.lat), lng = parseFloat(p.lng);
+    if (!isNaN(lat) && !isNaN(lng)) plShowMapPreview(lat, lng, p.place_name || '');
+  }
 }
 
 // ── Delete ────────────────────────────────────────────────────────
