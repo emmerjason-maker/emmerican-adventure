@@ -1561,3 +1561,44 @@ img { max-width: 100%; display: block; }
 .share-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
 .share-instagram:hover { color: #e1306c; border-color: #e1306c; }
 .share-facebook:hover { color: #1877f2; border-color: #1877f2; }
+
+/* ── Hero latest post card ───────────────────────────────────── */
+.hero-latest-post {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.hero-latest-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--red);
+}
+.hero-latest-card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--paper-dark);
+  transition: border-color 0.2s;
+}
+.hero-latest-card:hover { border-color: var(--red); }
+.hero-latest-img img {
+  width: 100%;
+  aspect-ratio: 16/9;
+  object-fit: cover;
+  display: block;
+}
+.hero-latest-body {
+  padding: 1rem;
+}
+.hero-latest-title {
+  font-family: var(--font-serif);
+  font-size: 1rem;
+  font-weight: 400;
+  line-height: 1.4;
+  margin: 0;
+}
+@media (max-width: 900px) {
+  .hero-latest-post { display: none; }
+}

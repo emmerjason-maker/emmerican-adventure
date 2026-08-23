@@ -268,6 +268,28 @@ for match in scheduled_pattern.finditer(blog):
         featured_new, idx, count=1, flags=re.S
     )
 
+    # ── Update hero latest post card ────────────────────────────────
+    hero_img = f'<img src="{feed_image}" alt="{esc(title)}" />' if feed_image else ''
+    hero_card = f'''      <div class="hero-latest-post">
+        <div class="hero-latest-label">Latest Post</div>
+        <a href="posts/{slug_file}" class="hero-latest-card">
+          <div class="hero-latest-img">{hero_img}</div>
+          <div class="hero-latest-body">
+            <div class="post-meta" style="margin-bottom:0.5rem;">
+              <span class="post-tag">{esc(post_num)}</span>
+              <span class="post-date">{fmt_date}</span>
+            </div>
+            <h3 class="hero-latest-title">{esc(title)}</h3>
+            <span class="read-more small" style="margin-top:0.75rem;display:inline-block;">Read Post →</span>
+          </div>
+        </a>
+      </div>
+    </section>'''
+    idx = re.sub(
+        r'      <div class="hero-latest-post">.*?</section>',
+        hero_card, idx, count=1, flags=re.S
+    )
+
     # ── 4. Update homepage photo grid (6 most recent) ───────────────
     if photo_imgs:
         photo_marker = '<!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->'
