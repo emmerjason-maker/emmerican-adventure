@@ -400,7 +400,10 @@ document.addEventListener('DOMContentLoaded', () => {
           <span class="coming-soon-chevron">›</span>
         </button>
         <div class="coming-soon-drawer" style="display:none;">${items}</div>`;
-      scheduledCards[0].parentNode.insertBefore(pill, scheduledCards[0]);
+
+      // Insert pill at TOP of card list (before first live card), not before scheduled cards
+      const firstCard = document.querySelector('.post-index-card');
+      if (firstCard) firstCard.parentNode.insertBefore(pill, firstCard);
       scheduledCards.forEach(c => { c.style.display = 'none'; });
     }
   });
