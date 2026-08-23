@@ -375,22 +375,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // ── Scheduled Posts — auto-reveal when publish date arrives ──────
 (function() {
   document.addEventListener('DOMContentLoaded', () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    document.querySelectorAll('.post-scheduled[data-publish-date]').forEach(card => {
-      const publishDate = new Date(card.dataset.publishDate + 'T00:00:00');
-      if (publishDate <= today) {
-        // Date has arrived — convert to normal clickable card
-        const slug = card.querySelector('a[href]')?.getAttribute('href');
-        if (slug) {
-          card.classList.remove('post-scheduled');
-          card.removeAttribute('data-publish-date');
-        }
-      }
-    });
-
-    // Build coming-soon pill AFTER reveal check so count is accurate
+    // Build coming-soon pill
     const scheduledCards = document.querySelectorAll('.post-index-card.post-scheduled');
     if (scheduledCards.length > 0) {
       const items = Array.from(scheduledCards).map(card => {
