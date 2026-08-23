@@ -1,4 +1,4 @@
-// BUILD: 2026-08-22-A
+// BUILD: 2026-08-22-B
 /* ═══════════════════════════════════════════════════════════════
    Japan Move — Admin Panel JS
    Multi-image support, rich text editor, YouTube, GitHub publish
@@ -53,29 +53,76 @@ document.addEventListener('DOMContentLoaded', () => {
     showAdmin();
   }
 
-  // Fix encoding corruption on paste — smart quotes and emoji pasted from
-  // AI tools / Word / iOS show as â€™ and ðŸ¡ because the clipboard sends
-  // UTF-8 bytes that get misread as Latin-1. Intercept the paste event,
-  // read the plain text, fix the encoding, and insert clean text instead.
+  // Sanitize paste in body editors — strips Gemini/Apple Notes/Word HTML,
+  // keeps only clean tags: p, b, i, strong, em, h3, ul, ol, li, a, br.
+  // Runs on every paste so formatting junk is never inserted regardless of source.
   ['postBody', 'editBody'].forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
     el.addEventListener('paste', e => {
-      const plain = (e.clipboardData || window.clipboardData)?.getData('text/plain');
-      if (!plain) return; // let browser handle rich paste
-      // Check for UTF-8 mojibake (â€™ pattern) — if found, fix before inserting
-      if (/â€[™œ™]|Ã[––©¼½¾¿]|ðŸ/.test(plain)) {
-        e.preventDefault();
-        try {
-          const bytes = new Uint8Array([...plain].map(c => c.charCodeAt(0)));
-          const fixed = new TextDecoder('utf-8').decode(bytes);
-          document.execCommand('insertText', false, fixed);
-        } catch {
-          document.execCommand('insertText', false, plain);
+      e.preventDefault();
+
+      // Prefer plain text if available and HTML isn't needed
+      const plain = (e.clipboardData || window.clipboardData)?.getData('text/plain') || '';
+      const html  = (e.clipboardData || window.clipboardData)?.getData('text/html')  || '';
+
+      let clean = '';
+
+      if (html) {
+        // Parse HTML and keep only safe tags
+        const tmp = document.createElement('div');
+        tmp.innerHTML = html;
+
+        // Remove script/style/meta elements entirely
+        tmp.querySelectorAll('script,style,meta,link,head').forEach(el => el.remove());
+
+        // Strip all attributes except href on <a> and src on <img>
+        tmp.querySelectorAll('*').forEach(node => {
+          const keep = [];
+          if (node.tagName === 'A' && node.getAttribute('href')) {
+            keep.push(['href', node.getAttribute('href')]);
+            keep.push(['target', '_blank']);
+          }
+          // Remove all attributes then restore safe ones
+          while (node.attributes.length > 0) node.removeAttribute(node.attributes[0].name);
+          keep.forEach(([k,v]) => node.setAttribute(k, v));
+        });
+
+        // Replace non-semantic tags with their text content
+        const KEEP = new Set(['P','B','I','STRONG','EM','H3','H2','UL','OL','LI','A','BR','BLOCKQUOTE']);
+        tmp.querySelectorAll('*').forEach(node => {
+          if (!KEEP.has(node.tagName)) {
+            // Replace with children (unwrap)
+            node.replaceWith(...node.childNodes);
+          }
+        });
+
+        // Fix encoding mojibake if present
+        clean = tmp.innerHTML
+          .replace(/&nbsp;/g, ' ')
+          .replace(/\u00a0/g, ' ')
+          .replace(/\s{2,}/g, ' ')
+          .trim();
+
+        // If result is effectively just text (no real tags), use plain text path
+        if (!/<(p|h[23]|ul|ol|li|b|strong|em|i|a)\b/i.test(clean)) {
+          clean = '';
         }
-        return;
       }
-      // No mojibake detected — let the browser handle it normally
+
+      if (!clean && plain) {
+        // Convert plain text: blank lines → paragraphs
+        clean = plain
+          .split(/\n\n+/)
+          .map(para => `<p>${para.replace(/\n/g, '<br>')}</p>`)
+          .join('');
+      }
+
+      if (clean) {
+        document.execCommand('insertHTML', false, clean);
+      } else if (plain) {
+        document.execCommand('insertText', false, plain);
+      }
     });
   });
 });
