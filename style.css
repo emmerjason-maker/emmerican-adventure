@@ -1542,6 +1542,7 @@ img { max-width: 100%; display: block; }
   transition: color 0.2s, border-color 0.2s;
 }
 .share-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
+.share-instagram:hover { color: #e1306c; border-color: #e1306c; }
 .share-native { display: none; }
 @media (max-width: 900px) {
   .share-native { display: inline-flex; }
