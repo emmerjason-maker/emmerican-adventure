@@ -194,6 +194,37 @@ for match in scheduled_pattern.finditer(blog):
 
     all_live_sorted = sorted(all_live, key=card_num, reverse=True)
 
+    # Renumber all cards so Post # always matches date order (oldest=1, newest=N)
+    # This fixes numbering drift when posts are inserted or rescheduled
+    total = len(all_live_sorted) + len(all_scheduled)
+    for i, card in enumerate(all_live_sorted):
+        correct_num = total - i  # newest live post gets highest number
+        actual_num  = card_num(card)
+        if actual_num != correct_num:
+            all_live_sorted[i] = re.sub(r'Post #\d+', f'Post #{correct_num}', card)
+            # Also fix the post file
+            slug_m = re.search(r'href="posts/([^"]+)"', card)
+            if slug_m and os.path.exists(f'posts/{slug_m.group(1)}'):
+                post_content = read(f'posts/{slug_m.group(1)}')
+                post_content = re.sub(r'<span class="post-tag">Post #\d+</span>',
+                                      f'<span class="post-tag">Post #{correct_num}</span>',
+                                      post_content)
+                write(f'posts/{slug_m.group(1)}', post_content)
+                print(f'  ✓ Renumbered posts/{slug_m.group(1)[:40]} → Post #{correct_num}')
+    for i, card in enumerate(all_scheduled):
+        correct_num = len(all_scheduled) - i  # relative position among scheduled
+        # Scheduled cards use hidden span — renumber based on date order
+        date_m = re.search(r'data-publish-date="([^"]+)"', card)
+        if date_m:
+            sched_sorted = sorted(all_scheduled, key=lambda c: re.search(r'data-publish-date="([^"]+)"', c).group(1) if re.search(r'data-publish-date="([^"]+)"', c) else '')
+            for j, sc in enumerate(sched_sorted):
+                sn = len(all_live_sorted) + j + 1
+                actual = re.search(r'Post #(\d+)', sc)
+                if actual and int(actual.group(1)) != sn:
+                    sched_sorted[j] = re.sub(r'Post #\d+', f'Post #{sn}', sc)
+            all_scheduled = sched_sorted
+            break
+
     # Find the block containing all cards and replace it
     first_card_start = re.search(r'    <article class="post-index-card', blog)
     last_card_end    = blog.rfind('    </article>\n') + len('    </article>\n')
