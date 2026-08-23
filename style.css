@@ -1602,10 +1602,13 @@ img { max-width: 100%; display: block; }
 @media (max-width: 900px) {
   .hero-latest-post { display: none; }
   .hero-latest-mobile { display: block !important; }
-  .hero { padding: 3rem 1.25rem 2rem; }
+  .hero { padding: 3rem 1.75rem 2rem; }
   .hero-content { padding: 0; }
   .hero-socials { gap: 1rem; flex-wrap: wrap; }
   .hero-social-link { font-size: 0.6rem; }
+  .hero-latest-mobile-img { width: 110px; height: 82px; }
+  .hero-latest-mobile-title { font-size: 1rem; }
+  .hero-latest-mobile-card { padding: 1rem; gap: 1rem; }
 }
 
 /* ── Hero social links ───────────────────────────────────────── */
