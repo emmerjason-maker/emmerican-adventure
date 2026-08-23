@@ -1560,7 +1560,4 @@ img { max-width: 100%; display: block; }
 }
 .share-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
 .share-instagram:hover { color: #e1306c; border-color: #e1306c; }
-.share-native { display: none; }
-@media (max-width: 900px) {
-  .share-native { display: inline-flex; }
-}
+.share-facebook:hover { color: #1877f2; border-color: #1877f2; }

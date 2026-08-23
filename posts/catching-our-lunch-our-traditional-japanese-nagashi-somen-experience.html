@@ -113,7 +113,7 @@
       <div class="post-share">
         <span class="post-share-label">Share this post</span>
         <div class="post-share-btns">
-          <button class="share-btn share-native" onclick="sharePost()" title="Share">
+          <button class="share-btn share-native" onclick="sharePost()" title="Share anywhere">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
             Share
           </button>
@@ -130,11 +130,10 @@
       <script>
         (function() {
           var url = window.location.href;
-          var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
           document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
         })();
         function sharePost() {
-          var url = window.location.href;
+          var url   = window.location.href;
           var title = document.querySelector('.post-entry-title')?.textContent?.trim() || document.title;
           if (navigator.share) {
             navigator.share({ title: title, url: url }).catch(function(){});
