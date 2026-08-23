@@ -913,8 +913,11 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
         }
       </script>
       <footer class="post-entry-footer">
-        <a href="../blog.html" class="read-more small">← Back to Journal</a>
-        ${prevPostHtml}
+        <a href="../blog.html" class="post-nav-back">← Back to Journal</a>
+        <div class="post-nav-row">
+          ${prevPostHtml ? `<a href="../posts/${prevSlug}" class="post-nav-prev">← ${escHtml(prevTitle)}</a>` : '<span></span>'}
+          <span></span>
+        </div>
       </footer>
       <div class="post-comments">
         <div id="disqus_thread"></div>
