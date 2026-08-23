@@ -296,6 +296,12 @@ select.field-input { cursor: pointer; }
   background: var(--success);
   color: #fff;
   text-align: center;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 9999;
+  box-shadow: 0 -2px 12px rgba(0,0,0,0.2);
 }
 .status-bar.error { background: var(--red); }
 
