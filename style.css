@@ -1704,3 +1704,39 @@ img { max-width: 100%; display: block; }
   .header-inner { padding-right: 0.25rem !important; }
   .translate-toggle { display: none !important; }
 }
+
+/* ── Ko-fi button ─────────────────────────────────────────────── */
+.post-kofi {
+  padding: 1.5rem 0;
+  border-top: 1px solid var(--paper-dark);
+  margin-top: 1rem;
+  text-align: center;
+}
+.kofi-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  background: #ff5e5b;
+  color: #fff;
+  border-radius: 4px;
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transition: opacity 0.2s;
+}
+.kofi-btn:hover { opacity: 0.85; }
+.kofi-footer-link {
+  display: block;
+  text-align: center;
+  color: var(--ink-faint);
+  text-decoration: none;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.75rem;
+  transition: color 0.2s;
+}
+.kofi-footer-link:hover { color: #ff5e5b; }
