@@ -1741,3 +1741,19 @@ img { max-width: 100%; display: block; }
   transition: color 0.2s;
 }
 .kofi-footer-link:hover { color: #ff5e5b; }
+
+/* ── Footer social links with icons ─────────────────────────── */
+.footer-social-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: rgba(245,240,232,0.5);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+.footer-social-link:hover { color: var(--white); }
+.footer-social-link svg { flex-shrink: 0; }
