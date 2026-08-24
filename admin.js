@@ -119,6 +119,10 @@ document.addEventListener('DOMContentLoaded', () => {
       }
 
       if (clean) {
+        // Fix UTF-8 mojibake from Gemini/Word paste
+        clean = clean.replace(/â€™/g,"'").replace(/â€œ/g,'"').replace(/â€/g,'"')
+                     .replace(/â€"/g,'—').replace(/â€"/g,'–').replace(/â€¦/g,'…')
+                     .replace(/Â /g,' ').replace(/Â/g,'');
         document.execCommand('insertHTML', false, clean);
       } else if (plain) {
         document.execCommand('insertText', false, plain);
