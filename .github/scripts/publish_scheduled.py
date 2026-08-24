@@ -196,10 +196,13 @@ for match in scheduled_pattern.finditer(blog):
     all_scheduled   = sorted(all_scheduled, key=lambda c: re.search(r'data-publish-date="([^"]+)"', c).group(1) if re.search(r'data-publish-date="([^"]+)"', c) else '')
 
     # Renumber all cards so Post # always matches date order (oldest=1, newest=N)
-    # This fixes numbering drift when posts are inserted or rescheduled
-    total = len(all_live_sorted) + len(all_scheduled)
+    # Live posts are numbered 1..n_live (oldest=1, newest=n_live).
+    # Scheduled posts continue from n_live+1 upward.
+    n_live  = len(all_live_sorted)
+    n_sched = len(all_scheduled)
+    total   = n_live + n_sched
     for i, card in enumerate(all_live_sorted):
-        correct_num = total - i  # newest live post gets highest number
+        correct_num = n_live - i  # newest live post gets n_live, oldest gets 1
         actual_num  = card_num(card)
         if actual_num != correct_num:
             all_live_sorted[i] = re.sub(r'Post #\d+', f'Post #{correct_num}', card)
@@ -314,27 +317,35 @@ for match in scheduled_pattern.finditer(blog):
         photo_marker = '<!-- ====== NEW PHOTOS INSERTED ABOVE THIS LINE ====== -->'
         grid_open    = '<div class="photo-grid">'
         if photo_marker in idx:
-            # Extract existing photo paths from current grid
-            grid_start  = idx.find(grid_open)
-            marker_pos  = idx.find(photo_marker)
+            # Extract existing photo path+caption pairs from current grid
+            grid_start   = idx.find(grid_open)
+            marker_pos   = idx.find(photo_marker)
             grid_section = idx[grid_start:marker_pos]
-            existing_paths = re.findall(r'<img src="([^"]+)"', grid_section)
+            existing_items = re.findall(
+                r'data-caption="([^"]+)"[^>]*>\s*<img src="([^"]+)"', grid_section
+            )
+            existing_captions = {path: cap for cap, path in existing_items}
+            existing_paths    = [path for _, path in existing_items]
 
-            # Prepend new, dedup, keep 6
+            # Prepend new photos, dedup, keep 6; preserve original captions for older photos
             seen = set()
-            final_paths = []
-            for p in list(photo_imgs) + existing_paths:
+            final_items = []  # list of (path, caption)
+            for p in photo_imgs:
                 if p not in seen:
                     seen.add(p)
-                    final_paths.append(p)
-            final_paths = final_paths[:6]
+                    final_items.append((p, title))
+            for p in existing_paths:
+                if p not in seen:
+                    seen.add(p)
+                    final_items.append((p, existing_captions.get(p, title)))
+            final_items = final_items[:6]
 
             # Rebuild grid
             grid_items = '\n'.join(
-                f'        <div class="photo-item" data-caption="{esc(title)}">\n'
-                f'          <img src="{esc(p)}" alt="{esc(title)}" />\n'
+                f'        <div class="photo-item" data-caption="{esc(cap)}">\n'
+                f'          <img src="{esc(p)}" alt="{esc(cap)}" />\n'
                 f'        </div>'
-                for p in final_paths
+                for p, cap in final_items
             )
             new_grid = f'{grid_open}\n{grid_items}\n        {photo_marker}'
             idx = idx[:grid_start] + new_grid + idx[marker_pos + len(photo_marker):]
@@ -426,31 +437,40 @@ for match in scheduled_pattern.finditer(blog):
         if vid_marker in idx and vid_id not in idx:
             grid_start = idx.find(grid_open)
             marker_pos = idx.find(vid_marker)
-            grid_section = idx[grid_start:marker_pos]
 
-            # Parse existing video IDs in order
-            existing_ids = re.findall(
-                r'src="https://www\.youtube\.com/embed/([a-zA-Z0-9_-]{11})"', grid_section
-            )
-            existing_titles = re.findall(r'<h3 class="video-title">([^<]+)</h3>', grid_section)
-            existing_descs  = re.findall(r'<p class="video-desc">([^<]+)</p>', grid_section)
+            # The marker sits at the TOP of the grid; all existing cards come
+            # AFTER it. Find the closing </div> of the entire videos-grid div
+            # by scanning forward from the marker for the first line that is
+            # just whitespace + </div> at the 6-space indent level.
+            grid_close_m = re.search(r'\n      </div>', idx[marker_pos:])
+            if not grid_close_m:
+                print("  ⚠ Could not find video grid closing tag — skipping grid update")
+            else:
+                grid_close = marker_pos + grid_close_m.start()
+                existing_section = idx[marker_pos + len(vid_marker):grid_close]
 
-            # Prepend new, dedup, keep 6
-            seen = set()
-            cards_data = [{'id': vid_id, 'card_title': esc(title), 'desc': esc(excerpt[:80])}]
-            for i, vid in enumerate(existing_ids):
-                if vid not in seen:
-                    seen.add(vid)
-                    cards_data.append({
-                        'id': vid,
-                        'card_title': existing_titles[i] if i < len(existing_titles) else esc(title),
-                        'desc': existing_descs[i] if i < len(existing_descs) else '',
-                    })
-            seen.add(vid_id)
-            cards_data = [c for c in cards_data if c['id'] not in seen or c['id'] == vid_id][:6]
+                # Extract existing video IDs, titles, descs in DOM order
+                existing_ids    = re.findall(
+                    r'src="https://www\.youtube\.com/embed/([a-zA-Z0-9_-]{11})"', existing_section
+                )
+                existing_titles = re.findall(r'<h3 class="video-title">([^<]+)</h3>', existing_section)
+                existing_descs  = re.findall(r'<p class="video-desc">([^<]+)</p>', existing_section)
 
-            # Rebuild
-            cards_html = '\n'.join(f"""        <div class="video-card">
+                # Prepend new vid, dedup, keep 6
+                seen = set([vid_id])
+                cards_data = [{'id': vid_id, 'card_title': esc(title), 'desc': fmt_date}]
+                for i, vid in enumerate(existing_ids):
+                    if vid not in seen:
+                        seen.add(vid)
+                        cards_data.append({
+                            'id': vid,
+                            'card_title': existing_titles[i] if i < len(existing_titles) else esc(title),
+                            'desc': existing_descs[i] if i < len(existing_descs) else '',
+                        })
+                cards_data = cards_data[:6]
+
+                # Rebuild entire grid
+                cards_html = '\n'.join(f"""        <div class="video-card">
           <div class="video-embed-wrap">
             <iframe src="https://www.youtube.com/embed/{c['id']}"
               title="{c['card_title']}" frameborder="0"
@@ -464,10 +484,10 @@ for match in scheduled_pattern.finditer(blog):
           </div>
         </div>""" for c in cards_data)
 
-            new_grid = f'{grid_open}\n        {vid_marker}\n{cards_html}\n        '
-            idx = idx[:grid_start] + new_grid + idx[marker_pos + len(vid_marker):]
-            write('index.html', idx)
-            print(f"  ✓ index.html video grid updated")
+                new_grid = f'{grid_open}\n        {vid_marker}\n{cards_html}\n      '
+                idx = idx[:grid_start] + new_grid + idx[grid_close:]
+                write('index.html', idx)
+                print(f"  ✓ index.html video grid updated ({len(cards_data)} cards)")
 
         # videos.html archive — just prepend if not already present
         vids_html = read('videos.html')
