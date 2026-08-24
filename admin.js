@@ -1,4 +1,4 @@
-// BUILD: 2026-08-22-B
+// BUILD: 2026-08-25-A
 /* ═══════════════════════════════════════════════════════════════
    Japan Move — Admin Panel JS
    Multi-image support, rich text editor, YouTube, GitHub publish
@@ -742,10 +742,8 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
     ? new Date(date + 'T12:00:00').toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' })
     : '';
 
-  // Build prev post link if provided
-  const prevPostHtml = (prevPostSlug && prevPostTitle)
-    ? '<a href="../posts/' + escHtml(prevPostSlug) + '.html" class="read-more small">← Previous: ' + escHtml(prevPostTitle) + '</a>'
-    : '';
+  // Whether a previous post exists to link to
+  const hasPrevPost = !!(prevPostSlug && prevPostTitle);
 
   // Build location HTML — supports plain text, URL, or "Label | URL" format
   const postLat = $('postLat')?.value || '';
@@ -804,8 +802,8 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="../style.css" />
-  <link rel="stylesheet" href="../blog.css" />
+  <link rel="stylesheet" href="../style.css?v=2026-08-24o" />
+  <link rel="stylesheet" href="../blog.css?v=2026-08-24o" />
   <link rel="stylesheet" href="../darkmode.css" />
   <meta name="description" content="${escHtml(plainExcerpt)}" />
   <meta name="author" content="Emmerican Adventure" />
@@ -886,17 +884,6 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
       <div class="post-share">
         <span class="post-share-label">Share this post</span>
         <div class="post-share-btns">
-          <button class="share-btn share-native" onclick="sharePost()" title="Share">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
-            Share
-          </button>
-          <a class="share-btn share-facebook" id="shareFacebook" href="#" target="_blank" rel="noopener">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
-            Facebook
-          </a>
-      <div class="post-share">
-        <span class="post-share-label">Share this post</span>
-        <div class="post-share-btns">
           <button class="share-btn share-native" onclick="sharePost()" title="Share anywhere">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
             Share
@@ -908,6 +895,10 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
           <a class="share-btn share-instagram" href="https://www.instagram.com/emmericanadvent" target="_blank" rel="noopener">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
             Instagram
+          </a>
+          <a class="share-btn share-kofi" href="https://ko-fi.com/emmericanadventure" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 9.299-.022 14.856c.054 5.15 3.41 5.043 3.41 5.043h6.5c2.48-.002 2.842-2.684 2.842-2.684s.341 2.684 2.821 2.684h4.701c2.478 0 2.876-2.44 2.876-2.44l1.33-12.703c.069-.538.029-1.171-.621-1.321zm-5.075 10.432c-.148.232-.48.311-.712.163l-4.496-2.917-1.557 1.412c-.194.176-.499.169-.686-.016l-1.22-1.244 3.968-3.609 4.703 3.052c.231.15.31.481.162.712l-.162.447zm1.875-5.407c-.113.26-.41.382-.67.27l-8.418-3.638 8.418-7.673c.258-.235.657-.217.894.04l.67.733c.237.258.22.657-.04.893l-7.38 6.727 7.38 3.19c.259.112.381.41.27.67l-.124.788z"/></svg>
+            Support
           </a>
         </div>
       </div>
@@ -929,7 +920,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
       <footer class="post-entry-footer">
         <a href="../blog.html" class="post-nav-back">← Back to Journal</a>
         <div class="post-nav-row">
-          ${prevPostHtml ? `<a href="../posts/${prevPostSlug}.html" class="post-nav-prev">← ${escHtml(prevPostTitle)}</a>` : '<span></span>'}
+          ${hasPrevPost ? `<a href="../posts/${prevPostSlug}.html" class="post-nav-prev">← ${escHtml(prevPostTitle)}</a>` : '<span></span>'}
           <span></span>
         </div>
       </footer>
@@ -957,9 +948,28 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
         <span class="footer-kanji">日本へ</span>
         <span class="footer-name">Emmerican Adventure</span>
       </div>
-      <div class="footer-copy">© 2026 Emmerican Adventure — Made with 愛 in Jacksonville, FL.</div>
+      <div class="footer-copy">© 2026 Emmerican Adventure — Made with 愛 in Yokosuka, Japan 🇯🇵</div>
       <div class="footer-links">
-        <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank">YouTube</a>
+        <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank" class="footer-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          YouTube
+        </a>
+        <a href="https://www.instagram.com/emmericanadvent" target="_blank" class="footer-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          Instagram
+        </a>
+        <a href="https://www.tiktok.com/@emmericanadvent" target="_blank" class="footer-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>
+          TikTok
+        </a>
+        <a href="https://www.facebook.com/emmericanadventure" target="_blank" class="footer-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          Facebook
+        </a>
+        <a href="https://ko-fi.com/emmericanadventure" target="_blank" class="footer-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 9.299-.022 14.856c.054 5.15 3.41 5.043 3.41 5.043h6.5c2.48-.002 2.842-2.684 2.842-2.684s.341 2.684 2.821 2.684h4.701c2.478 0 2.876-2.44 2.876-2.44l1.33-12.703c.069-.538.029-1.171-.621-1.321zm-5.075 10.432c-.148.232-.48.311-.712.163l-4.496-2.917-1.557 1.412c-.194.176-.499.169-.686-.016l-1.22-1.244 3.968-3.609 4.703 3.052c.231.15.31.481.162.712l-.162.447zm1.875-5.407c-.113.26-.41.382-.67.27l-8.418-3.638 8.418-7.673c.258-.235.657-.217.894.04l.67.733c.237.258.22.657-.04.893l-7.38 6.727 7.38 3.19c.259.112.381.41.27.67l-.124.788z"/></svg>
+          Ko-fi
+        </a>
       </div>
     </div>
   </footer>
@@ -1148,12 +1158,16 @@ async function handlePublish() {
         if (prevRes.ok) {
           const prevJson = await prevRes.json();
           let prevHtml = decodeURIComponent(escape(atob(prevJson.content.replace(/\n/g, ''))));
-          const nextLink = `<a href="../posts/${slug}.html" class="read-more small" style="margin-left:auto;">Next: ${title} →</a>`;
-          // Replace existing next link if present, otherwise insert before </footer>
-          if (prevHtml.includes('style="margin-left:auto;">Next:')) {
-            prevHtml = prevHtml.replace(/<a href[^>]+style="margin-left:auto;">Next:[^<]+<\/a>/, nextLink);
+          const nextLink = `<a href="../posts/${slug}.html" class="post-nav-next">${escHtml(title)} →</a>`;
+          // Fill the empty "next" slot inside .post-nav-row, or replace an
+          // existing next link if one is already there (e.g. re-publish).
+          if (/<a[^>]+class="post-nav-next"[^>]*>.*?<\/a>/.test(prevHtml)) {
+            prevHtml = prevHtml.replace(/<a[^>]+class="post-nav-next"[^>]*>.*?<\/a>/, nextLink);
+          } else if (/<div class="post-nav-row">[\s\S]*?<span><\/span>\s*<\/div>/.test(prevHtml)) {
+            prevHtml = prevHtml.replace(/<span><\/span>(\s*)<\/div>/, `${nextLink}$1</div>`);
           } else {
-            prevHtml = prevHtml.replace('</footer>', nextLink + '\n      </footer>');
+            // Legacy fallback for any post that still has the old flat footer markup
+            prevHtml = prevHtml.replace('</footer>', `      ${nextLink}\n      </footer>`);
           }
           await ghFetch(`contents/posts/${prevPostSlug}.html`, 'PUT', {
             message: `Add "Next" nav link to ${prevPostSlug}`,

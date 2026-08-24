@@ -625,15 +625,12 @@
 
 /* ─── Post footer ───────────────────────────────────────────── */
 .post-entry-footer {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
   padding-top: 2rem;
   border-top: 1px solid var(--paper-dark);
   margin-top: 3rem;
-  flex-wrap: wrap;
 }
-.post-entry-footer a {
+.post-nav-prev,
+.post-nav-next {
   white-space: nowrap;
 }
 
