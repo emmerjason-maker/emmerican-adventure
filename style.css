@@ -391,13 +391,13 @@ img { max-width: 100%; display: block; }
 
 /* ─── Post Entry Footer Nav ─────────────────────────────────────── */
 .post-entry-footer {
-  margin-top: 2rem;
-  padding-top: 1.5rem;
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--paper-dark);
 }
 .post-nav-back {
   display: inline-block;
-  margin-bottom: 1.25rem;
+  margin-bottom: 0.75rem;
   font-family: var(--font-mono);
   font-size: 0.72rem;
   text-transform: uppercase;
@@ -410,7 +410,7 @@ img { max-width: 100%; display: block; }
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1rem;
-  padding-top: 1rem;
+  padding-top: 0.75rem;
   border-top: 1px solid var(--paper-dark);
 }
 .post-nav-prev, .post-nav-next {
@@ -1525,9 +1525,9 @@ img { max-width: 100%; display: block; }
   align-items: center;
   gap: 0.75rem;
   flex-wrap: wrap;
-  padding: 1.5rem 0;
+  padding: 1rem 0;
   border-top: 1px solid var(--paper-dark);
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 .post-share-label {
   font-family: var(--font-mono);
