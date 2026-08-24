@@ -925,7 +925,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
       <footer class="post-entry-footer">
         <a href="../blog.html" class="post-nav-back">← Back to Journal</a>
         <div class="post-nav-row">
-          ${prevPostHtml ? `<a href="../posts/${prevSlug}" class="post-nav-prev">← ${escHtml(prevTitle)}</a>` : '<span></span>'}
+          ${prevPostHtml ? `<a href="../posts/${prevPostSlug}.html" class="post-nav-prev">← ${escHtml(prevPostTitle)}</a>` : '<span></span>'}
           <span></span>
         </div>
       </footer>
