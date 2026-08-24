@@ -290,21 +290,22 @@ for match in scheduled_pattern.finditer(blog):
         hero_card, idx, count=1, flags=re.S
     )
 
-    # Update mobile compact card
-    mobile_card = f'''        <!-- Latest post — mobile only -->
-        <div class="hero-latest-mobile">
-          <a href="posts/{slug_file}" class="hero-latest-mobile-card">
-            <div class="hero-latest-mobile-img">
-              {hero_img}
+    # Update mobile compact card — side-by-side layout (image left, text right)
+    img_src = feed_image or ''
+    mobile_card = f'''        <div class="hero-latest-mobile">
+          <a href="posts/{slug_file}" style="display:flex;flex-direction:row;text-decoration:none;color:inherit;border:1px solid rgba(255,255,255,0.12);border-radius:2px;overflow:hidden;background:var(--paper-warm);">
+            <div style="width:42%;flex-shrink:0;">
+              <img src="{img_src}" alt="" style="width:100%;height:100%;object-fit:cover;display:block;min-height:120px;" />
             </div>
-            <div class="hero-latest-mobile-body">
-              <div class="hero-latest-mobile-label">Latest Post</div>
-              <div class="hero-latest-mobile-title">{esc(title)}</div>
+            <div style="flex:1;padding:0.85rem 0.9rem;display:flex;flex-direction:column;justify-content:center;gap:0.35rem;min-width:0;">
+              <div style="font-family:monospace;font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:#eb5757;">Latest Post</div>
+              <div style="font-size:0.92rem;line-height:1.35;font-weight:500;">{esc(title)}</div>
+              <div style="font-size:0.7rem;opacity:0.5;margin-top:0.15rem;">Read Post →</div>
             </div>
           </a>
         </div>'''
     idx = re.sub(
-        r'        <!-- Latest post — mobile only -->.*?</div>\s*</div>',
+        r'        <div class="hero-latest-mobile">.*?</div>\s*</div>',
         mobile_card, idx, count=1, flags=re.S
     )
 

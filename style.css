@@ -1687,7 +1687,10 @@ img { max-width: 100%; display: block; }
 /* ── Mobile hero overflow fix ────────────────────────────────── */
 @media (max-width: 900px) {
   body { overflow-x: hidden; }
-  .hero { overflow: hidden; max-width: 100%; box-sizing: border-box; padding: 2.5rem 1.5rem 1.5rem !important; }
+  .hero { overflow: hidden; max-width: 100%; box-sizing: border-box; padding: 2rem 1.5rem 1rem !important; }
+  .hero-title { font-size: clamp(2rem, 9vw, 3rem) !important; margin-bottom: 0.75rem !important; }
+  .hero-desc { font-size: 0.9rem !important; margin-bottom: 0.5rem !important; }
+  .hero-meta { margin-bottom: 0.5rem !important; }
   .hero-content { max-width: 100%; }
   .hero-latest-mobile { max-width: 100%; }
   .hero-latest-mobile a { max-width: 100%; box-sizing: border-box; }
