@@ -308,7 +308,7 @@ for match in scheduled_pattern.finditer(blog):
           </a>
         </div>'''
     idx = re.sub(
-        r'        <div class="hero-latest-mobile">.*?</div>\s*</div>',
+        r'        <div class="hero-latest-mobile">.*?        </div>',
         mobile_card, idx, count=1, flags=re.S
     )
 
