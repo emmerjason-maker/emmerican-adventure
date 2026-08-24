@@ -378,7 +378,12 @@ document.addEventListener('DOMContentLoaded', () => {
     // Build coming-soon pill
     const scheduledCards = document.querySelectorAll('.post-index-card.post-scheduled');
     if (scheduledCards.length > 0) {
-      const items = Array.from(scheduledCards).map(card => {
+      // Sort by publish date ascending (soonest first)
+      const sorted = Array.from(scheduledCards).sort((a, b) => {
+        const da = a.dataset.publishDate || '', db = b.dataset.publishDate || '';
+        return da.localeCompare(db);
+      });
+      const items = sorted.map(card => {
         const title = card.querySelector('.scheduled-title')?.textContent?.trim() || '';
         const date  = card.querySelector('.post-date')?.textContent?.trim() || '';
         return `<div class="coming-soon-item">
@@ -396,7 +401,7 @@ document.addEventListener('DOMContentLoaded', () => {
           this.setAttribute('aria-expanded', !open);
           this.querySelector('.coming-soon-chevron').textContent = open ? '›' : '‹';
         ">
-          <span class="coming-soon-label">📅 Coming soon — ${scheduledCards.length} post${scheduledCards.length > 1 ? 's' : ''}</span>
+          <span class="coming-soon-label">📅 Coming soon — ${sorted.length} post${sorted.length > 1 ? 's' : ''}</span>
           <span class="coming-soon-chevron">›</span>
         </button>
         <div class="coming-soon-drawer" style="display:none;">${items}</div>`;
