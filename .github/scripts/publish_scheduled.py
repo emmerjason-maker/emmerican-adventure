@@ -302,6 +302,10 @@ for match in scheduled_pattern.finditer(blog):
             </div>
             <div style="flex:1;padding:0.85rem 0.9rem;display:flex;flex-direction:column;justify-content:center;gap:0.35rem;min-width:0;">
               <div style="font-family:monospace;font-size:0.58rem;text-transform:uppercase;letter-spacing:0.1em;color:#eb5757;">Latest Post</div>
+              <div style="display:flex;align-items:center;gap:0.4rem;flex-wrap:wrap;">
+                <span class="post-tag" style="font-size:0.55rem;">{esc(post_num)}</span>
+                <span style="font-family:monospace;font-size:0.58rem;opacity:0.45;">{fmt_date}</span>
+              </div>
               <div style="font-size:0.92rem;line-height:1.35;font-weight:500;">{esc(title)}</div>
               <div style="font-size:0.7rem;opacity:0.5;margin-top:0.15rem;">Read Post →</div>
             </div>
