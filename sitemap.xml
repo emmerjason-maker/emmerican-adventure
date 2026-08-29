@@ -338,4 +338,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <url>
+    <loc>https://emmericanadventure.com/posts/chasing-sunsets-along-the-coast-finding-magic-in-the-unseen-world.html</loc>
+    <lastmod>2026-08-30</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
