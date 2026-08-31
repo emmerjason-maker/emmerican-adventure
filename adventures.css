@@ -660,3 +660,143 @@
 @media (max-width: 640px) {
   .adv-map-embed { height: 280px; }
 }
+
+/* ── NPB Stadium Tour Tracker ─────────────────────────────────────── */
+.stadium-tour-section {
+  background: var(--paper-warm);
+  border-top: 1px solid var(--paper-dark);
+  padding: 4rem 2rem;
+}
+.stadium-tour-inner {
+  max-width: 1100px;
+  margin: 0 auto;
+}
+.stadium-tour-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 2rem;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+}
+.stadium-tour-title {
+  font-family: var(--font-display);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-style: italic;
+  color: var(--ink);
+  margin: 0.25rem 0 0.3rem;
+}
+.stadium-tour-sub {
+  font-size: 0.9rem;
+  color: var(--ink-faint);
+  max-width: 460px;
+}
+.stadium-tour-count {
+  text-align: center;
+  flex-shrink: 0;
+}
+.stadium-count-num {
+  font-family: var(--font-display);
+  font-size: 3.5rem;
+  font-style: italic;
+  color: var(--red);
+  line-height: 1;
+}
+.stadium-count-denom {
+  font-family: var(--font-mono);
+  font-size: 1.1rem;
+  color: var(--ink-faint);
+}
+.stadium-count-label {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  margin-top: 0.2rem;
+}
+.stadium-progress-bar {
+  height: 4px;
+  background: var(--paper-dark);
+  border-radius: 2px;
+  margin-bottom: 2.5rem;
+  overflow: hidden;
+}
+.stadium-progress-fill {
+  height: 100%;
+  background: var(--red);
+  border-radius: 2px;
+  width: 0%;
+  transition: width 0.8s ease;
+}
+.stadium-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1rem;
+}
+.stadium-card {
+  border: 1px solid var(--paper-dark);
+  border-radius: 2px;
+  padding: 1.1rem 1.2rem;
+  background: var(--paper);
+  position: relative;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.stadium-card.visited {
+  border-color: var(--red);
+  background: color-mix(in srgb, var(--red) 5%, var(--paper));
+}
+.stadium-card.visited:hover { transform: translateY(-2px); }
+.stadium-card-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--red);
+  margin-bottom: 0.6rem;
+}
+.stadium-card-badge.unvisited { color: var(--ink-faint); }
+.stadium-card-name {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-style: italic;
+  color: var(--ink);
+  margin-bottom: 0.2rem;
+  line-height: 1.3;
+}
+.stadium-card-team {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  color: var(--ink-faint);
+  margin-bottom: 0.5rem;
+}
+.stadium-card-meta {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.stadium-card-meta a {
+  color: var(--red);
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+.stadium-card-meta a:hover { opacity: 0.7; }
+.stadium-loading {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ink-faint);
+}
+@media (max-width: 600px) {
+  .stadium-tour-section { padding: 3rem 1.25rem; }
+  .stadium-grid { grid-template-columns: 1fr 1fr; }
+  .stadium-card { padding: 0.9rem; }
+}

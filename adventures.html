@@ -160,7 +160,30 @@
 
   </main>
 
-  <!-- ── FOOTER (matches site footer) ─────────────────────────────── -->
+  <!-- ── NPB STADIUM TOUR TRACKER ─────────────────────────────────── -->
+  <section class="stadium-tour-section">
+    <div class="stadium-tour-inner">
+      <div class="stadium-tour-header">
+        <div>
+          <span class="section-tag">⚾ Challenge</span>
+          <h2 class="stadium-tour-title">NPB Stadium Tour</h2>
+          <p class="stadium-tour-sub">Visiting all 12 Nippon Professional Baseball home stadiums across Japan</p>
+        </div>
+        <div class="stadium-tour-count" id="stadiumCount">
+          <span class="stadium-count-num">—</span>
+          <span class="stadium-count-denom">/ 12</span>
+          <div class="stadium-count-label">visited</div>
+        </div>
+      </div>
+      <div class="stadium-progress-bar">
+        <div class="stadium-progress-fill" id="stadiumProgressFill"></div>
+      </div>
+      <div class="stadium-grid" id="stadiumGrid">
+        <div class="stadium-loading">Loading stadiums…</div>
+      </div>
+    </div>
+  </section>
+
   <footer class="site-footer">
     <div class="footer-inner">
       <div class="footer-logo">
@@ -192,6 +215,58 @@
   <script src="js/geo-helpers.js"></script>
   <script src="adventures.js"></script>
   <script src="main.js"></script>
+  <script>
+  // ── NPB Stadium Tour Tracker ──────────────────────────────────────
+  (async function() {
+    const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5NzQyNzMsImV4cCI6MjA1OTU1MDI3M30.6V8BrRPQCxQGCTDdCNQ_Lk95TFnCiGNGHBiPkuXVwEU';
+
+    const grid    = document.getElementById('stadiumGrid');
+    const countEl = document.getElementById('stadiumCount').querySelector('.stadium-count-num');
+    const fill    = document.getElementById('stadiumProgressFill');
+
+    try {
+      const res = await fetch(
+        `${SUPABASE_URL}/rest/v1/adventures?type=eq.stadium&tags=cs.%7Bnpb%7D&order=visited_date.asc.nullslast,name.asc`,
+        { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
+      );
+      const stadiums = await res.json();
+
+      const visited = stadiums.filter(s => s.status === 'visited');
+      const pct = Math.round((visited.length / stadiums.length) * 100);
+      countEl.textContent = visited.length;
+      fill.style.width = pct + '%';
+
+      function fmtDate(iso) {
+        if (!iso) return '';
+        const [y, m, d] = iso.split('-').map(Number);
+        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+        return `${months[m-1]} ${d}, ${y}`;
+      }
+
+      grid.innerHTML = stadiums.map(s => {
+        const isVisited = s.status === 'visited';
+        const badge = isVisited
+          ? `<div class="stadium-card-badge">✅ Visited · ${fmtDate(s.visited_date)}</div>`
+          : `<div class="stadium-card-badge unvisited">⭕ Not yet visited</div>`;
+        const meta = isVisited && s.post_url
+          ? `<div class="stadium-card-meta">📍 ${s.location_city} &nbsp;·&nbsp; <a href="${s.post_url}">Read the post →</a></div>`
+          : `<div class="stadium-card-meta">📍 ${s.location_city}${s.location_region ? ', ' + s.location_region : ''}</div>`;
+        return `
+          <div class="stadium-card${isVisited ? ' visited' : ''}">
+            ${badge}
+            <div class="stadium-card-name">${s.name}</div>
+            <div class="stadium-card-team">${s.place_name}</div>
+            ${meta}
+          </div>`;
+      }).join('');
+
+    } catch (err) {
+      grid.innerHTML = '<div class="stadium-loading">Could not load stadiums.</div>';
+      console.error('Stadium tracker error:', err);
+    }
+  })();
+  </script>
   <!-- Google Translate — opens translate.google.com with current page URL -->
   <div id="translate-picker" style="display:none;position:fixed;z-index:9999;background:var(--paper);border:1px solid var(--paper-dark);border-radius:4px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,0.18);min-width:160px;">
     <div style="font-size:0.7rem;opacity:0.6;margin-bottom:6px;letter-spacing:0.06em;">TRANSLATE TO</div>
