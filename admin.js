@@ -1533,7 +1533,7 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
       console.warn('Homepage update failed:', err.message);
     }
   } catch (err) {
-    console.warn('Could not update homepage featured post:', err.message);
+    // featured-post section removed — hero card handles latest post display
   }
 }
 
