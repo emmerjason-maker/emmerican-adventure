@@ -1299,7 +1299,7 @@ async function handlePublish() {
     // 9b. Update homepage + videos page if post has YouTube
     if (!isScheduled && ytVideos && ytVideos.length > 0) {
       showStatus('Updating video gallery…', false, true);
-      await updateVideoGrid({ title, slug, ytVideos });
+      await updateVideoGrid({ title, slug, ytVideos, date });
       await updateVideosPage({ title, slug, date, ytVideos });
     }
 
@@ -1540,7 +1540,7 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
 
 
 // ── Update homepage video grid ────────────────────────────────
-async function updateVideoGrid({ title, slug, ytVideos }) {
+async function updateVideoGrid({ title, slug, ytVideos, date }) {
   try {
     await withGhRetry('Homepage video grid', async () => {
       const fileRes = await ghFetch('contents/index.html');
@@ -1552,26 +1552,38 @@ async function updateVideoGrid({ title, slug, ytVideos }) {
       const marker = '<!-- ====== NEW VIDEO INSERTED ABOVE THIS LINE ====== -->';
       if (!html.includes(marker)) throw new Error('Marker not found in index.html');
 
-      // Extract all existing video cards from the grid (between videos-grid open and the marker)
-      // so we can rebuild the full list cleanly — no fragile string splitting
-      const gridStart = html.indexOf('<div class="videos-grid">');
+      const gridOpen  = '<div class="videos-grid">';
+      const gridStart = html.indexOf(gridOpen);
       const markerPos = html.indexOf(marker);
-      const gridSection = html.substring(gridStart, markerPos);
 
-      // Parse existing cards into structured objects
+      // Find the closing </div> of the entire videos-grid div
+      const gridCloseMatch = html.slice(markerPos).match(/\n      <\/div>/);
+      if (!gridCloseMatch) throw new Error('Could not find video grid closing tag');
+      const gridClose = markerPos + gridCloseMatch.index;
+
+      // Extract existing cards from AFTER the marker (where they actually live)
+      const existingSection = html.slice(markerPos + marker.length, gridClose);
       const existingCardRe = /<div class="video-card">\s*<div class="video-embed-wrap">\s*<iframe[^>]*src="https:\/\/www\.youtube\.com\/embed\/([a-zA-Z0-9_-]{11})[^"]*"[^>]*title="([^"]*)"[\s\S]*?<h3 class="video-title">([^<]*)<\/h3>\s*<p class="video-desc">([^<]*)<\/p>/g;
       const existingCards = [];
       let m;
-      while ((m = existingCardRe.exec(gridSection)) !== null) {
+      while ((m = existingCardRe.exec(existingSection)) !== null) {
         existingCards.push({ id: m[1], iframeTitle: m[2], title: m[3], desc: m[4] });
       }
+
+      // Format date for display (same as publish_scheduled.py)
+      const fmtDate = date
+        ? (() => {
+            const d = new Date(date + 'T00:00:00');
+            return d.toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+          })()
+        : '';
 
       // Prepend new videos, dedup by ID, keep 6 most recent
       const newEntries = ytVideos.map(v => ({
         id: v.id,
         iframeTitle: escHtml(v.label || title),
         title: escHtml(v.label || title),
-        desc: escHtml(title),
+        desc: fmtDate,
       }));
       const seen = new Set();
       const allCards = [...newEntries, ...existingCards].filter(c => {
@@ -1580,7 +1592,7 @@ async function updateVideoGrid({ title, slug, ytVideos }) {
         return true;
       }).slice(0, 6);
 
-      // Rebuild the grid HTML
+      // Rebuild the entire grid block
       const cardHtml = allCards.map(c => `
         <div class="video-card">
           <div class="video-embed-wrap">
@@ -1599,11 +1611,8 @@ async function updateVideoGrid({ title, slug, ytVideos }) {
           </div>
         </div>`).join('\n');
 
-      // Replace everything between videos-grid open and the marker
-      const newGridSection = `<div class="videos-grid">\n        ${marker}${cardHtml}\n        `;
-      const updated = html.substring(0, gridStart) +
-                      newGridSection +
-                      html.substring(markerPos + marker.length);
+      const newGridBlock = `${gridOpen}\n        ${marker}\n${cardHtml}\n      `;
+      const updated = html.slice(0, gridStart) + newGridBlock + html.slice(gridClose);
 
       const putRes = await ghFetch('contents/index.html', 'PUT', {
         message: `Update homepage videos: ${title}`,
@@ -2742,7 +2751,7 @@ async function savePostEdit(filename) {
           ? new Date(existingDateText + ' 12:00:00').toISOString().split('T')[0]
           : localTodayStr();
         const slug = filename.replace('.html', '');
-        await updateVideoGrid({ title: newTitle, slug, ytVideos: editYtVideos });
+        await updateVideoGrid({ title: newTitle, slug, ytVideos: editYtVideos, date: postDateIso });
         await updateVideosPage({ title: newTitle, slug, date: postDateIso, ytVideos: editYtVideos });
       } catch (vidGridErr) {
         console.warn('Video grid sync error:', vidGridErr.message);
