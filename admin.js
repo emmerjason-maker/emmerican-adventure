@@ -234,21 +234,7 @@ function handleToolbar(action) {
 
 // ── Multi-image handling ──────────────────────────────────────────
 function addFiles(fileList) {
-  // Reject HEIC/HEIF — browsers (except Safari on Apple devices) can't decode
-  // these. Show a friendly error immediately rather than failing silently at publish.
-  const heicFiles = Array.from(fileList).filter(f =>
-    f.type === 'image/heic' || f.type === 'image/heif' ||
-    /\.heic$/i.test(f.name) || /\.heif$/i.test(f.name)
-  );
-  if (heicFiles.length > 0) {
-    showStatus(
-      `HEIC photos can't be uploaded directly. On iPhone: open Settings → Camera → Formats → Most Compatible to shoot in JPEG. Or convert using Preview on Mac (Export → JPEG).`,
-      true
-    );
-    return;
-  }
-
-  const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
+  const files = Array.from(fileList).filter(f => f.type.startsWith('image/') || /\.(heic|heif|jpg|jpeg|png|gif|webp|avif)$/i.test(f.name));
   const remaining = CONFIG.maxImages - images.length;
 
   if (remaining <= 0) {
@@ -1070,7 +1056,13 @@ async function handlePublish() {
           canvas.getContext('2d').drawImage(image, 0, 0, w, h);
           resolve(canvas.toDataURL('image/jpeg', 0.78).split(',')[1]);
         };
-        image.onerror = () => reject(new Error(`Could not load image: ${img.name}`));
+        image.onerror = () => {
+          const isHeic = /\.heic$/i.test(img.name) || /\.heif$/i.test(img.name);
+          const hint = isHeic
+            ? `${img.name} couldn't be read (HEIC). Try opening it in Preview and exporting as JPEG, or change iPhone Settings → Camera → Formats → Most Compatible.`
+            : `Could not load image: ${img.name}`;
+          reject(new Error(hint));
+        };
         image.src = img.dataUrl;
       });
       await uploadFile(path, compressed);
