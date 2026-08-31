@@ -312,8 +312,9 @@ for match in scheduled_pattern.finditer(blog):
           </a>
         </div>'''
     idx = re.sub(
-        r'        <div class="hero-latest-mobile">.*?        </div>',
-        mobile_card, idx, count=1, flags=re.S
+        r'        <div class="hero-latest-mobile">.*?        <div class="hero-scroll">',
+        mobile_card + '\n        <div class="hero-scroll">',
+        idx, count=1, flags=re.S
     )
 
     # ── 4. Update homepage photo grid (6 most recent) ───────────────
