@@ -234,6 +234,20 @@ function handleToolbar(action) {
 
 // ── Multi-image handling ──────────────────────────────────────────
 function addFiles(fileList) {
+  // Reject HEIC/HEIF — browsers (except Safari on Apple devices) can't decode
+  // these. Show a friendly error immediately rather than failing silently at publish.
+  const heicFiles = Array.from(fileList).filter(f =>
+    f.type === 'image/heic' || f.type === 'image/heif' ||
+    /\.heic$/i.test(f.name) || /\.heif$/i.test(f.name)
+  );
+  if (heicFiles.length > 0) {
+    showStatus(
+      `HEIC photos can't be uploaded directly. On iPhone: open Settings → Camera → Formats → Most Compatible to shoot in JPEG. Or convert using Preview on Mac (Export → JPEG).`,
+      true
+    );
+    return;
+  }
+
   const files = Array.from(fileList).filter(f => f.type.startsWith('image/'));
   const remaining = CONFIG.maxImages - images.length;
 
