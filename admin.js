@@ -1045,7 +1045,7 @@ async function handlePublish() {
       showStatus(`Uploading photo ${i + 1} of ${images.length}…`, false, true);
       const safeName = img.name.replace(/\s+/g, '-').toLowerCase();
       const path = `images/${Date.now()}-${safeName}`;
-      const compressed = await new Promise(resolve => {
+      const compressed = await new Promise((resolve, reject) => {
         const image = new Image();
         image.onload = () => {
           const maxW = 1600;
@@ -1056,6 +1056,7 @@ async function handlePublish() {
           canvas.getContext('2d').drawImage(image, 0, 0, w, h);
           resolve(canvas.toDataURL('image/jpeg', 0.78).split(',')[1]);
         };
+        image.onerror = () => reject(new Error(`Could not load image: ${img.name}`));
         image.src = img.dataUrl;
       });
       await uploadFile(path, compressed);
@@ -1880,7 +1881,15 @@ function ghFetch(endpoint, method = 'GET', body = null) {
     },
   };
   if (body) opts.body = JSON.stringify(body);
-  return fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/${endpoint}`, opts);
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 30000); // 30s timeout
+  opts.signal = controller.signal;
+  return fetch(`https://api.github.com/repos/${CONFIG.owner}/${CONFIG.repo}/${endpoint}`, opts)
+    .finally(() => clearTimeout(timeout))
+    .catch(err => {
+      if (err.name === 'AbortError') throw new Error(`GitHub API timeout (${method} ${endpoint})`);
+      throw err;
+    });
 }
 
 // ── UI helpers ────────────────────────────────────────────────────
