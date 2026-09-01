@@ -185,6 +185,16 @@
       color: var(--ink-faint);
     }
 
+    .baseball-map-wrap {
+      border: 1px solid var(--paper-dark);
+      border-radius: 2px;
+      overflow: hidden;
+      margin-bottom: 2rem;
+      position: relative;
+    }
+    .baseball-map { width: 100%; height: 420px; }
+    @media (max-width: 600px) { .baseball-map { height: 280px; } }
+
     @media (max-width: 600px) {
       .baseball-page { padding: 3rem 1.25rem 4rem; }
       .league-stats { grid-template-columns: repeat(3, 1fr); }
@@ -266,6 +276,11 @@
         </div>
       </div>
 
+      <!-- World map -->
+      <div class="baseball-map-wrap">
+        <div id="baseballMap" class="baseball-map"></div>
+      </div>
+
       <!-- Tabs -->
       <div class="stadium-tabs" id="stadiumTabs">
         <button class="stadium-tab active" data-league="all">All Stadiums</button>
@@ -317,6 +332,74 @@
 
   <script src="main.js"></script>
   <script>
+  // ── Baseball World Map ────────────────────────────────────────────
+  var baseballMap, baseballInfoWindow;
+
+  function initBaseballMap() {
+    baseballMap = new google.maps.Map(document.getElementById('baseballMap'), {
+      center: { lat: 30, lng: -30 },   // Pacific-centered to show Japan, US, Korea
+      zoom: 2,
+      mapTypeId: 'roadmap',
+      styles: [
+        { featureType: 'poi', stylers: [{ visibility: 'off' }] },
+        { featureType: 'transit', stylers: [{ visibility: 'off' }] }
+      ],
+      disableDefaultUI: true,
+      zoomControl: true,
+    });
+    baseballInfoWindow = new google.maps.InfoWindow({ maxWidth: 260 });
+    loadBaseballMarkers();
+  }
+
+  function loadBaseballMarkers() {
+    var SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
+    var SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
+    fetch(SUPABASE_URL + '/rest/v1/adventures?tags=cs.%7Bstadium-tour%7D&select=*',
+      { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } })
+      .then(function(r) { return r.json(); })
+      .then(function(stadiums) {
+        if (!Array.isArray(stadiums)) return;
+        stadiums.forEach(function(s) {
+          if (!s.lat || !s.lng) return;
+          var visited = s.status === 'visited';
+          var tags = s.tags || [];
+          var league = tags.indexOf('npb') > -1 ? 'npb' : tags.indexOf('mlb') > -1 ? 'mlb' : 'kbo';
+          var color = visited
+            ? (league === 'npb' ? '#c0392b' : league === 'mlb' ? '#2980b9' : '#27ae60')
+            : '#555';
+          var marker = new google.maps.Marker({
+            position: { lat: parseFloat(s.lat), lng: parseFloat(s.lng) },
+            map: baseballMap,
+            title: s.name,
+            icon: {
+              path: google.maps.SymbolPath.CIRCLE,
+              scale: visited ? 9 : 6,
+              fillColor: color,
+              fillOpacity: visited ? 0.95 : 0.45,
+              strokeColor: '#fff',
+              strokeWeight: visited ? 2 : 1,
+            },
+          });
+          marker.addListener('click', function() {
+            var flag = league === 'npb' ? '🇯🇵' : league === 'mlb' ? '🇺🇸' : '🇰🇷';
+            var content = '<div style="font-family:var(--font-body);max-width:220px;">'
+              + '<div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.08em;color:' + (visited ? color : '#888') + ';margin-bottom:0.3rem;">'
+              + flag + ' ' + league.toUpperCase() + (visited ? ' · ✅ Visited' : ' · ⭕ Not yet') + '</div>'
+              + '<div style="font-weight:600;font-size:0.92rem;margin-bottom:0.15rem;">' + s.name + '</div>'
+              + '<div style="font-size:0.78rem;color:#666;margin-bottom:' + (s.post_url ? '0.5rem' : '0') + ';">' + (s.place_name || '') + '</div>'
+              + (s.post_url ? '<a href="' + s.post_url + '" style="font-size:0.72rem;color:' + color + ';">Read the post →</a>' : '')
+              + '</div>';
+            baseballInfoWindow.setContent(content);
+            baseballInfoWindow.open(baseballMap, marker);
+          });
+        });
+      })
+      .catch(function(e) { console.warn('Baseball map error:', e); });
+  }
+  </script>
+  <script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB7n5r_eitRFUZ8n5wgNlxsTKOQisB4zb8&callback=initBaseballMap">
+  </script>
   (async function() {
     const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE0MTM4MTMsImV4cCI6MjA5Njk4OTgxM30._GuEJWGiRHktIeX6ukleM2s07V_W6pbMxIV8ntXjy44';
