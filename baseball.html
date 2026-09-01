@@ -371,10 +371,16 @@
 
     try {
       var res = await fetch(
-        SUPABASE_URL + '/rest/v1/adventures?type=eq.stadium&select=*&order=status.asc,name.asc',
+        SUPABASE_URL + '/rest/v1/adventures?tags=cs.%7Bstadium-tour%7D&select=*&order=status.asc,name.asc',
         { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }
       );
-      all = await res.json();
+      if (!res.ok) {
+        var errBody = await res.text();
+        throw new Error('HTTP ' + res.status + ': ' + errBody);
+      }
+      var data = await res.json();
+      if (!Array.isArray(data)) throw new Error('Unexpected response: ' + JSON.stringify(data).slice(0, 120));
+      all = data;
 
       // Update stat bars
       ['npb','mlb','kbo'].forEach(function(lg) {
