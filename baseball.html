@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Baseball World Tour — Emmerican Adventure</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;700&family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css?v=2026-08-31a" />
+  <script src="darkmode.js"></script>
+  <link rel="stylesheet" href="darkmode.css" />
+
+  <meta name="description" content="Tracking our family's goal to visit every NPB, MLB, and KBO home stadium — Japan, the US, and South Korea." />
+  <link rel="canonical" href="https://emmericanadventure.com/baseball.html" />
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Emmerican Adventure" />
+  <meta property="og:title" content="Baseball World Tour — Emmerican Adventure" />
+  <meta property="og:description" content="Tracking our family's goal to visit every NPB, MLB, and KBO home stadium." />
+  <meta property="og:url" content="https://emmericanadventure.com/baseball.html" />
+  <meta property="og:image" content="https://emmericanadventure.com/images/og-image.jpg" />
+  <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+  <style>
+    /* ── Page layout ─────────────────────────────────────────────── */
+    .baseball-page {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 4rem 2rem 5rem;
+    }
+    .baseball-hero {
+      margin-bottom: 3rem;
+    }
+    .baseball-label {
+      font-family: var(--font-mono);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.2em;
+      color: var(--red);
+      margin-bottom: 0.75rem;
+    }
+    .baseball-title {
+      font-family: var(--font-display);
+      font-size: clamp(2.5rem, 6vw, 4.5rem);
+      font-style: italic;
+      line-height: 1.05;
+      margin-bottom: 0.75rem;
+    }
+    .baseball-sub {
+      font-size: 1rem;
+      color: var(--ink-faint);
+      max-width: 520px;
+      line-height: 1.6;
+    }
+
+    /* ── League stat bar ─────────────────────────────────────────── */
+    .league-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--paper-dark);
+      border: 1px solid var(--paper-dark);
+      margin-bottom: 2.5rem;
+    }
+    .league-stat {
+      background: var(--paper-warm);
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+    }
+    .league-stat-flag { font-size: 1.5rem; margin-bottom: 0.25rem; }
+    .league-stat-name {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      text-transform: uppercase;
+      letter-spacing: 0.15em;
+      color: var(--ink-faint);
+      margin-bottom: 0.5rem;
+    }
+    .league-stat-fraction {
+      font-family: var(--font-display);
+      font-style: italic;
+    }
+    .league-stat-num { font-size: 2.8rem; color: var(--red); line-height: 1; }
+    .league-stat-denom { font-size: 1.1rem; color: var(--ink-faint); }
+    .league-stat-bar {
+      height: 3px;
+      background: var(--paper-dark);
+      margin-top: 0.75rem;
+      border-radius: 2px;
+      overflow: hidden;
+    }
+    .league-stat-fill {
+      height: 100%;
+      background: var(--red);
+      border-radius: 2px;
+      transition: width 0.8s ease;
+      width: 0%;
+    }
+
+    /* ── Tabs ────────────────────────────────────────────────────── */
+    .stadium-tabs {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+    }
+    .stadium-tab {
+      font-family: var(--font-mono);
+      font-size: 0.68rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      padding: 0.45rem 1rem;
+      border: 1px solid var(--paper-dark);
+      background: transparent;
+      color: var(--ink-faint);
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.15s;
+    }
+    .stadium-tab:hover { color: var(--ink); border-color: var(--ink-faint); }
+    .stadium-tab.active {
+      background: var(--red);
+      border-color: var(--red);
+      color: #fff;
+    }
+
+    /* ── Stadium grid ────────────────────────────────────────────── */
+    .stadium-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+      gap: 0.875rem;
+    }
+    .stadium-card {
+      border: 1px solid var(--paper-dark);
+      border-radius: 2px;
+      padding: 1rem 1.1rem;
+      background: var(--paper);
+      transition: border-color 0.2s, transform 0.2s;
+    }
+    .stadium-card.visited {
+      border-color: var(--red);
+      background: color-mix(in srgb, var(--red) 5%, var(--paper));
+    }
+    .stadium-card.visited:hover { transform: translateY(-2px); }
+    .stadium-badge {
+      font-family: var(--font-mono);
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--red);
+      margin-bottom: 0.5rem;
+    }
+    .stadium-badge.unvisited { color: var(--ink-faint); }
+    .stadium-name {
+      font-family: var(--font-display);
+      font-style: italic;
+      font-size: 0.98rem;
+      line-height: 1.3;
+      margin-bottom: 0.2rem;
+    }
+    .stadium-team {
+      font-family: var(--font-mono);
+      font-size: 0.65rem;
+      color: var(--ink-faint);
+      margin-bottom: 0.5rem;
+    }
+    .stadium-meta {
+      font-family: var(--font-mono);
+      font-size: 0.62rem;
+      color: var(--ink-faint);
+    }
+    .stadium-meta a { color: var(--red); text-decoration: none; }
+    .stadium-meta a:hover { text-decoration: underline; }
+    .stadium-loading {
+      grid-column: 1 / -1;
+      text-align: center;
+      padding: 4rem 2rem;
+      font-family: var(--font-mono);
+      font-size: 0.8rem;
+      color: var(--ink-faint);
+    }
+
+    @media (max-width: 600px) {
+      .baseball-page { padding: 3rem 1.25rem 4rem; }
+      .league-stats { grid-template-columns: repeat(3, 1fr); }
+      .league-stat { padding: 1rem 0.75rem; }
+      .league-stat-num { font-size: 2rem; }
+      .stadium-grid { grid-template-columns: 1fr 1fr; }
+      .stadium-card { padding: 0.8rem 0.9rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-kanji" aria-hidden="true">⚾</div>
+
+  <!-- ── SITE HEADER ───────────────────────────────────────────────── -->
+  <header class="site-header" id="top">
+    <div class="header-inner">
+      <a href="index.html" class="site-logo">
+        <span class="logo-kanji">日本</span>
+        <span class="logo-text">
+          <span class="logo-name">Emmerican Adventure</span>
+          <span class="logo-sub">Chapter 2: Life in Japan</span>
+        </span>
+      </a>
+      <div class="header-right">
+        <nav class="nav">
+          <a href="index.html" class="nav-link">Home</a>
+          <a href="blog.html" class="nav-link">Journal</a>
+          <a href="adventures.html" class="nav-link">Adventures</a>
+          <a href="map.html" class="nav-link">Map</a>
+          <a href="videos.html" class="nav-link">Videos</a>
+          <a href="photos.html" class="nav-link">Photos</a>
+          <a href="about.html" class="nav-link">About</a>
+        </nav>
+        <button class="search-toggle" id="searchToggle" aria-label="Search">🔍</button>
+        <button id="darkModeToggle" class="dark-mode-toggle" aria-label="Toggle dark mode">☀️</button>
+        <button class="mobile-menu-btn" aria-label="Menu">☰</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <div class="baseball-page">
+
+      <!-- Hero -->
+      <div class="baseball-hero">
+        <div class="baseball-label">⚾ Family Challenge</div>
+        <h1 class="baseball-title">Baseball<br>World Tour</h1>
+        <p class="baseball-sub">Our family's quest to see a game at every home stadium across NPB in Japan, MLB in the US, and KBO in South Korea.</p>
+      </div>
+
+      <!-- League stats -->
+      <div class="league-stats">
+        <div class="league-stat">
+          <div class="league-stat-flag">🇯🇵</div>
+          <div class="league-stat-name">NPB · Japan</div>
+          <div class="league-stat-fraction">
+            <span class="league-stat-num" id="npbNum">—</span>
+            <span class="league-stat-denom"> / 12</span>
+          </div>
+          <div class="league-stat-bar"><div class="league-stat-fill" id="npbFill"></div></div>
+        </div>
+        <div class="league-stat">
+          <div class="league-stat-flag">🇺🇸</div>
+          <div class="league-stat-name">MLB · USA</div>
+          <div class="league-stat-fraction">
+            <span class="league-stat-num" id="mlbNum">—</span>
+            <span class="league-stat-denom"> / 30</span>
+          </div>
+          <div class="league-stat-bar"><div class="league-stat-fill" id="mlbFill"></div></div>
+        </div>
+        <div class="league-stat">
+          <div class="league-stat-flag">🇰🇷</div>
+          <div class="league-stat-name">KBO · Korea</div>
+          <div class="league-stat-fraction">
+            <span class="league-stat-num" id="kboNum">—</span>
+            <span class="league-stat-denom"> / 9</span>
+          </div>
+          <div class="league-stat-bar"><div class="league-stat-fill" id="kboFill"></div></div>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="stadium-tabs" id="stadiumTabs">
+        <button class="stadium-tab active" data-league="all">All Stadiums</button>
+        <button class="stadium-tab" data-league="npb">NPB 🇯🇵</button>
+        <button class="stadium-tab" data-league="mlb">MLB 🇺🇸</button>
+        <button class="stadium-tab" data-league="kbo">KBO 🇰🇷</button>
+      </div>
+
+      <!-- Grid -->
+      <div class="stadium-grid" id="stadiumGrid">
+        <div class="stadium-loading">Loading stadiums…</div>
+      </div>
+
+    </div>
+  </main>
+
+  <!-- ── FOOTER ────────────────────────────────────────────────────── -->
+  <footer class="site-footer">
+    <div class="footer-inner">
+      <div class="footer-left">
+        <span class="footer-kanji">日本へ</span>
+        <span class="footer-name">Emmerican Adventure</span>
+      </div>
+      <div class="footer-copy">© 2026 Emmerican Adventure — Made with 愛 in Yokosuka, Japan 🇯🇵</div>
+      <div class="footer-links">
+        <a href="https://www.youtube.com/@EmmericanAdventure" target="_blank" class="footer-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23.498 6.186a3.016 3.016 0 00-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 00.502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 002.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 002.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+          YouTube
+        </a>
+        <a href="https://www.instagram.com/emmericanadvent" target="_blank" class="footer-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
+          Instagram
+        </a>
+        <a href="https://www.tiktok.com/@emmericanadvent" target="_blank" class="footer-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.34 6.34 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.18 8.18 0 004.78 1.52V6.76a4.85 4.85 0 01-1.01-.07z"/></svg>
+          TikTok
+        </a>
+        <a href="https://www.facebook.com/emmericanadventure" target="_blank" class="footer-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M18 2h-3a5 5 0 00-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 011-1h3z"/></svg>
+          Facebook
+        </a>
+        <a href="https://ko-fi.com/emmericanadventure" target="_blank" class="footer-social-link">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 9.299-.022 14.856c.054 5.15 3.41 5.043 3.41 5.043h6.5c2.48-.002 2.842-2.684 2.842-2.684s.341 2.684 2.821 2.684h4.701c2.478 0 2.876-2.44 2.876-2.44l1.33-12.703c.069-.538.029-1.171-.621-1.321zm-5.075 10.432c-.148.232-.48.311-.712.163l-4.496-2.917-1.557 1.412c-.194.176-.499.169-.686-.016l-1.22-1.244 3.968-3.609 4.703 3.052c.231.15.31.481.162.712l-.162.447zm1.875-5.407c-.113.26-.41.382-.67.27l-8.418-3.638 8.418-7.673c.258-.235.657-.217.894.04l.67.733c.237.258.22.657-.04.893l-7.38 6.727 7.38 3.19c.259.112.381.41.27.67l-.124.788z"/></svg>
+          Ko-fi
+        </a>
+      </div>
+    </div>
+  </footer>
+
+  <script src="main.js"></script>
+  <script>
+  (async function() {
+    const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5NzQyNzMsImV4cCI6MjA1OTU1MDI3M30.6V8BrRPQCxQGCTDdCNQ_Lk95TFnCiGNGHBiPkuXVwEU';
+
+    const grid = document.getElementById('stadiumGrid');
+    let all = [];
+
+    function league(s) {
+      const t = s.tags || [];
+      if (t.indexOf('npb') > -1) return 'npb';
+      if (t.indexOf('mlb') > -1) return 'mlb';
+      if (t.indexOf('kbo') > -1) return 'kbo';
+      return 'other';
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '';
+      const p = iso.split('-');
+      const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+      return months[parseInt(p[1], 10) - 1] + ' ' + parseInt(p[2], 10) + ', ' + p[0];
+    }
+
+    function render(filter) {
+      const list = filter === 'all' ? all : all.filter(s => league(s) === filter);
+      if (!list.length) { grid.innerHTML = '<div class="stadium-loading">No stadiums.</div>'; return; }
+
+      grid.innerHTML = list.map(function(s) {
+        const visited = s.status === 'visited';
+        const dateStr = s.visited_date ? fmtDate(s.visited_date) : '';
+        const badgeText = visited ? ('✅ Visited' + (dateStr ? ' · ' + dateStr : '')) : '⭕ Not yet visited';
+        const metaCity = (s.location_city || '') + (s.location_region ? ', ' + s.location_region : '');
+        const postLink = (visited && s.post_url) ? ' &nbsp;·&nbsp; <a href="' + s.post_url + '">Read post →</a>' : '';
+        return '<div class="stadium-card' + (visited ? ' visited' : '') + '">'
+          + '<div class="stadium-badge' + (visited ? '' : ' unvisited') + '">' + badgeText + '</div>'
+          + '<div class="stadium-name">' + s.name + '</div>'
+          + '<div class="stadium-team">' + (s.place_name || '') + '</div>'
+          + '<div class="stadium-meta">📍 ' + metaCity + postLink + '</div>'
+          + '</div>';
+      }).join('');
+    }
+
+    // Tab clicks
+    document.getElementById('stadiumTabs').addEventListener('click', function(e) {
+      var tab = e.target;
+      while (tab && !tab.dataset.league) tab = tab.parentElement;
+      if (!tab || !tab.dataset.league) return;
+      document.querySelectorAll('.stadium-tab').forEach(function(t) { t.classList.remove('active'); });
+      tab.classList.add('active');
+      render(tab.dataset.league);
+    });
+
+    try {
+      var res = await fetch(
+        SUPABASE_URL + '/rest/v1/adventures?type=eq.stadium&select=*&order=status.asc,name.asc',
+        { headers: { 'apikey': SUPABASE_ANON, 'Authorization': 'Bearer ' + SUPABASE_ANON } }
+      );
+      all = await res.json();
+
+      // Update stat bars
+      ['npb','mlb','kbo'].forEach(function(lg) {
+        var total   = lg === 'npb' ? 12 : lg === 'mlb' ? 30 : 9;
+        var visited = all.filter(function(s) { return league(s) === lg && s.status === 'visited'; }).length;
+        document.getElementById(lg + 'Num').textContent  = visited;
+        document.getElementById(lg + 'Fill').style.width = Math.round(visited / total * 100) + '%';
+      });
+
+      render('all');
+
+    } catch(err) {
+      grid.innerHTML = '<div class="stadium-loading">Could not load stadiums — ' + err.message + '</div>';
+    }
+  })();
+  </script>
+</body>
+</html>

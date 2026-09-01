@@ -871,3 +871,50 @@
   .stadium-league-counts { gap: 0.5rem; }
   .league-count-num { font-size: 1.8rem; }
 }
+
+/* ── Baseball World Tour teaser card ─────────────────────────────── */
+.baseball-teaser {
+  border-top: 1px solid var(--paper-dark);
+  padding: 2rem;
+}
+.baseball-teaser-card {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  padding: 1.25rem 1.5rem;
+  border: 1px solid var(--paper-dark);
+  border-radius: 2px;
+  background: var(--paper-warm);
+  text-decoration: none;
+  color: inherit;
+  max-width: 600px;
+  margin: 0 auto;
+  transition: border-color 0.2s, transform 0.2s;
+}
+.baseball-teaser-card:hover { border-color: var(--red); transform: translateY(-1px); }
+.baseball-teaser-icon { font-size: 2rem; flex-shrink: 0; }
+.baseball-teaser-body { flex: 1; min-width: 0; }
+.baseball-teaser-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--red);
+  margin-bottom: 0.2rem;
+}
+.baseball-teaser-title {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 1.2rem;
+  margin-bottom: 0.15rem;
+}
+.baseball-teaser-sub {
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  color: var(--ink-faint);
+}
+.baseball-teaser-arrow {
+  font-size: 1.25rem;
+  color: var(--red);
+  flex-shrink: 0;
+}

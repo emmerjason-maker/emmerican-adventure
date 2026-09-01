@@ -62,6 +62,7 @@
         <a href="map.html" class="nav-link">Map</a>
         <a href="videos.html" class="nav-link">Videos</a>
         <a href="photos.html" class="nav-link">Photos</a>
+        <a href="baseball.html" class="nav-link">Baseball</a>
         <a href="about.html" class="nav-link">About</a>
       </nav>
       <button class="search-toggle" aria-label="Search" aria-expanded="false" aria-controls="headerSearchBar">🔍</button>
@@ -160,47 +161,17 @@
 
   </main>
 
-  <!-- ── BASEBALL WORLD TOUR TRACKER ──────────────────────────────── -->
-  <section class="stadium-tour-section">
-    <div class="stadium-tour-inner">
-      <div class="stadium-tour-header">
-        <div>
-          <span class="section-tag">⚾ Challenge</span>
-          <h2 class="stadium-tour-title">Baseball World Tour</h2>
-          <p class="stadium-tour-sub">Chasing ballparks across three leagues — NPB, MLB, and KBO</p>
-        </div>
-        <div class="stadium-league-counts" id="leagueCounts">
-          <div class="league-count-item">
-            <span class="league-count-num" id="countNpb">—</span>
-            <span class="league-count-denom">/12</span>
-            <div class="league-count-label">NPB</div>
-          </div>
-          <div class="league-count-divider"></div>
-          <div class="league-count-item">
-            <span class="league-count-num" id="countMlb">—</span>
-            <span class="league-count-denom">/30</span>
-            <div class="league-count-label">MLB</div>
-          </div>
-          <div class="league-count-divider"></div>
-          <div class="league-count-item">
-            <span class="league-count-num" id="countKbo">—</span>
-            <span class="league-count-denom">/9</span>
-            <div class="league-count-label">KBO</div>
-          </div>
-        </div>
+  <!-- ── BASEBALL WORLD TOUR TEASER ──────────────────────────────── -->
+  <section class="baseball-teaser">
+    <a href="baseball.html" class="baseball-teaser-card">
+      <div class="baseball-teaser-icon">⚾</div>
+      <div class="baseball-teaser-body">
+        <div class="baseball-teaser-label">Family Challenge</div>
+        <div class="baseball-teaser-title">Baseball World Tour</div>
+        <div class="baseball-teaser-sub">Tracking every NPB, MLB &amp; KBO home stadium</div>
       </div>
-
-      <div class="stadium-tabs" id="stadiumTabs">
-        <button class="stadium-tab active" data-league="all">All</button>
-        <button class="stadium-tab" data-league="npb">NPB 🇯🇵</button>
-        <button class="stadium-tab" data-league="mlb">MLB 🇺🇸</button>
-        <button class="stadium-tab" data-league="kbo">KBO 🇰🇷</button>
-      </div>
-
-      <div class="stadium-grid" id="stadiumGrid">
-        <div class="stadium-loading">Loading stadiums…</div>
-      </div>
-    </div>
+      <div class="baseball-teaser-arrow">→</div>
+    </a>
   </section>
 
   <footer class="site-footer">
@@ -234,96 +205,6 @@
   <script src="js/geo-helpers.js"></script>
   <script src="adventures.js"></script>
   <script src="main.js"></script>
-  <script>
-  // ── Baseball World Tour Tracker ───────────────────────────────────
-  (async function() {
-    const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
-    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5NzQyNzMsImV4cCI6MjA1OTU1MDI3M30.6V8BrRPQCxQGCTDdCNQ_Lk95TFnCiGNGHBiPkuXVwEU';
-
-    const grid = document.getElementById('stadiumGrid');
-    let allStadiums = [];
-
-    function getLeague(s) {
-      const t = s.tags || [];
-      if (t.includes('npb')) return 'npb';
-      if (t.includes('mlb')) return 'mlb';
-      if (t.includes('kbo')) return 'kbo';
-      return 'other';
-    }
-
-    function fmtDate(iso) {
-      if (!iso) return '';
-      const [y, m, d] = iso.split('-').map(Number);
-      return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] + ` ${d}, ${y}`;
-    }
-
-    function renderGrid(league) {
-      const filtered = league === 'all' ? allStadiums : allStadiums.filter(s => getLeague(s) === league);
-      if (!filtered.length) { grid.innerHTML = '<div class="stadium-loading">No stadiums found.</div>'; return; }
-
-      grid.innerHTML = filtered.map(s => {
-        const visited = s.status === 'visited';
-        const tags = s.tags || [];
-        const isFamily = tags.includes('family');
-        const isSolo   = tags.includes('solo');
-        const league   = getLeague(s);
-
-        let badgeText, badgeClass;
-        if (visited && isFamily)      { badgeText = `👨‍👩‍👧‍👦 Family · ${fmtDate(s.visited_date)}`;  badgeClass = 'family'; }
-        else if (visited && isSolo)   { badgeText = `⚾ Solo · ${fmtDate(s.visited_date)}`;     badgeClass = 'solo';   }
-        else if (visited)             { badgeText = `✅ Visited · ${fmtDate(s.visited_date)}`;  badgeClass = 'visited';}
-        else                          { badgeText = '⭕ Not yet visited';                        badgeClass = 'unvisited'; }
-
-        const leagueFlag = league === 'npb' ? '🇯🇵' : league === 'kbo' ? '🇰🇷' : '🇺🇸';
-
-        const meta = visited && s.post_url
-          ? `<div class="stadium-card-meta">📍 ${s.location_city} &nbsp;·&nbsp; <a href="${s.post_url}">Read post →</a></div>`
-          : `<div class="stadium-card-meta">📍 ${s.location_city}${s.location_region ? ', ' + s.location_region : ''}</div>`;
-
-        const leagueTag = (league === 'all' || filtered.some(x => getLeague(x) !== league))
-          ? `<span class="stadium-league-tag">${leagueFlag} ${league.toUpperCase()}</span>` : '';
-
-        return `<div class="stadium-card${visited ? ' visited' + (isFamily ? ' family' : isSolo ? ' solo' : '') : ''}">
-          <div class="stadium-card-badge ${badgeClass}">${badgeText}</div>
-          <div class="stadium-card-name">${s.name}</div>
-          <div class="stadium-card-team">${s.place_name}</div>
-          ${meta}
-        </div>`;
-      }).join('');
-    }
-
-    try {
-      const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/adventures?type=eq.stadium&order=status.asc,visited_date.asc.nullslast,name.asc`,
-        { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
-      );
-      allStadiums = await res.json();
-
-      // Update counts
-      const npbVisited = allStadiums.filter(s => getLeague(s) === 'npb' && s.status === 'visited').length;
-      const mlbVisited = allStadiums.filter(s => getLeague(s) === 'mlb' && s.status === 'visited').length;
-      const kboVisited = allStadiums.filter(s => getLeague(s) === 'kbo' && s.status === 'visited').length;
-      document.getElementById('countNpb').textContent = npbVisited;
-      document.getElementById('countMlb').textContent = mlbVisited;
-      document.getElementById('countKbo').textContent = kboVisited;
-
-      // Tabs
-      document.getElementById('stadiumTabs').addEventListener('click', e => {
-        const tab = e.target.closest('.stadium-tab');
-        if (!tab) return;
-        document.querySelectorAll('.stadium-tab').forEach(t => t.classList.remove('active'));
-        tab.classList.add('active');
-        renderGrid(tab.dataset.league);
-      });
-
-      renderGrid('all');
-
-    } catch (err) {
-      grid.innerHTML = '<div class="stadium-loading">Could not load stadiums.</div>';
-      console.error('Stadium tracker error:', err);
-    }
-  })();
-  </script>
   <!-- Google Translate — opens translate.google.com with current page URL -->
   <div id="translate-picker" style="display:none;position:fixed;z-index:9999;background:var(--paper);border:1px solid var(--paper-dark);border-radius:4px;padding:10px;box-shadow:0 4px 16px rgba(0,0,0,0.18);min-width:160px;">
     <div style="font-size:0.7rem;opacity:0.6;margin-bottom:6px;letter-spacing:0.06em;">TRANSLATE TO</div>
