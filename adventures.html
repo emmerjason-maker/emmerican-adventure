@@ -160,24 +160,43 @@
 
   </main>
 
-  <!-- ── NPB STADIUM TOUR TRACKER ─────────────────────────────────── -->
+  <!-- ── BASEBALL WORLD TOUR TRACKER ──────────────────────────────── -->
   <section class="stadium-tour-section">
     <div class="stadium-tour-inner">
       <div class="stadium-tour-header">
         <div>
           <span class="section-tag">⚾ Challenge</span>
-          <h2 class="stadium-tour-title">NPB Stadium Tour</h2>
-          <p class="stadium-tour-sub">Visiting all 12 Nippon Professional Baseball home stadiums across Japan</p>
+          <h2 class="stadium-tour-title">Baseball World Tour</h2>
+          <p class="stadium-tour-sub">Chasing ballparks across three leagues — NPB, MLB, and KBO</p>
         </div>
-        <div class="stadium-tour-count" id="stadiumCount">
-          <span class="stadium-count-num">—</span>
-          <span class="stadium-count-denom">/ 12</span>
-          <div class="stadium-count-label">visited</div>
+        <div class="stadium-league-counts" id="leagueCounts">
+          <div class="league-count-item">
+            <span class="league-count-num" id="countNpb">—</span>
+            <span class="league-count-denom">/12</span>
+            <div class="league-count-label">NPB</div>
+          </div>
+          <div class="league-count-divider"></div>
+          <div class="league-count-item">
+            <span class="league-count-num" id="countMlb">—</span>
+            <span class="league-count-denom">/30</span>
+            <div class="league-count-label">MLB</div>
+          </div>
+          <div class="league-count-divider"></div>
+          <div class="league-count-item">
+            <span class="league-count-num" id="countKbo">—</span>
+            <span class="league-count-denom">/9</span>
+            <div class="league-count-label">KBO</div>
+          </div>
         </div>
       </div>
-      <div class="stadium-progress-bar">
-        <div class="stadium-progress-fill" id="stadiumProgressFill"></div>
+
+      <div class="stadium-tabs" id="stadiumTabs">
+        <button class="stadium-tab active" data-league="all">All</button>
+        <button class="stadium-tab" data-league="npb">NPB 🇯🇵</button>
+        <button class="stadium-tab" data-league="mlb">MLB 🇺🇸</button>
+        <button class="stadium-tab" data-league="kbo">KBO 🇰🇷</button>
       </div>
+
       <div class="stadium-grid" id="stadiumGrid">
         <div class="stadium-loading">Loading stadiums…</div>
       </div>
@@ -216,50 +235,88 @@
   <script src="adventures.js"></script>
   <script src="main.js"></script>
   <script>
-  // ── NPB Stadium Tour Tracker ──────────────────────────────────────
+  // ── Baseball World Tour Tracker ───────────────────────────────────
   (async function() {
     const SUPABASE_URL  = 'https://azjwuraxixuioeddkicq.supabase.co';
     const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF6and1cmF4aXh1aW9lZGRraWNxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDM5NzQyNzMsImV4cCI6MjA1OTU1MDI3M30.6V8BrRPQCxQGCTDdCNQ_Lk95TFnCiGNGHBiPkuXVwEU';
 
-    const grid    = document.getElementById('stadiumGrid');
-    const countEl = document.getElementById('stadiumCount').querySelector('.stadium-count-num');
-    const fill    = document.getElementById('stadiumProgressFill');
+    const grid = document.getElementById('stadiumGrid');
+    let allStadiums = [];
+
+    function getLeague(s) {
+      const t = s.tags || [];
+      if (t.includes('npb')) return 'npb';
+      if (t.includes('mlb')) return 'mlb';
+      if (t.includes('kbo')) return 'kbo';
+      return 'other';
+    }
+
+    function fmtDate(iso) {
+      if (!iso) return '';
+      const [y, m, d] = iso.split('-').map(Number);
+      return ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][m-1] + ` ${d}, ${y}`;
+    }
+
+    function renderGrid(league) {
+      const filtered = league === 'all' ? allStadiums : allStadiums.filter(s => getLeague(s) === league);
+      if (!filtered.length) { grid.innerHTML = '<div class="stadium-loading">No stadiums found.</div>'; return; }
+
+      grid.innerHTML = filtered.map(s => {
+        const visited = s.status === 'visited';
+        const tags = s.tags || [];
+        const isFamily = tags.includes('family');
+        const isSolo   = tags.includes('solo');
+        const league   = getLeague(s);
+
+        let badgeText, badgeClass;
+        if (visited && isFamily)      { badgeText = `👨‍👩‍👧‍👦 Family · ${fmtDate(s.visited_date)}`;  badgeClass = 'family'; }
+        else if (visited && isSolo)   { badgeText = `⚾ Solo · ${fmtDate(s.visited_date)}`;     badgeClass = 'solo';   }
+        else if (visited)             { badgeText = `✅ Visited · ${fmtDate(s.visited_date)}`;  badgeClass = 'visited';}
+        else                          { badgeText = '⭕ Not yet visited';                        badgeClass = 'unvisited'; }
+
+        const leagueFlag = league === 'npb' ? '🇯🇵' : league === 'kbo' ? '🇰🇷' : '🇺🇸';
+
+        const meta = visited && s.post_url
+          ? `<div class="stadium-card-meta">📍 ${s.location_city} &nbsp;·&nbsp; <a href="${s.post_url}">Read post →</a></div>`
+          : `<div class="stadium-card-meta">📍 ${s.location_city}${s.location_region ? ', ' + s.location_region : ''}</div>`;
+
+        const leagueTag = (league === 'all' || filtered.some(x => getLeague(x) !== league))
+          ? `<span class="stadium-league-tag">${leagueFlag} ${league.toUpperCase()}</span>` : '';
+
+        return `<div class="stadium-card${visited ? ' visited' + (isFamily ? ' family' : isSolo ? ' solo' : '') : ''}">
+          <div class="stadium-card-badge ${badgeClass}">${badgeText}</div>
+          <div class="stadium-card-name">${s.name}</div>
+          <div class="stadium-card-team">${s.place_name}</div>
+          ${meta}
+        </div>`;
+      }).join('');
+    }
 
     try {
       const res = await fetch(
-        `${SUPABASE_URL}/rest/v1/adventures?type=eq.stadium&tags=cs.%7Bnpb%7D&order=visited_date.asc.nullslast,name.asc`,
+        `${SUPABASE_URL}/rest/v1/adventures?type=eq.stadium&order=status.asc,visited_date.asc.nullslast,name.asc`,
         { headers: { apikey: SUPABASE_ANON, Authorization: `Bearer ${SUPABASE_ANON}` } }
       );
-      const stadiums = await res.json();
+      allStadiums = await res.json();
 
-      const visited = stadiums.filter(s => s.status === 'visited');
-      const pct = Math.round((visited.length / stadiums.length) * 100);
-      countEl.textContent = visited.length;
-      fill.style.width = pct + '%';
+      // Update counts
+      const npbVisited = allStadiums.filter(s => getLeague(s) === 'npb' && s.status === 'visited').length;
+      const mlbVisited = allStadiums.filter(s => getLeague(s) === 'mlb' && s.status === 'visited').length;
+      const kboVisited = allStadiums.filter(s => getLeague(s) === 'kbo' && s.status === 'visited').length;
+      document.getElementById('countNpb').textContent = npbVisited;
+      document.getElementById('countMlb').textContent = mlbVisited;
+      document.getElementById('countKbo').textContent = kboVisited;
 
-      function fmtDate(iso) {
-        if (!iso) return '';
-        const [y, m, d] = iso.split('-').map(Number);
-        const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-        return `${months[m-1]} ${d}, ${y}`;
-      }
+      // Tabs
+      document.getElementById('stadiumTabs').addEventListener('click', e => {
+        const tab = e.target.closest('.stadium-tab');
+        if (!tab) return;
+        document.querySelectorAll('.stadium-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        renderGrid(tab.dataset.league);
+      });
 
-      grid.innerHTML = stadiums.map(s => {
-        const isVisited = s.status === 'visited';
-        const badge = isVisited
-          ? `<div class="stadium-card-badge">✅ Visited · ${fmtDate(s.visited_date)}</div>`
-          : `<div class="stadium-card-badge unvisited">⭕ Not yet visited</div>`;
-        const meta = isVisited && s.post_url
-          ? `<div class="stadium-card-meta">📍 ${s.location_city} &nbsp;·&nbsp; <a href="${s.post_url}">Read the post →</a></div>`
-          : `<div class="stadium-card-meta">📍 ${s.location_city}${s.location_region ? ', ' + s.location_region : ''}</div>`;
-        return `
-          <div class="stadium-card${isVisited ? ' visited' : ''}">
-            ${badge}
-            <div class="stadium-card-name">${s.name}</div>
-            <div class="stadium-card-team">${s.place_name}</div>
-            ${meta}
-          </div>`;
-      }).join('');
+      renderGrid('all');
 
     } catch (err) {
       grid.innerHTML = '<div class="stadium-loading">Could not load stadiums.</div>';

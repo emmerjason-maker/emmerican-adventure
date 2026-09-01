@@ -800,3 +800,74 @@
   .stadium-grid { grid-template-columns: 1fr 1fr; }
   .stadium-card { padding: 0.9rem; }
 }
+
+/* ── Multi-league counts + tabs ───────────────────────────────────── */
+.stadium-league-counts {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-shrink: 0;
+}
+.league-count-item {
+  text-align: center;
+  min-width: 3rem;
+}
+.league-count-num {
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  font-style: italic;
+  color: var(--red);
+  line-height: 1;
+}
+.league-count-denom {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--ink-faint);
+}
+.league-count-label {
+  font-family: var(--font-mono);
+  font-size: 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--ink-faint);
+  margin-top: 0.15rem;
+}
+.league-count-divider {
+  width: 1px;
+  height: 2.5rem;
+  background: var(--paper-dark);
+}
+.stadium-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+.stadium-tab {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 0.4rem 0.9rem;
+  border: 1px solid var(--paper-dark);
+  background: transparent;
+  color: var(--ink-faint);
+  cursor: pointer;
+  border-radius: 2px;
+  transition: all 0.15s;
+}
+.stadium-tab:hover { color: var(--ink); border-color: var(--ink-faint); }
+.stadium-tab.active {
+  background: var(--red);
+  border-color: var(--red);
+  color: var(--white);
+}
+/* family visited card accent */
+.stadium-card.family { border-color: #4a7fc1; background: color-mix(in srgb, #4a7fc1 5%, var(--paper)); }
+.stadium-card.solo   { border-color: var(--red); }
+.stadium-card-badge.family   { color: #4a7fc1; }
+.stadium-card-badge.solo     { color: var(--red); }
+@media (max-width: 600px) {
+  .stadium-league-counts { gap: 0.5rem; }
+  .league-count-num { font-size: 1.8rem; }
+}
