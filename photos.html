@@ -988,7 +988,6 @@
           </div>
         </div>`;
     }).join('');
-    }).join('');
 
     // Load More button
     let lb = $('loadMoreBtn');
@@ -1057,7 +1056,13 @@
 
   // ── Events ───────────────────────────────────────────────────
   document.addEventListener('DOMContentLoaded', () => {
-    loadPhotos();
+    // Safety net: hide loading spinner after 8s even if something went wrong
+  setTimeout(() => {
+    const loadEl = document.getElementById('photosLoading');
+    if (loadEl && loadEl.style.display !== 'none') loadEl.style.display = 'none';
+  }, 8000);
+
+  loadPhotos();
 
     $('lightboxClose').addEventListener('click', closeLightbox);
     $('lightboxPrev').addEventListener('click', () => shiftLightbox(-1));
