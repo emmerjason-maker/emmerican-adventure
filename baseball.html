@@ -429,7 +429,9 @@
         const visited = s.status === 'visited';
         const dateStr = s.visited_date ? fmtDate(s.visited_date) : '';
         const badgeText = visited ? ('✅ Visited' + (dateStr ? ' · ' + dateStr : '')) : '⭕ Not yet visited';
-        const metaCity = (s.location_city || '') + (s.location_region ? ', ' + s.location_region : '');
+        const metaCity = (s.location_city || '')
+          + (s.location_region ? ', ' + s.location_region : '')
+          + (s.location_country ? ', ' + s.location_country : '');
         const postLink = (visited && s.post_url) ? ' &nbsp;·&nbsp; <a href="' + s.post_url + '">Read post →</a>' : '';
         return '<div class="stadium-card' + (visited ? ' visited' : '') + '">'
           + '<div class="stadium-badge' + (visited ? '' : ' unvisited') + '">' + badgeText + '</div>'
