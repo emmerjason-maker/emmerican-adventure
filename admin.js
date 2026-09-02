@@ -1539,6 +1539,67 @@ async function updateHomepageFeatured({ title, date, postNumber, uploadedImages,
 
 
 
+// ── Sync blog.html card when a post is edited ─────────────────────
+async function updateBlogCard({ filename, title, bodyHtml, editPhotos, editYtVideos }) {
+  try {
+    await withGhRetry('Blog card sync', async () => {
+      const fileRes = await ghFetch('contents/blog.html');
+      if (!fileRes.ok) throw new Error(`Could not fetch blog.html (${fileRes.status})`);
+      const fileJson = await fileRes.json();
+      let html = decodeURIComponent(escape(atob(fileJson.content.replace(/\n/g, ''))));
+      const sha = fileJson.sha;
+
+      // Find the card for this post
+      const href = `posts/${filename}`;
+      const cardRe = new RegExp(
+        `(<article class="post-index-card">\\s*<a href="${href.replace(/\./g, '\\.')}[^>]*>[\\s\\S]*?</article>)`
+      );
+      if (!cardRe.test(html)) { console.warn('Blog card not found for', filename); return; }
+
+      // Build new excerpt from body text
+      const tmp = document.createElement('div');
+      tmp.innerHTML = bodyHtml;
+      const bodyText = (tmp.textContent || '').replace(/\s+/g, ' ').trim();
+      const newExcerpt = escHtml(bodyText.slice(0, 160).replace(/\s\S+$/, '') + '…');
+      const newTitle   = escHtml(title);
+
+      // Get new thumbnail
+      let newThumb = '';
+      if (editPhotos && editPhotos.length > 0) {
+        newThumb = `https://emmericanadventure.com/${editPhotos[0].src}`;
+      } else if (editYtVideos && editYtVideos.length > 0) {
+        newThumb = `https://img.youtube.com/vi/${editYtVideos[0].id}/maxresdefault.jpg`;
+      }
+
+      html = html.replace(cardRe, (match) => {
+        let card = match;
+        // Title
+        card = card.replace(/(<h2 class="post-index-title">)[^<]*(<\/h2>)/, `$1${newTitle}$2`);
+        // Excerpt
+        card = card.replace(/(<p class="post-index-excerpt">)[^<]*(…)?(<\/p>)/, `$1${newExcerpt}$3`);
+        // img alt
+        card = card.replace(/(class="post-index-img"[\s\S]*?<img[^>]*alt=")[^"]*(")/,`$1${newTitle}$2`);
+        // img src (only if we have a thumb)
+        if (newThumb) {
+          card = card.replace(/(class="post-index-img"[\s\S]*?<img[^>]*src=")[^"]*(")/,`$1${escHtml(newThumb)}$2`);
+        }
+        return card;
+      });
+
+      const pushRes = await ghFetch('contents/blog.html', 'PUT', {
+        message: `Update blog card: ${title}`,
+        content: btoa(unescape(encodeURIComponent(html))),
+        sha,
+        branch: CONFIG.branch,
+      });
+      if (!pushRes.ok) { const e = await pushRes.json(); throw new Error(e.message || 'blog.html push failed'); }
+    });
+  } catch (err) {
+    console.warn('Blog card sync error:', err.message);
+    // Non-fatal — the post file itself was already saved
+  }
+}
+
 // ── Update homepage video grid ────────────────────────────────
 async function updateVideoGrid({ title, slug, ytVideos, date }) {
   try {
@@ -2558,6 +2619,16 @@ async function savePostEdit(filename) {
     const ogTitle = doc.querySelector('meta[property="og:title"]');
     if (ogTitle) ogTitle.setAttribute('content', newTitle + ' — Emmerican Adventure');
 
+    // ── Meta/OG description — derive from first body paragraph ──
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = bodyToSave;
+    const bodyText = (tempDiv.textContent || '').replace(/\s+/g, ' ').trim();
+    const newExcerpt = bodyText.slice(0, 200).replace(/\s\S+$/, '') + '…';
+    const metaDesc = doc.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute('content', newExcerpt);
+    const ogDesc = doc.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.setAttribute('content', newExcerpt);
+
     // ── Location ─────────────────────────────────────────────────
     const existingLoc = doc.querySelector('.post-location');
     if (newLocation) {
@@ -2791,6 +2862,11 @@ async function savePostEdit(filename) {
     }
 
     showStatus('✓ Post saved! Changes will be live in ~60 seconds.', false);
+
+    // Sync blog.html card (excerpt, title, thumbnail)
+    showStatus('Syncing journal page…', false, true);
+    await updateBlogCard({ filename, title: newTitle, bodyHtml: bodyToSave, editPhotos, editYtVideos });
+
     // Save adventure details if filled in
     await saveEditAdv(editingSlug);
 
