@@ -372,7 +372,7 @@ function countryFlag(name) {
 }
 
 function updateCounts() {
-  const counts = { restaurant: 0, place: 0, post: 0 };
+  const counts = { restaurant: 0, place: 0, post: 0, stadium: 0 };
   allAdventures.forEach(a => { if (counts[a.type] !== undefined) counts[a.type]++; });
   document.getElementById('countRestaurant').textContent = counts.restaurant;
   document.getElementById('countPlace').textContent      = counts.place;
