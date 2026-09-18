@@ -520,6 +520,7 @@ async function loadEditAdvDetails(slug) {
       if ($('editAdvPrice') && adv.price_range) $('editAdvPrice').value = adv.price_range;
       if ($('editAdvCuisine') && adv.cuisine) $('editAdvCuisine').value = adv.cuisine;
       if ($('editAdvNotes') && adv.notes) $('editAdvNotes').value = adv.notes;
+      if ($('editAdvVenueName')) $('editAdvVenueName').value = adv.place_name || adv.name || '';
       const tags = adv.tags || [];
       ['editTagKidFriendly','editTagWouldReturn','editTagMustTry','editTagHiddenGem','editTagEnglishMenu']
         .forEach(id => { const el = $(id); if (el) el.checked = tags.includes(el.value); });
@@ -540,7 +541,9 @@ async function saveEditAdv(slug) {
   const tags    = ['editTagKidFriendly','editTagWouldReturn','editTagMustTry','editTagHiddenGem','editTagEnglishMenu']
     .filter(id => $(id)?.checked).map(id => $(id).value);
   const advId   = $('editAdvType')?.dataset.advId;
+  const venueName = $('editAdvVenueName')?.value.trim() || null;
   const payload = { type, rating, price_range: price, cuisine, notes, tags: tags.length ? tags : null, post_url: `posts/${slug}.html`, status: 'visited' };
+  if (venueName) { payload.name = venueName; payload.place_name = venueName; }
   try {
     if (advId) {
       await fetch(`${ADV_SUPABASE_URL}/rest/v1/adventures?id=eq.${advId}`, {
@@ -551,8 +554,10 @@ async function saveEditAdv(slug) {
     } else {
       const loc = $('editLocation')?.value.trim() || '';
       const parts = loc.split(',').map(s => s.trim());
+      const venueName = $('editAdvVenueName')?.value.trim() || null;
       Object.assign(payload, {
-        name: $('editTitle')?.value.trim() || slug,
+        name:      venueName || $('editTitle')?.value.trim() || slug,
+        place_name: venueName || null,
         location_city: parts[0] || null, location_region: parts[1] || null,
         location_country: parts[parts.length-1] || null,
         lat: parseFloat($('editLat')?.value) || null,
@@ -4274,6 +4279,10 @@ function initEditLocationSearch() {
     document.getElementById('editLat').value = lat;
     if (document.getElementById('editPlaceId')) document.getElementById('editPlaceId').value = placeId;
     document.getElementById('editLng').value = lng;
+
+    // Pre-fill venue name if not already set
+    const venueField = document.getElementById('editAdvVenueName');
+    if (venueField && !venueField.value.trim()) venueField.value = name;
 
     showEditMapPreview(lat, lng, name);
   });
