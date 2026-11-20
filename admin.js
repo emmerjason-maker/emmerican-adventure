@@ -2285,6 +2285,34 @@ async function publishScheduledPostNow(filename) {
   }
 }
 
+// Sort scheduled cards in blog.html by publish date, number them after the
+// live posts, and put them back (at the bottom of the list). Returns the new
+// html plus the slugs whose number changed.
+function renumberScheduledCards(blogHtml) {
+  const schedRe = /[ \t]*<article class="post-index-card post-scheduled"[\s\S]*?<\/article>\n?/g;
+  const cards = blogHtml.match(schedRe) || [];
+  if (!cards.length) return { html: blogHtml, changed: [] };
+  const liveCount = (blogHtml.match(/<article class="post-index-card">/g) || []).length;
+  const insertAt = blogHtml.search(schedRe);
+  const stripped = blogHtml.replace(schedRe, '');
+  const keyed = cards.map((c, i) => ({
+    c, i,
+    date: (c.match(/data-publish-date="([^"]*)"/) || [])[1] || '9999',
+    old: parseInt((c.match(/Post #(\d+)/) || [])[1]) || 0,
+    slug: (c.match(/data-slug="([^"]+)"/) || [])[1],
+  }));
+  // Date order; ties keep their existing number order
+  keyed.sort((a, b) => a.date.localeCompare(b.date) || a.old - b.old || a.i - b.i);
+  const changed = [];
+  const out = keyed.map((k, j) => {
+    const num = liveCount + j + 1;
+    if (k.old !== num && k.slug) changed.push({ slug: k.slug, num });
+    return k.c.replace(/Post #\d+/g, `Post #${num}`);
+  });
+  const html = stripped.slice(0, insertAt) + out.join('') + stripped.slice(insertAt);
+  return { html, changed };
+}
+
 async function reschedulePost(filename, currentDate) {
   // Convert "August 14, 2026" → "2026-08-14" for the prompt default
   let defaultDate = currentDate || '';
@@ -2349,6 +2377,11 @@ async function reschedulePost(filename, currentDate) {
       .replace(/Going live on [^.]+\./, `Going live on ${fmtDate}.`);
     blogHtml = blogHtml.slice(0, cardStart) + card + blogHtml.slice(cardEnd);
 
+    // Renumber scheduled posts by publish-date order (live count + 1, +2, …)
+    // and reorder their cards so the journal list matches posting order.
+    const renum = renumberScheduledCards(blogHtml);
+    blogHtml = renum.html;
+
     await ghFetch('contents/blog.html', 'PUT', {
       message: `Reschedule ${slug} to ${isoDate}`,
       content: btoa(unescape(encodeURIComponent(blogHtml))),
@@ -2356,7 +2389,25 @@ async function reschedulePost(filename, currentDate) {
       branch: CONFIG.branch,
     });
 
-    showStatus(`✓ Rescheduled to ${fmtDate} — refreshing list…`, false);
+    // Update the Post # tag inside each scheduled post file whose number changed
+    for (const { slug: sSlug, num } of renum.changed) {
+      try {
+        const r = await ghFetch(`contents/posts/${sSlug}.html`);
+        if (!r.ok) continue;
+        const j = await r.json();
+        const html = decodeURIComponent(escape(atob(j.content.replace(/\n/g, ''))));
+        const updated = html.replace(/<span class="post-tag">Post #\d+<\/span>/, `<span class="post-tag">Post #${num}</span>`);
+        if (updated === html) continue;
+        await ghFetch(`contents/posts/${sSlug}.html`, 'PUT', {
+          message: `Renumber ${sSlug} → Post #${num}`,
+          content: btoa(unescape(encodeURIComponent(updated))),
+          sha: j.sha,
+          branch: CONFIG.branch,
+        });
+      } catch (e) { console.warn('Renumber failed for', sSlug, e); }
+    }
+
+    showStatus(`✓ Rescheduled to ${fmtDate} and renumbered scheduled posts — refreshing list…`, false);
     // Wait 3 seconds for GitHub's API to propagate the write before re-reading
     setTimeout(() => loadPostsList(), 3000);
 
