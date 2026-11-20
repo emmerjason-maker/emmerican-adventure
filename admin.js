@@ -175,6 +175,18 @@ function bindEvents() {
   if ($('ytAddBtn')) $('ytAddBtn').addEventListener('click', addYtVideo);
   if ($('editYtAddBtn')) $('editYtAddBtn').addEventListener('click', addEditYtVideo);
   if ($('editPhotoInput')) $('editPhotoInput').addEventListener('change', handleEditPhotoAdd);
+
+  // Drag & drop on edit-post photo zone
+  const editZone = $('editPhotoDropZone');
+  if (editZone) {
+    ['dragenter', 'dragover'].forEach(ev => editZone.addEventListener(ev, e => { e.preventDefault(); editZone.classList.add('drag-over'); }));
+    editZone.addEventListener('dragleave', () => editZone.classList.remove('drag-over'));
+    editZone.addEventListener('drop', e => {
+      e.preventDefault();
+      editZone.classList.remove('drag-over');
+      addEditPhotoFiles(e.dataTransfer.files);
+    });
+  }
 }
 
 // ── Login ─────────────────────────────────────────────────────────
@@ -2538,7 +2550,12 @@ function removeEditPhoto(idx) {
 }
 
 function handleEditPhotoAdd(e) {
-  const files = Array.from(e.target.files);
+  addEditPhotoFiles(e.target.files);
+  e.target.value = '';
+}
+
+function addEditPhotoFiles(fileList) {
+  const files = Array.from(fileList || []).filter(f => f.type.startsWith('image/') || /\.(heic|heif)$/i.test(f.name));
   files.forEach(file => {
     const reader = new FileReader();
     reader.onload = ev => {
@@ -2547,7 +2564,6 @@ function handleEditPhotoAdd(e) {
     };
     reader.readAsDataURL(file);
   });
-  e.target.value = '';
 }
 
 // ── Edit YouTube management ───────────────────────────────────

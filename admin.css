@@ -1391,3 +1391,5 @@ select.field-input { cursor: pointer; }
 
 /* ── Post list search + collapse ─────────────────────────────── */
 .post-list-collapsed { display: none !important; }
+
+.photo-drop-zone.drag-over { border-color: var(--red); background: rgba(192,57,43,0.05); }
