@@ -7,8 +7,20 @@ name: Scheduled Post Publisher
 # RSS feed, and search index.
 on:
   schedule:
-    - cron: '0 16 * * *'   # 16:00 UTC = 1:00am JST — full hour buffer past midnight so early runner starts don't cause wrong date
+    # GitHub delays scheduled runs (worst at the top of the hour), so we
+    # trigger several times at off-peak minutes. The publisher is a no-op
+    # when nothing is due, so extra runs are harmless; the first one to
+    # start publishes the day's post. All are after midnight JST.
+    - cron: '7 15 * * *'    # 00:07 JST
+    - cron: '37 15 * * *'   # 00:37 JST
+    - cron: '17 16 * * *'   # 01:17 JST
+    - cron: '47 17 * * *'   # 02:47 JST
   workflow_dispatch:        # also triggerable manually
+
+# Never let two publisher runs overlap (they edit the same files)
+concurrency:
+  group: scheduled-publish
+  cancel-in-progress: false
 
 jobs:
   publish:
