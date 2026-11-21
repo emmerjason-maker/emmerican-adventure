@@ -513,4 +513,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <url>
+    <loc>https://emmericanadventure.com/posts/plunging-underwater-in-yokohama-riding-the-diving-coaster-vanish-at-cosmo-world.html</loc>
+    <lastmod>2026-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
