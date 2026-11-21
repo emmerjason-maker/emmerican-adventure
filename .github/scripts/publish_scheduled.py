@@ -170,6 +170,15 @@ for match in scheduled_pattern.finditer(blog):
         '<article class="post-entry post-full" data-scheduled="true">',
         '<article class="post-entry post-full">'
     )
+    # Make sure the page has a valid og:image — Facebook/Instagram link previews
+    # and the RSS feed depend on it. Fix missing tags and the old doubled-URL bug.
+    og_tag = f'<meta property="og:image" content="{feed_image}" />'
+    og_cur = re.search(r'<meta property="og:image" content="([^"]*)"\s*/?>', post_new)
+    if og_cur:
+        if og_cur.group(1) == '' or og_cur.group(1).startswith('https://emmericanadventure.com/http'):
+            post_new = post_new.replace(og_cur.group(0), og_tag, 1)
+    else:
+        post_new = post_new.replace('  <meta property="og:url"', f'  {og_tag}\n  <meta property="og:url"', 1)
     write(post_path, post_new)
     print(f"  ✓ Post file updated")
 
