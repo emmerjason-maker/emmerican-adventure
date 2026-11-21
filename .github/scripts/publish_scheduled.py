@@ -106,7 +106,7 @@ for match in scheduled_pattern.finditer(blog):
     # Video-only posts have no photo and no og:image: fall back to the post's
     # YouTube embed so the hero/feed card never ends up with a blank image.
     if not feed_image:
-        yt_embed = re.search(r'youtube(?:-nocookie)?\.com/embed/([a-zA-Z0-9_-]{11})', post)
+        yt_embed = re.search(r'(?:youtube(?:-nocookie)?\.com/(?:embed/|shorts/|watch\?v=)|youtu\.be/)([a-zA-Z0-9_-]{11})', post)
         if yt_embed:
             feed_image = f'https://img.youtube.com/vi/{yt_embed.group(1)}/maxresdefault.jpg'
     if 'youtube.com' in feed_image or 'ytimg.com' in feed_image:
@@ -137,6 +137,10 @@ for match in scheduled_pattern.finditer(blog):
                             pass
                 if os.path.exists(local_thumb):
                     feed_image = f'https://emmericanadventure.com/{local_thumb}'
+
+    if not feed_image:
+        # Instagram (via Zapier) rejects feed items without an image
+        print('::warning::No image found for this post — RSS item will have no enclosure and the Instagram Zap will fail. Add a photo or video.')
 
     # Build excerpt from post body if not in card
     if excerpt_m and 'Going live on' not in excerpt_m.group(1):

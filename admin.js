@@ -831,7 +831,7 @@ function buildPostPage({ title, slug, date, postNumber, location, body, ytId, up
   <meta property="og:title" content="${escHtml(title)} — Emmerican Adventure" />
   <meta property="og:description" content="${escHtml(plainExcerpt)}" />
   <meta property="og:url" content="https://emmericanadventure.com/posts/${slug}.html" />
-  ${imgSrc ? `<meta property="og:image" content="https://emmericanadventure.com/${escHtml(imgSrc)}" />` : ''}
+  ${imgSrc ? `<meta property="og:image" content="${/^https?:/.test(imgSrc) ? escHtml(imgSrc) : 'https://emmericanadventure.com/' + escHtml(imgSrc)}" />` : ''}
   <link rel="icon" type="image/x-icon" href="../favicon.ico" />
   <link rel="icon" type="image/svg+xml" href="../favicon.svg" />
   <link rel="apple-touch-icon" href="../apple-touch-icon.png" />
@@ -2818,7 +2818,15 @@ async function savePostEdit(filename) {
     // ── og:image — was never updated on edit, so reordering or
     // swapping the key photo never propagated to social previews.
     // Falls back to the first video's thumbnail if there are no photos.
-    const ogImageTag = doc.querySelector('meta[property="og:image"]');
+    let ogImageTag = doc.querySelector('meta[property="og:image"]');
+    if (!ogImageTag && doc.head) {
+      // Posts built without an image never had the tag — create it so
+      // video-only posts still get a preview image and feed thumbnail.
+      ogImageTag = doc.createElement('meta');
+      ogImageTag.setAttribute('property', 'og:image');
+      ogImageTag.setAttribute('content', '');
+      doc.head.appendChild(ogImageTag);
+    }
     if (ogImageTag) {
       let newOgImage = '';
       if (editPhotos.length > 0) {
