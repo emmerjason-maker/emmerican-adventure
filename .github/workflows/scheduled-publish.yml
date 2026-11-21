@@ -63,3 +63,11 @@ jobs:
             git commit -m "Auto-publish scheduled posts for $(date +%Y-%m-%d)"
             git push https://x-access-token:${{ secrets.GH_PAT }}@github.com/emmerjason-maker/emmerican-adventure.git main
           fi
+
+      - name: Fail if any post was held back for a missing image
+        run: |
+          if [ -f /tmp/blocked_no_image.txt ]; then
+            echo "::error::Posts held back (no photo or YouTube video/link):"
+            cat /tmp/blocked_no_image.txt
+            exit 1
+          fi

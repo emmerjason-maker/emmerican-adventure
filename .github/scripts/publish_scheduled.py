@@ -50,6 +50,7 @@ scheduled_pattern = re.compile(
 )
 
 published_any = False
+blocked_no_image = []
 
 for match in scheduled_pattern.finditer(blog):
     publish_date_str = match.group(1)
@@ -140,7 +141,11 @@ for match in scheduled_pattern.finditer(blog):
 
     if not feed_image:
         # Instagram (via Zapier) rejects feed items without an image
-        print('::warning::No image found for this post — RSS item will have no enclosure and the Instagram Zap will fail. Add a photo or video.')
+        # Don't publish: Instagram/Facebook (via Zapier) need an image. Leave the
+        # post scheduled and fail the run so it shows up as a red X / email.
+        print(f'::error::Not publishing "{title}" — no photo or YouTube video/link found. Add one via Edit Post; the next run will publish it.')
+        blocked_no_image.append(title)
+        continue
 
     # Build excerpt from post body if not in card
     if excerpt_m and 'Going live on' not in excerpt_m.group(1):
@@ -543,5 +548,12 @@ for match in scheduled_pattern.finditer(blog):
 
 if not published_any:
     print("No posts due for publishing today.")
+
+if blocked_no_image:
+    print(f"{len(blocked_no_image)} post(s) held back for missing image: {blocked_no_image}")
+    # Exit 0 so the commit step still saves other posts; the workflow's final
+    # step reads this file and fails the run so the problem is visible.
+    with open('/tmp/blocked_no_image.txt', 'w') as f:
+        f.write('\n'.join(blocked_no_image))
 
 sys.exit(0)

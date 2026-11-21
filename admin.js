@@ -1015,6 +1015,15 @@ function slugify(title) {
 }
 
 // ── Publish ───────────────────────────────────────────────────────
+// Instagram/Facebook (via the RSS feed + Zapier) need an image for every post.
+// A post qualifies if it has a photo, a YouTube video, or a YouTube link in the body.
+function postHasImageSource(photoCount, videos, bodyHtml) {
+  if (photoCount > 0) return true;
+  if (videos && videos.length > 0) return true;
+  return /(?:youtube(?:-nocookie)?\.com\/(?:embed\/|shorts\/|watch\?v=)|youtu\.be\/)[a-zA-Z0-9_-]{11}/.test(bodyHtml || '');
+}
+const NO_IMAGE_MSG = 'This post needs at least one photo or a YouTube video/link — Instagram and Facebook require an image. Add one and try again.';
+
 async function handlePublish() {
   const title    = $('postTitle').value.trim();
   const date     = $('postDate').value;
@@ -1043,6 +1052,8 @@ async function handlePublish() {
   if (!body && (!ytVideos || ytVideos.length === 0) && images.length === 0) {
     showStatus('Please add some content — body text, a video, or at least one photo.', true); return;
   }
+
+  if (!postHasImageSource(images.length, ytVideos, body)) { showStatus(NO_IMAGE_MSG, true); return; }
 
   // Check if post is scheduled (future date)
   const isScheduled = date && new Date(date + 'T00:00:00') > new Date();
@@ -2666,6 +2677,8 @@ async function savePostEdit(filename) {
   if (!bodyToSave || !bodyToSave.trim()) {
     showStatus('Body is empty — not saving to protect content.', true); return;
   }
+
+  if (!postHasImageSource(editPhotos.length, editYtVideos, bodyToSave)) { showStatus(NO_IMAGE_MSG, true); return; }
 
   $('saveEditLabel').textContent = 'Saving…';
   $('saveEditBtn').disabled = true;
