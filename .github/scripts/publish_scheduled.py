@@ -103,6 +103,12 @@ for match in scheduled_pattern.finditer(blog):
     # For feed enclosures, prefer photos hosted on our domain (Instagram blocks YouTube CDN)
     # Check if post has photos and use the first one if og_image is a YouTube URL
     feed_image = og_image
+    # Video-only posts have no photo and no og:image: fall back to the post's
+    # YouTube embed so the hero/feed card never ends up with a blank image.
+    if not feed_image:
+        yt_embed = re.search(r'youtube(?:-nocookie)?\.com/embed/([a-zA-Z0-9_-]{11})', post)
+        if yt_embed:
+            feed_image = f'https://img.youtube.com/vi/{yt_embed.group(1)}/maxresdefault.jpg'
     if 'youtube.com' in feed_image or 'ytimg.com' in feed_image:
         post_photos = re.findall(r'<img src="\.\./([^"]+)"', post)
         if post_photos:
