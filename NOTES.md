@@ -139,6 +139,8 @@
 | Platform | Handle / URL |
 |----------|-------------|
 | X (Twitter) | https://x.com/emmericanadvent |
+| Threads | https://www.threads.com/@emmericanadventure |
+| Bluesky | https://bsky.app/profile/emmericanadventure.bsky.social |
 | Facebook | https://www.facebook.com/profile.php?id=61590685654080 |
 | YouTube (main) | https://www.youtube.com/@EmmericanAdventure |
 | YouTube (secondary) | https://www.youtube.com/@hashtagemmer |
