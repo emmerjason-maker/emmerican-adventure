@@ -527,4 +527,11 @@
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
+
+  <url>
+    <loc>https://emmericanadventure.com/posts/above-the-clouds-to-seoul-flying-korean-air-s-boeing-787-dreamliner-from-tokyo-narita-to-incheon.html</loc>
+    <lastmod>2026-11-24</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
 </urlset>
