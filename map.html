@@ -95,6 +95,10 @@
     .map-toggle.active-country    { background: var(--ink);  border-color: var(--ink);  color: var(--paper); }
     .map-toggle.active-post       { background: #2980b9; border-color: #2980b9; color: #fff; }
     .map-toggle.active-stadium    { background: #27ae60; border-color: #27ae60; color: #fff; }
+    .map-toggle.active-kidswith   { background: #8e5a2b; border-color: #8e5a2b; color: #fff; }
+    .map-toggle.active-kidswithout{ background: #34495e; border-color: #34495e; color: #fff; }
+    .map-toggles-sep { width: 1px; align-self: stretch; background: var(--rule, #d9d1c3); margin: 0.1rem 0.25rem; }
+    .map-popup-kids { font-family: var(--font-mono); font-size: 0.6rem; letter-spacing: 0.08em; text-transform: uppercase; color: #34495e; margin-top: 0.25rem; }
 
     .map-count { font-family: var(--font-mono); font-size: 0.62rem; }
 
@@ -181,6 +185,13 @@
     <button class="map-toggle active-stadium" data-type="stadium" onclick="toggleType(this, 'stadium')">
       ⚾ Stadiums <span class="map-count" id="countStadium">0</span>
     </button>
+    <span class="map-toggles-sep" aria-hidden="true"></span>
+    <button class="map-toggle active-kidswith" data-kids="with" onclick="toggleKids(this, 'with')" title="Places we visited as a family">
+      👨‍👩‍👧‍👦 With kids <span class="map-count" id="countKidsWith">0</span>
+    </button>
+    <button class="map-toggle active-kidswithout" data-kids="without" onclick="toggleKids(this, 'without')" title="Places we visited without the kids">
+      🚶 Without kids <span class="map-count" id="countKidsWithout">0</span>
+    </button>
   </div>
 
   <div class="map-container">
@@ -209,6 +220,12 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 let map, infoWindow;
 let allMarkers    = [];
 let activeTypes   = { restaurant: true, place: true, country: true, post: true, stadium: true };
+let activeKids    = { with: true, without: true };
+// An entry counts as "with kids" unless with_kids is explicitly false (blog post pins are family).
+function withKids(a) { return a.with_kids !== false; }
+function kidsAllowed(a) { return withKids(a) ? activeKids.with : activeKids.without; }
+function markerVisible(m) { return !!activeTypes[m.type] && (m.withKids ? activeKids.with : activeKids.without); }
+function applyFilters() { allMarkers.forEach(m => m.marker.setMap(markerVisible(m) ? map : null)); }
 let allAdventures = [];
 let mapDataError  = false;  // tracks whether loadAdventures failed
 
@@ -293,15 +310,16 @@ function placeMarkers() {
   allAdventures.forEach(a => {
     const marker = new google.maps.Marker({
       position: { lat: parseFloat(a.lat), lng: parseFloat(a.lng) },
-      map: activeTypes[a.type] ? map : null,
+      map: (activeTypes[a.type] && kidsAllowed(a)) ? map : null,
       title: a.name,
       icon: {
         path: google.maps.SymbolPath.CIRCLE,
         scale: a.type === 'country' ? 10 : 8,
         fillColor: PIN_COLORS[a.type] || '#666',
         fillOpacity: 0.92,
-        strokeColor: '#fff',
-        strokeWeight: 1.5,
+        // Without-kids pins get a dark outline so they stand out from family pins
+        strokeColor: withKids(a) ? '#fff' : '#1a1714',
+        strokeWeight: withKids(a) ? 1.5 : 3,
       },
     });
 
@@ -310,7 +328,7 @@ function placeMarkers() {
       infoWindow.open(map, marker);
     });
 
-    allMarkers.push({ marker, type: a.type });
+    allMarkers.push({ marker, type: a.type, withKids: withKids(a) });
   });
 
   // Don't auto-fitBounds on initial load — keep the Japan-centered
@@ -330,7 +348,15 @@ function fitMapBounds() {
 function toggleType(btn, type) {
   activeTypes[type] = !activeTypes[type];
   btn.classList.toggle('active-' + type, activeTypes[type]);
-  allMarkers.forEach(m => { if (m.type === type) m.marker.setMap(activeTypes[type] ? map : null); });
+  applyFilters();
+  fitMapBounds();
+}
+
+function toggleKids(btn, which) {
+  activeKids[which] = !activeKids[which];
+  btn.classList.toggle('active-kids' + which, activeKids[which]);
+  applyFilters();
+  updateCounts();
   fitMapBounds();
 }
 
@@ -372,15 +398,20 @@ function countryFlag(name) {
 }
 
 function updateCounts() {
+  document.getElementById('countKidsWith').textContent    = allAdventures.filter(a => withKids(a)).length;
+  document.getElementById('countKidsWithout').textContent = allAdventures.filter(a => !withKids(a)).length;
+
+  // Type and country counts follow the With/Without kids filter
+  const shown = allAdventures.filter(kidsAllowed);
   const counts = { restaurant: 0, place: 0, post: 0, stadium: 0 };
-  allAdventures.forEach(a => { if (counts[a.type] !== undefined) counts[a.type]++; });
+  shown.forEach(a => { if (counts[a.type] !== undefined) counts[a.type]++; });
   document.getElementById('countRestaurant').textContent = counts.restaurant;
   document.getElementById('countPlace').textContent      = counts.place;
   document.getElementById('countPost').textContent       = counts.post;
   document.getElementById('countStadium').textContent   = counts.stadium || 0;
 
   const countrySet = new Set();
-  allAdventures.forEach(a => {
+  shown.forEach(a => {
     if (!a.location_country) return;
     countrySet.add(displayCountryFor(a));
   });
@@ -432,6 +463,7 @@ function buildPopup(a) {
     '<div class="map-popup-type">' + typeLabel + '</div>' +
     '<div class="map-popup-name">' + esc(a.name) + '</div>' +
     (loc ? '<div class="map-popup-loc">' + esc(loc) + '</div>' : '') +
+    (withKids(a) ? '' : '<div class="map-popup-kids">🚶 Without the kids</div>') +
     starsHtml + notes + link + mapsLink +
   '</div>';
 }
@@ -459,7 +491,7 @@ function initMapSearch() {
     debounce = setTimeout(() => {
       const q = input.value.toLowerCase().trim();
       if (!q) {
-        allMarkers.forEach(m => { m.marker.setMap(activeTypes[m.type] ? map : null); });
+        applyFilters();
         fitMapBounds();
         return;
       }
@@ -470,7 +502,7 @@ function initMapSearch() {
           return Math.abs(lat - pos.lat()) < 0.0001 && Math.abs(lng - pos.lng()) < 0.0001;
         });
         const name = a ? (a.name + ' ' + (a.location_city || '') + ' ' + (a.location_country || '')).toLowerCase() : '';
-        m.marker.setMap(name.includes(q) && activeTypes[m.type] ? map : null);
+        m.marker.setMap(name.includes(q) && markerVisible(m) ? map : null);
       });
     }, 200);
   });

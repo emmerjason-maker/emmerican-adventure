@@ -459,6 +459,7 @@ async function saveAdvFromPost({ title, slug, date, uploadedImages }) {
     tags:             tags.length > 0 ? tags : null,
     notes,
     post_url:         `posts/${slug}.html`,
+    with_kids:        document.getElementById('postWithKids')?.checked !== false,
     photos,
     youtube_videos:   youtubeVideos,
     created_by:       '3fd413d3-d92d-440f-b0ff-ca98b36cf251',
@@ -493,6 +494,7 @@ function resetAdvFields() {
   if ($('advPostRating'))  $('advPostRating').value = '';
   if ($('advPostRatingVal')) $('advPostRatingVal').textContent = '';
   if ($('advPostNotes'))   $('advPostNotes').value  = '';
+  if ($('postWithKids'))   $('postWithKids').checked = true;
   if ($('postGeoCity'))    $('postGeoCity').value    = '';
   if ($('postGeoRegion'))  $('postGeoRegion').value  = '';
   if ($('postGeoCountry')) $('postGeoCountry').value = '';
@@ -533,6 +535,7 @@ async function loadEditAdvDetails(slug) {
       if ($('editAdvCuisine') && adv.cuisine) $('editAdvCuisine').value = adv.cuisine;
       if ($('editAdvNotes') && adv.notes) $('editAdvNotes').value = adv.notes;
       if ($('editAdvVenueName')) $('editAdvVenueName').value = adv.place_name || adv.name || '';
+      if ($('editAdvWithKids')) $('editAdvWithKids').checked = adv.with_kids !== false;
       const tags = adv.tags || [];
       ['editTagKidFriendly','editTagWouldReturn','editTagMustTry','editTagHiddenGem','editTagEnglishMenu']
         .forEach(id => { const el = $(id); if (el) el.checked = tags.includes(el.value); });
@@ -554,7 +557,7 @@ async function saveEditAdv(slug) {
     .filter(id => $(id)?.checked).map(id => $(id).value);
   const advId   = $('editAdvType')?.dataset.advId;
   const venueName = $('editAdvVenueName')?.value.trim() || null;
-  const payload = { type, rating, price_range: price, cuisine, notes, tags: tags.length ? tags : null, post_url: `posts/${slug}.html`, status: 'visited' };
+  const payload = { type, rating, price_range: price, cuisine, notes, tags: tags.length ? tags : null, post_url: `posts/${slug}.html`, status: 'visited', with_kids: $('editAdvWithKids')?.checked !== false };
   if (venueName) { payload.name = venueName; payload.place_name = venueName; }
   try {
     if (advId) {
@@ -3167,6 +3170,7 @@ async function advSave() {
     rating:           type === 'restaurant' ? (parseFloat($('advRating')?.value) || null) : null,
     kid_friendly:     type === 'restaurant' ? ($('advKidFriendly')?.checked ?? null) : null,
     would_return:     type === 'restaurant' ? ($('advWouldReturn')?.checked  ?? null) : null,
+    with_kids:        $('advWithKids')?.checked !== false,
     notes:            $('advNotes')?.value.trim()    || null,
     tags:             tags.length ? tags : null,
     photos:           allAdvPhotos(uploadedPhotoUrls).length ? allAdvPhotos(uploadedPhotoUrls) : null,
@@ -3257,6 +3261,7 @@ function advEdit(id) {
   if ($('advCuisine'))   $('advCuisine').value          = a.cuisine || '';
   if ($('advPrice'))     $('advPrice').value            = a.price_range || '';
   if ($('advRating'))    $('advRating').value           = a.rating || '';
+  if ($('advWithKids'))  $('advWithKids').checked       = a.with_kids !== false;
   if ($('advKidFriendly')) $('advKidFriendly').checked = !!a.kid_friendly;
   if ($('advWouldReturn')) $('advWouldReturn').checked  = !!a.would_return;
   if ($('advNotes'))     $('advNotes').value            = a.notes || '';
@@ -3373,6 +3378,7 @@ function advResetForm() {
   $('advCuisine').value          = '';
   $('advPrice').value            = '';
   $('advRating').value           = '';
+  if ($('advWithKids')) $('advWithKids').checked = true;
   $('advKidFriendly').checked    = false;
   $('advWouldReturn').checked    = false;
   $('advNotes').value            = '';

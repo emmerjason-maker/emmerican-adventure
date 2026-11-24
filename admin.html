@@ -263,6 +263,10 @@
             </div>
 
             <div style="margin-top:0.75rem;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;cursor:pointer;"><input type="checkbox" id="postWithKids" checked style="width:auto;" /> 👨‍👩‍👧‍👦 The kids came along <span class="optional">uncheck if you went without them</span></label>
+            </div>
+
+            <div style="margin-top:0.75rem;">
               <label class="field-label">Tags</label>
               <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-top:0.4rem;">
                 <label style="display:flex;align-items:center;gap:4px;font-size:0.75rem;cursor:pointer;"><input type="checkbox" id="tagKidFriendly" value="Kid-Friendly" /> Kid-Friendly</label>
@@ -440,6 +444,10 @@
                     <label class="field-label">Cuisine / Category <span class="optional">optional</span></label>
                     <input type="text" class="field-input" id="editAdvCuisine" placeholder="e.g. Japanese, BBQ…" />
                   </div>
+                </div>
+
+                <div style="margin-top:0.75rem;">
+                  <label style="display:flex;align-items:center;gap:6px;font-size:0.8rem;cursor:pointer;"><input type="checkbox" id="editAdvWithKids" checked style="width:auto;" /> 👨‍👩‍👧‍👦 The kids came along <span class="optional">uncheck if you went without them</span></label>
                 </div>
 
                 <div style="margin-top:0.75rem;">
@@ -661,6 +669,12 @@
               </div>
             </div>
 
+            <div class="field-group">
+              <label class="field-label" style="gap:1.5rem;">
+                <span>👨‍👩‍👧‍👦 The kids came along</span>
+                <input type="checkbox" id="advWithKids" checked style="width:auto;" />
+              </label>
+            </div>
             <div class="field-group">
               <label class="field-label">Notes / Journal Entry <span class="optional">optional</span></label>
               <textarea class="field-input" id="advNotes" rows="4" placeholder="What did you think? What did the kids say? Any must-order dishes?"></textarea>
