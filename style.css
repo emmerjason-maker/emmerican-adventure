@@ -1562,6 +1562,9 @@ img { max-width: 100%; display: block; }
 .share-btn:hover { color: var(--ink); border-color: var(--ink-faint); }
 .share-instagram:hover { color: #e1306c; border-color: #e1306c; }
 .share-facebook:hover { color: #1877f2; border-color: #1877f2; }
+.share-x:hover { color: var(--ink); border-color: var(--ink); }
+.share-threads:hover { color: var(--ink); border-color: var(--ink); }
+.share-bluesky:hover { color: #1185fe; border-color: #1185fe; }
 
 /* ── Hero latest post card ───────────────────────────────────── */
 .hero-latest-post {

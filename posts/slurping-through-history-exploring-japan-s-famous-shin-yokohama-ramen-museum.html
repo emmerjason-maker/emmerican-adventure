@@ -121,6 +121,18 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
             Instagram
           </a>
+          <a class="share-btn share-x" id="shareX" href="#" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+            X
+          </a>
+          <a class="share-btn share-threads" id="shareThreads" href="#" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17.5 8.5C16.7 5.6 14.7 4 12 4 8.1 4 6 7 6 12s2.1 8 6 8c3 0 5-1.6 5-4 0-2.3-2-3.4-5-3.4-2.2 0-3.4.9-3.4 2.1 0 1.2 1.1 1.9 2.4 1.9 2.2 0 3.7-1.7 3.7-5.1 0-1.1-.2-2.2-.6-3"/></svg>
+            Threads
+          </a>
+          <a class="share-btn share-bluesky" id="shareBluesky" href="#" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 10.8c-1.087-2.114-4.046-6.053-6.798-7.995C2.566.944 1.561 1.266.902 1.565.139 1.908 0 3.08 0 3.768c0 .69.378 5.65.624 6.479.815 2.736 3.713 3.66 6.383 3.364.136-.02.275-.039.415-.056-.138.022-.276.04-.415.056-3.912.58-7.387 2.005-2.83 7.078 5.013 5.19 6.87-1.113 7.823-4.308.953 3.195 2.05 9.271 7.733 4.308 4.267-4.308 1.172-6.498-2.74-7.078a8.741 8.741 0 01-.415-.056c.14.017.279.036.415.056 2.67.297 5.568-.628 6.383-3.364.246-.828.624-5.79.624-6.479 0-.688-.139-1.86-.902-2.203-.659-.299-1.664-.621-4.3 1.24-2.752 1.942-5.711 5.881-6.798 7.995z"/></svg>
+            Bluesky
+          </a>
           <a class="share-btn share-kofi" href="https://ko-fi.com/emmericanadventure" target="_blank" rel="noopener">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M23.881 8.948c-.773-4.085-4.859-4.593-4.859-4.593H.723c-.604 0-.679.798-.679.798s-.082 9.299-.022 14.856c.054 5.15 3.41 5.043 3.41 5.043h6.5c2.48-.002 2.842-2.684 2.842-2.684s.341 2.684 2.821 2.684h4.701c2.478 0 2.876-2.44 2.876-2.44l1.33-12.703c.069-.538.029-1.171-.621-1.321zm-5.075 10.432c-.148.232-.48.311-.712.163l-4.496-2.917-1.557 1.412c-.194.176-.499.169-.686-.016l-1.22-1.244 3.968-3.609 4.703 3.052c.231.15.31.481.162.712l-.162.447zm1.875-5.407c-.113.26-.41.382-.67.27l-8.418-3.638 8.418-7.673c.258-.235.657-.217.894.04l.67.733c.237.258.22.657-.04.893l-7.38 6.727 7.38 3.19c.259.112.381.41.27.67l-.124.788z"/></svg>
             Support
@@ -131,6 +143,11 @@
         (function() {
           var url = window.location.href;
           document.getElementById('shareFacebook').href = 'https://www.facebook.com/sharer/sharer.php?u=' + encodeURIComponent(url);
+          var shareTitle = (document.querySelector('.post-entry-title')?.textContent || document.title).trim();
+          var shareText = encodeURIComponent(shareTitle + ' ' + url);
+          document.getElementById('shareX').href = 'https://twitter.com/intent/tweet?text=' + encodeURIComponent(shareTitle) + '&url=' + encodeURIComponent(url);
+          document.getElementById('shareThreads').href = 'https://www.threads.net/intent/post?text=' + shareText;
+          document.getElementById('shareBluesky').href = 'https://bsky.app/intent/compose?text=' + shareText;
         })();
         function sharePost() {
           var url   = window.location.href;
