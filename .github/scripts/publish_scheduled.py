@@ -34,6 +34,50 @@ def write(path, content):
     with open(path, 'w', encoding='utf-8') as f:
         f.write(content)
 
+def rebuild_post_nav():
+    """Rebuild prev/next links on every post from the order shown in blog.html.
+
+    Order = live cards oldest->newest, then scheduled cards by publish date.
+    A post links "previous" to the post before it and "next" only to a post
+    that is already live. Idempotent; only rewrites posts that change.
+    """
+    blog_html = read('blog.html')
+    arts = re.findall(r'<article class="post-index-card([^"]*)"([^>]*)>(.*?)</article>', blog_html, re.S)
+    rows = []
+    for cls, attrs, body in arts:
+        m = re.search(r'data-slug="([^"]+)"', attrs) or re.search(r'href="posts/([^"]+)\.html"', body)
+        t = re.search(r'<h2 class="post-index-title[^"]*">(.*?)</h2>', body, re.S)
+        d = re.search(r'data-publish-date="([^"]+)"', attrs)
+        if m and t:
+            rows.append(dict(slug=m.group(1), title=t.group(1).strip(),
+                             sched='post-scheduled' in cls, date=d.group(1) if d else ''))
+    live = [r for r in rows if not r['sched']]
+    sched = sorted([r for r in rows if r['sched']], key=lambda r: r['date'])
+    chron = list(reversed(live)) + sched
+    row_pat = re.compile(r'[ \t]*<div class="post-nav-row">.*?</div>', re.S)
+    fixed = 0
+    for i, r in enumerate(chron):
+        path = f"posts/{r['slug']}.html"
+        if not os.path.exists(path):
+            continue
+        html_ = read(path)
+        if len(row_pat.findall(html_)) != 1:
+            continue
+        prev = chron[i - 1] if i > 0 else None
+        nxt = chron[i + 1] if (i + 1 < len(chron) and not r['sched'] and not chron[i + 1]['sched']) else None
+        row = '        <div class="post-nav-row">\n'
+        row += (f'          <a href="../posts/{prev["slug"]}.html" class="post-nav-prev">\u2190 {prev["title"]}</a>\n'
+                if prev else '          <span></span>\n')
+        row += (f'          <a href="../posts/{nxt["slug"]}.html" class="post-nav-next">{nxt["title"]} \u2192</a>\n'
+                if nxt else '          <span></span>\n')
+        row += '        </div>'
+        new_html = row_pat.sub(lambda m: row, html_, count=1)
+        if new_html != html_:
+            write(path, new_html)
+            fixed += 1
+    print(f"Post nav: {fixed} post(s) updated")
+
+
 def strip_tags(html):
     return re.sub(r'<[^>]+>', '', html)
 
@@ -554,6 +598,9 @@ for match in scheduled_pattern.finditer(blog):
             print(f"  ⚠ No adventure entry for this post — add via Edit Post → Adventure Details")
     except Exception:
         pass
+
+if published_any:
+    rebuild_post_nav()
 
 if not published_any:
     print("No posts due for publishing today.")
